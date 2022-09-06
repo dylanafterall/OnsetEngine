@@ -52,7 +52,6 @@ _deps
 data/
 external/box2d/
 external/entt/
-external/glad/include/KHR/
 external/glm/
 external/googletest/
 external/sol2/
