@@ -1,0 +1,40 @@
+# Set the project name
+project(lua)
+
+# Add a library with the above sources
+add_library(${PROJECT_NAME} 
+    lua/lua-5.4.4/src/lapi.c
+    lua/lua-5.4.4/src/lcode.c
+    lua/lua-5.4.4/src/lctype.c
+    lua/lua-5.4.4/src/ldebug.c
+    lua/lua-5.4.4/src/ldo.c
+    lua/lua-5.4.4/src/ldump.c
+    lua/lua-5.4.4/src/lfunc.c
+    lua/lua-5.4.4/src/lgc.c
+    lua/lua-5.4.4/src/llex.c
+    lua/lua-5.4.4/src/lmem.c
+    lua/lua-5.4.4/src/lobject.c
+    lua/lua-5.4.4/src/lopcodes.c
+    lua/lua-5.4.4/src/lparser.c
+    lua/lua-5.4.4/src/lstate.c
+    lua/lua-5.4.4/src/lstring.c
+    lua/lua-5.4.4/src/ltable.c
+    lua/lua-5.4.4/src/ltm.c
+    lua/lua-5.4.4/src/lundump.c
+    lua/lua-5.4.4/src/lvm.c
+    lua/lua-5.4.4/src/lzio.c
+    lua/lua-5.4.4/src/lauxlib.c
+    lua/lua-5.4.4/src/lbaselib.c
+    lua/lua-5.4.4/src/lcorolib.c
+    lua/lua-5.4.4/src/ldblib.c
+    lua/lua-5.4.4/src/liolib.c
+    lua/lua-5.4.4/src/lmathlib.c
+    lua/lua-5.4.4/src/loadlib.c
+    lua/lua-5.4.4/src/loslib.c
+    lua/lua-5.4.4/src/lstrlib.c
+    lua/lua-5.4.4/src/ltablib.c
+    lua/lua-5.4.4/src/lutf8lib.c
+    lua/lua-5.4.4/src/linit.c
+    lua/lua-5.4.4/src/lua.c
+    lua/lua-5.4.4/src/luac.c
+)
