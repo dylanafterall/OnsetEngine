@@ -52,10 +52,13 @@ _deps
 data/
 external/box2d/
 external/entt/
+external/glad/include
+external/glad/src
 external/glm/
 external/googletest/
 external/sol2/
 external/spdlog/
 external/stb/stb/
-external/lua/lua/
+external/lua/lua/lua-5.4.4/
+external/lua/lua/lua-5.4.4.tar.gz
 build/

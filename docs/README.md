@@ -15,7 +15,6 @@ new techniques and practices over time.
 </p>
 
 ## Infrastructure
-***
 
 <p>Dependencies:
 <ul>
@@ -53,60 +52,54 @@ new techniques and practices over time.
 </p>
 
 ## Installation
-***
 
 <p>These instructions are for my personal reference. Please adjust for your OS, Distro, Package Manager, etc.
 
-<ol> 
+<ol>
+    <li> Get OpenGL libraries: </li>
+        <ul>
+            <li>if macOS: </li>
+                <ul>
+                    <li><a href="https://developer.apple.com/xcode/">download Xcode developer tools</a> </li>
+                    <li>xcode-select --install </li>
+                </ul>
+            <li>if Ubuntu: </li>
+                <ul>
+                    <li>sudo apt-get update </li>
+                    <li>sudo apt-get install build-essential </li>
+                    <li>sudo apt-get install cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev </li>
+                </ul>
+        </ul> 
     <li> Get CMake: </li>
         <ul>
             <li>if macOS: </li>
                 <ul>
-                    <li> <a href="https://cmake.org/download/">download CMake binary</a> </li>
-                    <li> `PATH="/Applications/CMake.app/Contents/bin":"$PATH"` </li>
+                    <li><a href="https://cmake.org/download/">download CMake binary</a> </li>
+                    <li>PATH="/Applications/CMake.app/Contents/bin":"$PATH" </li>
             </ul>
             <li>if Ubuntu: </li>
                 <ul>
-                    <li> `sudo apt-get update` </li>
-                    <li> `sudo apt-get install cmake` </li>
+                    <li>sudo apt-get install cmake </li>
                 </ul>
         </ul>
-    <li> Get OpenGL libraries: </li>
+    <li>In root directory, enter following commands: </li>
         <ul>
-            <li>if macOS </li>
+            <li>if macOS: </li>
                 <ul>
-                    <li><a href="https://developer.apple.com/xcode/">download Xcode developer tools</a> </li>
-                    <li>(if necessary): `xcode-select --install` </li>
+                    <li>mkdir build </li>
+                    <li>./configure.sh </li>
+                    <li>./build.sh </li>
+                    <li>./run.sh </li>
                 </ul>
-            <li>if Ubuntu </li>
+            <li>if Ubuntu: </li>
                 <ul>
-                    <li>(if necessary): update driver for graphics hardware </li>
-                    <li> `sudo apt-get install build-essential` </li>
-                    <li> `sudo apt-get install cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev` </li>
+                    <li> </li>
                 </ul>
         </ul>
-    <li>In root directory, add git submodules: </li>
-        <ul>
-            <li>git submodule add https://github.com/g-truc/glm.git external/glm </li>
-            <li>git submodule add https://github.com/skypjack/entt.git external/entt </li>
-            <li>git submodule add https://github.com/erincatto/box2d.git external/box2d </li>
-            <li>git submodule add https://github.com/nothings/stb.git external/stb/stb </li>
-            <li>git submodule add https://github.com/ThePhD/sol2.git external/sol2 </li>
-            <li>git submodule add https://github.com/gabime/spdlog.git external/spdlog </li>
-            <li>git submodule add https://github.com/google/googletest.git external/googletest </li>
-        </ul>
-    <li>In root directory, enter following commands (.sh scripts are written for zsh): </li>
-        <ol>
-            <li>`mkdir build` </li>
-            <li>`./configure.sh` </li>
-            <li>`./build.sh` </li>
-            <li>`./run.sh` </li>
-        </ol>
 </ol>
 </p>
 
 ## Acknowledgements
-***
 
 <p>This project was inspired by:<br>
 <ul> 

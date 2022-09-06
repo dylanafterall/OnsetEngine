@@ -25,29 +25,12 @@ set(SOURCES
 # add an executable with the above sources
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-# ------------------------------------------------------------------------------
-# Automate Git Submodules
-
-# Update submodules as needed
-find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}")
-        endif()
-    endif()
-endif()
-
 
 # ------------------------------------------------------------------------------
 # sub-directories (points CMake to these CMakeLists.txt)
 
 add_subdirectory(external/box2d)
+add_subdirectory(external/glad)
 add_subdirectory(external/entt)
 add_subdirectory(external/glm)
 add_subdirectory(external/googletest)
@@ -61,8 +44,8 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC ${PROJECT_SOURCE_DIR}/external/box2d/include
     PUBLIC ${PROJECT_SOURCE_DIR}/external/box2d/extern
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/box2d/extern/glad/include
     PUBLIC ${PROJECT_SOURCE_DIR}/external/box2d/extern/glfw/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/external/glad/include
     PUBLIC ${PROJECT_SOURCE_DIR}/external/entt/src
     PUBLIC ${PROJECT_SOURCE_DIR}/external/glm
     PUBLIC ${PROJECT_SOURCE_DIR}/external/googletest/googletest/include
@@ -87,7 +70,7 @@ include_directories(${OPENGL_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}
     box2d
     EnTT
-    glad
+    sub_glad
     glfw
     glm
     gtest
