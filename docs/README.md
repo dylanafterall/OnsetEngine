@@ -1,6 +1,6 @@
 # Onset Engine
 
-<p>The Onset Engine is a 2D, ECS (Entity-Component-System) game engine written in C++, GLSL, and Lua (for scripting). <br>
+<p>The Onset Engine is a 2D, ECS (Entity-Component-System) game engine written in C++. Shaders are written in GLSL and scripts are written in Lua. It uses the OpenGL API for rendering. <br>
 I am building this engine for my own education. It is not intended for 
 commerical application. Its development will be ongoing, as I try to incorporate 
 new techniques and practices over time. 
@@ -67,33 +67,49 @@ new techniques and practices over time.
                 <ul>
                     <li>sudo apt-get update </li>
                     <li>sudo apt-get install build-essential </li>
-                    <li>sudo apt-get install cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev </li>
+                    <li>sudo apt-get install libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev </li>
                 </ul>
         </ul> 
     <li> Get CMake: </li>
         <ul>
             <li>if macOS: </li>
                 <ul>
-                    <li><a href="https://cmake.org/download/">download CMake binary</a> </li>
+                    <li><a href="https://cmake.org/download/">download and install cmake-x.xx.x-macos-universal.dmg binary release</a> </li>
                     <li>PATH="/Applications/CMake.app/Contents/bin":"$PATH" </li>
             </ul>
             <li>if Ubuntu: </li>
                 <ul>
                     <li>sudo apt-get install cmake </li>
+                    <li>if cmake --version (from apt-get install) is not recent enough: </li>
+                        <ul>
+                            <li>sudo apt-get install libssl-dev </li>
+                            <li><a href="https://cmake.org/download/">download and extract cmake-x.xx.x.tar.gz release </a> </li>
+                            <li>cd $CMAKE_DOWNLOAD_PATH </li>
+                            <li>./configure </li>
+                            <li>gmake </li>
+                            <li>sudo make install </li>
+                            <li>restart terminal </li>
+                        </ul>
                 </ul>
         </ul>
-    <li>In root directory, enter following commands: </li>
+    <li>In desired download location: </li>
+        <ul>
+            <li>git clone https://github.com/dylanafterall/OnsetEngine.git </li>
+        </ul>
+    <li>cd into OnsetEngine/ root directory, enter following commands: </li>
         <ul>
             <li>if macOS: </li>
                 <ul>
-                    <li>mkdir build </li>
                     <li>./configure.sh </li>
                     <li>./build.sh </li>
                     <li>./run.sh </li>
                 </ul>
             <li>if Ubuntu: </li>
                 <ul>
-                    <li> </li>
+                    <li>sudo apt-get install curl </li>
+                    <li>bash ./configure.sh </li>
+                    <li>bash ./build.sh </li>
+                    <li>bash ./run.sh </li>
                 </ul>
         </ul>
 </ol>
