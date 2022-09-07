@@ -18,8 +18,8 @@ new techniques and practices over time.
 
 <p>Dependencies:
 <ul>
-    <li><a href="https://cmake.org/">CMake</a> </li>
     <li><a href="https://www.opengl.org/">OpenGL</a> </li>
+    <li><a href="https://cmake.org/">CMake</a> </li>
 </ul>
 </p>
 

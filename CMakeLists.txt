@@ -13,21 +13,20 @@ project(OnsetEngine)
 # EnTT requires at least C++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
-
-# ------------------------------------------------------------------------------
-# Onset Engine CPP AND H FILES
-
-# create a sources variable with link to cpp files to compile
-set(SOURCES
+# Create the executable
+add_executable(${PROJECT_NAME}
     src/main.cpp
+    src/core_game.cpp
+    src/core_window.cpp
+    src/core_assetmanager.cpp
 )
 
-# add an executable with the above sources
-add_executable(${PROJECT_NAME} ${SOURCES})
-
-
-# ------------------------------------------------------------------------------
-# sub-directories (points CMake to these CMakeLists.txt)
+find_package(OpenGL REQUIRED)
+include_directories(
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src
+    ${OPENGL_INCLUDE_DIRS}
+)
 
 add_subdirectory(external/box2d)
 add_subdirectory(external/glad)
@@ -39,9 +38,8 @@ add_subdirectory(external/sol2)
 add_subdirectory(external/spdlog)
 add_subdirectory(external/stb)
 
-# set the directories to INCLUDE in build command (not external libs)
+# set the directories to INCLUDE in build command
 target_include_directories(${PROJECT_NAME}
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC ${PROJECT_SOURCE_DIR}/external/box2d/include
     PUBLIC ${PROJECT_SOURCE_DIR}/external/box2d/extern
     PUBLIC ${PROJECT_SOURCE_DIR}/external/box2d/extern/glfw/include
@@ -54,18 +52,6 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC ${PROJECT_SOURCE_DIR}/external/spdlog/include
     PUBLIC ${PROJECT_SOURCE_DIR}/external/stb
 )
-
-
-# ------------------------------------------------------------------------------
-# OpenGL - 'REQUIRED' stops CMake if OpenGL is not found 
-# 	 - OpenGL is dependency, but not in external directory
-
-find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIRS})
-
-
-# ------------------------------------------------------------------------------
-# link external libraries
 
 target_link_libraries(${PROJECT_NAME}
     box2d

@@ -49,7 +49,7 @@ _deps
 
 # Project-specific -------------------------------------------------------------
 *.DS_Store
-data/
+asset/
 external/box2d/
 external/entt/
 external/glm/
