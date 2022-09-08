@@ -6,7 +6,7 @@
 //  designated entry point to Onset Engine program
 // -----------------------------------------------------------------------------
 
-#include "core_game.h"
+#include "core_game.hpp"
 
 int main(int argc, char* argv[]) {
     Game game;

@@ -6,7 +6,7 @@
 //  implementation of AssetManager class, for loading/removing assets
 // -----------------------------------------------------------------------------
 
-#include "core_assetmanager.h"
+#include "core_assetmanager.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION    // required before stb include - only once
 #include "stb/stb_image.h"
@@ -165,6 +165,21 @@ void AssetManager::setFShader(const std::string& assetId, const char* fragmentPa
     spdlog::info("New FShader added to Asset Manager with id = " + assetId);
 }
 
+void AssetManager::setShaderProgram(const std::string& assetId, unsigned int vertexShader, unsigned int fragmentShader) {
+    unsigned int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    // check shader linking for errors 
+    checkShaderProgramErrors(shaderProgram);
+
+    // add shaderProgram to asset manager's map 
+    shaderPrograms.emplace(assetId, shaderProgram);
+    spdlog::info("New ShaderProgram added to Asset Manager with id = " + assetId);
+  
+}
+
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // 'Get' functions
@@ -182,6 +197,10 @@ unsigned int AssetManager::getFShader(const std::string& assetId) {
     return fshaders[assetId];
 }
 
+unsigned int AssetManager::getShaderProgram(const std::string& assetId) {
+    return shaderPrograms[assetId];
+}
+
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // Misc functions
@@ -189,6 +208,9 @@ unsigned int AssetManager::getFShader(const std::string& assetId) {
 
 void AssetManager::clearAssets() {
     // de-allocate textures
+    for (auto texture : textures) {
+        glDeleteTextures(1, &texture.second);
+    }
     textures.clear();
     
     // de-allocate vertex shaders
@@ -202,20 +224,42 @@ void AssetManager::clearAssets() {
         glDeleteShader(fshader.second);
     }
     fshaders.clear();
+
+    // de-allocate shader programs 
+    for (auto program : shaderPrograms) {
+        glDeleteProgram(program.second);
+    }
+    shaderPrograms.clear();
 }
 
 void AssetManager::checkShaderErrors(unsigned int shader, std::string type) {
     int success;
-    char infoLog[1024];
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (success) {
         spdlog::info("Compiled shader of type: {}", type);
     }
     else {
+        char infoLog[1024];
         glGetShaderInfoLog(shader, 1024, NULL, infoLog);
         spdlog::error(
             "Shader compilation error of type: {}: {}", 
             type, 
+            infoLog
+        );
+    }
+}
+
+void AssetManager::checkShaderProgramErrors(unsigned int program) {
+    int success;
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (success) {
+        spdlog::info("Linked shaders into shader program object");
+    }
+    else {
+        char infoLog[1024];
+        glGetProgramInfoLog(program, 1024, NULL, infoLog);
+        spdlog::error(
+            "Shader linking error of type: LINKER: {}",
             infoLog
         );
     }

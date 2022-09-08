@@ -2,10 +2,10 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_all.h
-//  header of all component headers 
+// system_all.hpp
+//  header of all system headers 
 // -----------------------------------------------------------------------------
-#ifndef COMPONENT_ALL_H
-#define COMPONENT_ALL_H
+#ifndef SYSTEM_ALL_HPP
+#define SYSTEM_ALL_HPP
 
-#endif // COMPONENT_ALL_H
+#endif // SYSTEM_ALL_HPP

@@ -2,14 +2,14 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// core_game.h
+// core_game.hpp
 //  header of Game class, controls game loop  
 // -----------------------------------------------------------------------------
-#ifndef CORE_GAME_H
-#define CORE_GAME_H
+#ifndef CORE_GAME_HPP
+#define CORE_GAME_HPP
 
-#include "core_assetmanager.h"
-#include "core_window.h"
+#include "core_assetmanager.hpp"
+#include "core_window.hpp"
 
 #include "GLFW/glfw3.h"
 #include "entt/entt.hpp"
@@ -52,4 +52,4 @@ private:
     entt::registry m_registry;
 };
 
-#endif // CORE_GAME_H
+#endif // CORE_GAME_HPP

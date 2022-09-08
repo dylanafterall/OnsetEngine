@@ -6,4 +6,4 @@
 //  implementation: component to hold shader ID  
 // -----------------------------------------------------------------------------
 
-#include "component_shader.h"
+#include "component_shader.hpp"

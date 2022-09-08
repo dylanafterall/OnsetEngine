@@ -6,4 +6,4 @@
 //  implementation: component to hold texture1 and texture2 
 // -----------------------------------------------------------------------------
 
-#include "component_texture.h"
+#include "component_texture.hpp"

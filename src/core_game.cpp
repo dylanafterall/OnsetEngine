@@ -9,9 +9,10 @@
 //          add ability to change framerate? 
 //          interpolate rendering based on renderFactor
 
-#include "core_game.h"
-#include "component_shader.h"
-#include "component_texture.h"
+#include "core_game.hpp"
+#include "component_texture.hpp"
+#include "component_shader.hpp"
+#include "component_shaderprogram.hpp"
 
 #include "spdlog/spdlog.h"
 #include "glm/glm.hpp"
@@ -46,6 +47,7 @@ void Game::initialize() {
 }
 
 void Game::setup() {
+    // loading in assets
     m_assetManager.setVShader("vert", "../asset/shader/v.vert");
     m_assetManager.setFShader("frag", "../asset/shader/f.frag");
     m_assetManager.setTexture("container", "../asset/texture/container.jpg");
@@ -53,31 +55,12 @@ void Game::setup() {
 
     unsigned int vertex = m_assetManager.getVShader("vert");
     unsigned int fragment = m_assetManager.getFShader("frag");
+    m_assetManager.setShaderProgram("vert&frag", vertex, fragment);
 
-    // link shaders
-    unsigned int ID = glCreateProgram();
-    glAttachShader(ID, vertex);
-    glAttachShader(ID, fragment);
-    glLinkProgram(ID);
-    // test if linking successful
-    int success;
-    char infoLog[1024];
-    glGetProgramiv(ID, GL_LINK_STATUS, &success);
-    if (success) {
-        spdlog::info("Linked shaders into shader program object");
-    }
-    else {
-        glGetProgramInfoLog(ID, 1024, NULL, infoLog);
-        spdlog::error(
-            "Shader linking error of type: LINKER: {}",
-            infoLog
-        );
-    }
-    
+    // assigning asset components to entities
     auto player = m_registry.create();
-    // create, initialize, and assign to entity the given component
-    m_registry.emplace<ShaderComponent>(player, m_assetManager.getVShader("vert"), m_assetManager.getFShader("frag"));
     m_registry.emplace<TextureComponent>(player, m_assetManager.getTexture("container"));
+    m_registry.emplace<ShaderProgramComponent>(player, m_assetManager.getShaderProgram("vert&frag"));
 }
 
 // _____________________________________________________________________________

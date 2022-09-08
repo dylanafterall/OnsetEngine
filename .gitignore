@@ -49,6 +49,8 @@ _deps
 
 # Project-specific -------------------------------------------------------------
 *.DS_Store
+.cache/
+compile_commands.json
 asset/
 external/box2d/
 external/entt/

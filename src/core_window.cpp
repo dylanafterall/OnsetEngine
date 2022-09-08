@@ -6,7 +6,7 @@
 //  implementation: handling GLFW window data/functionality  
 // -----------------------------------------------------------------------------
 
-#include "core_window.h"
+#include "core_window.hpp"
 
 #include "spdlog/spdlog.h"
 
