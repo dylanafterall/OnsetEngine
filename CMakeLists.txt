@@ -19,6 +19,8 @@ add_executable(${PROJECT_NAME}
     src/core_game.cpp
     src/core_window.cpp
     src/core_assetmanager.cpp
+    src/system_movement.cpp
+    src/system_render.cpp
 )
 
 find_package(OpenGL REQUIRED)

@@ -13,11 +13,15 @@
 #include "component_texture.hpp"
 #include "component_shader.hpp"
 #include "component_shaderprogram.hpp"
+#include "component_boxbody.hpp"
+
+#include "system_movement.hpp"
+#include "system_render.hpp"
 
 #include "spdlog/spdlog.h"
 #include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
+// #include "glm/gtc/matrix_transform.hpp"
+// #include "glm/gtc/type_ptr.hpp"
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -42,12 +46,12 @@ void Game::initialize() {
     // initialize GLFW window and GLAD
     m_window.initialize();
 
-    // configure global opengl state ...........................................
+    // configure global opengl state
     glEnable(GL_DEPTH_TEST);    // used for z-buffer 
 }
 
 void Game::setup() {
-    // loading in assets
+    // AssetManager ............................................................
     m_assetManager.setVShader("vert", "../asset/shader/v.vert");
     m_assetManager.setFShader("frag", "../asset/shader/f.frag");
     m_assetManager.setTexture("container", "../asset/texture/container.jpg");
@@ -57,10 +61,35 @@ void Game::setup() {
     unsigned int fragment = m_assetManager.getFShader("frag");
     m_assetManager.setShaderProgram("vert&frag", vertex, fragment);
 
-    // assigning asset components to entities
+    // Box2D ...................................................................
+    // make bottom static box
+    BoxBodyComponent bottomBox;
+    bottomBox.m_bodyDef.position.Set(0.0f, -10.0f);
+    bottomBox.m_body = m_world->CreateBody(&bottomBox.m_bodyDef);
+    bottomBox.m_polygonShape.SetAsBox(50.0f, 10.0f);
+    bottomBox.m_body->CreateFixture(&bottomBox.m_polygonShape, 0.0f);
+
+    // make top dynamic box
+    BoxBodyComponent topBox;
+    topBox.m_bodyDef.type = b2_dynamicBody;
+    topBox.m_bodyDef.position.Set(0.0f, 4.0f);
+    topBox.m_body = m_world->CreateBody(&topBox.m_bodyDef);
+    topBox.m_polygonShape.SetAsBox(1.0f, 1.0f);
+    topBox.m_fixtureDef.shape = &topBox.m_polygonShape;
+    topBox.m_fixtureDef.density = 1.0f;
+    topBox.m_fixtureDef.friction = 0.3f;
+    topBox.m_body->CreateFixture(&topBox.m_fixtureDef);
+
+    // EnTT ....................................................................
     auto player = m_registry.create();
     m_registry.emplace<TextureComponent>(player, m_assetManager.getTexture("container"));
     m_registry.emplace<ShaderProgramComponent>(player, m_assetManager.getShaderProgram("vert&frag"));
+
+    auto lowerBox = m_registry.create();
+    m_registry.emplace<BoxBodyComponent>(lowerBox, bottomBox);
+    auto upperBox = m_registry.create();
+    m_registry.emplace<BoxBodyComponent>(upperBox, topBox);
+
 }
 
 // _____________________________________________________________________________
@@ -84,12 +113,12 @@ void Game::run() {
         // game loop ...........................................................
         processInput();
         // use a fixed-step for Update(), for physics and AI
-        while (lag >= STEP_TIME) {
-            update(STEP_TIME);
-            lag -= STEP_TIME;
+        while (lag >= TIME_STEP) {
+            update(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+            lag -= TIME_STEP;
         }
         // normalize renderFactor [0, 1.0], used  to interpolate rendering
-        render(lag / STEP_TIME); 
+        render(lag / TIME_STEP); 
     }
 }
 
@@ -101,9 +130,13 @@ void Game::processInput() {
     }
 }
 
-void Game::update(const double stepTime) {
+void Game::update(const float timeStep, const int32 velocityIterations, const int32 positionIterations) {
     // call window and input callbacks associated with these events
     glfwPollEvents();
+
+    // Box2D simulation
+    m_world->Step(timeStep, velocityIterations, positionIterations);
+    m_movementSystem.update(timeStep, m_registry);
 }
 
 void Game::render(double renderFactor) {

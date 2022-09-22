@@ -1,4 +1,3 @@
-
 // -----------------------------------------------------------------------------
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git

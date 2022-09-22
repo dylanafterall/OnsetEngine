@@ -44,7 +44,8 @@ new techniques and practices over time.
     <li>OS: Ubuntu / macOS </li>
     <li>Editor: Neovim </li>
     <li>Build System: CMake </li>
-    <li>Static Analysis: Clang-Tidy, Cppcheck </li>
+    <li>LSP: clangd </li>
+    <li>Static Analysis: Cppcheck, Clang-Tidy </li>
     <li>Dynamic Analysis: LLDB, Valgrind (Memcheck, Cachegrind) </li>
     <li>Testing: CTest, GoogleTest </li>
     <li>Documentation: Doxygen </li>
