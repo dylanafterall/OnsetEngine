@@ -8,4 +8,7 @@
 #ifndef SYSTEM_ALL_HPP
 #define SYSTEM_ALL_HPP
 
+#include "system_movement.hpp"
+#include "system_render.hpp"
+
 #endif // SYSTEM_ALL_HPP

@@ -14,12 +14,15 @@
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // Constructor and Destructor
+// _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
+// AssetManager(): -------------------------------------------------------------
 AssetManager::AssetManager() {
     spdlog::info("AssetManager constructor called!");
 }
 
+// ~AssetManager(): ------------------------------------------------------------
 AssetManager::~AssetManager() {
     spdlog::info("AssetManager destructor called, clearing assets!");
     clearAssets();
@@ -28,8 +31,10 @@ AssetManager::~AssetManager() {
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // 'Set' functions
+// _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
+// setTexutre(): ---------------------------------------------------------------
 void AssetManager::setTexture(const std::string& assetId, const char* texturePath) {
     // generate and bind texture for OpenGL configuration
     unsigned int texture;
@@ -89,6 +94,7 @@ void AssetManager::setTexture(const std::string& assetId, const char* texturePat
     stbi_image_free(data);
 }
 
+// setVShader(): ---------------------------------------------------------------
 void AssetManager::setVShader(const std::string& assetId, const char* vertexPath) {
     // retrieve the vertex source code from filePath 
     std::string vertexCode;
@@ -130,6 +136,7 @@ void AssetManager::setVShader(const std::string& assetId, const char* vertexPath
     spdlog::info("New VShader added to Asset Manager with id = " + assetId);
 }
  
+// setFShader(): ---------------------------------------------------------------
 void AssetManager::setFShader(const std::string& assetId, const char* fragmentPath) {
     // retrieve the shader source code from filePath 
     std::string fragmentCode;
@@ -165,6 +172,7 @@ void AssetManager::setFShader(const std::string& assetId, const char* fragmentPa
     spdlog::info("New FShader added to Asset Manager with id = " + assetId);
 }
 
+// setShaderProgram(): ---------------------------------------------------------
 void AssetManager::setShaderProgram(const std::string& assetId, unsigned int vertexShader, unsigned int fragmentShader) {
     unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
@@ -177,61 +185,188 @@ void AssetManager::setShaderProgram(const std::string& assetId, unsigned int ver
     // add shaderProgram to asset manager's map 
     shaderPrograms.emplace(assetId, shaderProgram);
     spdlog::info("New ShaderProgram added to Asset Manager with id = " + assetId);
-  
 }
+
+/*
+// setModel(): -----------------------------------------------------------------
+void AssetManager::setModel(const std::string& assetId, const char* modelPath) {
+    FILE* file;
+    file = fopen(modelPath, "r");
+    char line[1024];
+
+    // temporary vectors for vertices, tex coords, and indices
+    std::vector<int> v;
+    std::vector<int> tc;
+    std::vector<int> i;
+    vertices.emplace(assetId, v);
+    textureCoordinates.emplace(assetId, tc);
+    indices.emplace(assetId, i);
+
+    while (fgets(line, 1024, file)) {
+        //vertex data
+        if (strncmp(line, "v ", 2) == 0) {
+            float xCoord;
+            float yCoord;
+            float zCoord;
+            // note to future self: I am bad at creating obj files from Blender,
+            // thus the order of vertices in my obj file goes x -> z -> (-1)*y
+            sscanf(line, "v %f %f %f", &xCoord, &zCoord, &yCoord);
+            yCoord *= -1;
+            vertices[assetId].emplace_back(xCoord);
+            vertices[assetId].emplace_back(yCoord);
+            vertices[assetId].emplace_back(zCoord);
+        }
+
+        // texture coordinate data
+        if (strncmp(line, "vt ", 3) == 0) {
+            float uCoord;
+            float vCoord;
+            sscanf(line, "vt %f %f", &uCoord, &vCoord);
+            textureCoordinates[assetId].emplace_back(uCoord);
+            textureCoordinates[assetId].emplace_back(vCoord);
+        }
+
+        // index data
+        if (strncmp(line, "f ", 2) == 0) {
+            // each line contains 3 vertices, A, B, and C
+            // each vertex has a vertex index, texCoord index, normal index
+            int vertexA;
+            int vertexB;
+            int vertexC;
+            int texCoordA;
+            int texCoordB;
+            int texCoordC;
+            int normalA;
+            int normalB;
+            int normalC;
+            sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d", 
+                &vertexA, &texCoordA, &normalA,
+                &vertexB, &texCoordB, &normalB,
+                &vertexC, &texCoordC, &normalC
+            );
+            indices[assetId].emplace_back(vertexA);
+            indices[assetId].emplace_back(vertexB);
+            indices[assetId].emplace_back(vertexC);
+        }
+    }
+
+    unsigned int sizeV = vertices[assetId].size();
+    unsigned int sizeTC = textureCoordinates[assetId].size();
+    unsigned int sizeI = indices[assetId].size();
+    sizeVertices.emplace(assetId, sizeV);
+    sizeTextureCoordinates.emplace(assetId, sizeTC);
+    sizeIndices.emplace(assetId, sizeI);
+}
+*/
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // 'Get' functions
+// _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
+// getTexture(): ---------------------------------------------------------------
 unsigned int AssetManager::getTexture(const std::string& assetId) {
     return textures[assetId];
 }
 
+// getVShader(): ---------------------------------------------------------------
 unsigned int AssetManager::getVShader(const std::string& assetId) {
     return vshaders[assetId];
 }
 
+// getFShader(): ---------------------------------------------------------------
 unsigned int AssetManager::getFShader(const std::string& assetId) {
     return fshaders[assetId];
 }
 
+// getShaderProgram(): ---------------------------------------------------------
 unsigned int AssetManager::getShaderProgram(const std::string& assetId) {
     return shaderPrograms[assetId];
 }
 
+/*
+// getVertices(): --------------------------------------------------------------
+std::vector<float> AssetManager::getVertices(const std::string& assetId) {
+    return vertices[assetId];
+}
+
+// getTextureCoordinates(): ----------------------------------------------------
+std::vector<float> AssetManager::getTextureCoordinates(const std::string& assetId) {
+    return textureCoordinates[assetId];
+}
+
+// getIndices(): ---------------------------------------------------------------
+std::vector<int> AssetManager::getIndices(const std::string& assetId) {
+    return indices[assetId];
+}
+
+// getSizeVertices(): ----------------------------------------------------------
+unsigned int AssetManager::getSizeVertices(const std::string& assetId) {
+    return sizeVertices[assetId];
+}
+
+// getSizeTextureCoordinates(): ------------------------------------------------
+unsigned int AssetManager::getSizeTextureCoordinates(const std::string& assetId) {
+    return sizeTextureCoordinates[assetId];
+}
+
+// getSizeIndices(): -----------------------------------------------------------
+unsigned int AssetManager::getSizeIndices(const std::string& assetId) {
+    return sizeIndices[assetId];
+}
+*/
+
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // Misc functions
+// _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
+// clearAssets(): --------------------------------------------------------------
 void AssetManager::clearAssets() {
-    // de-allocate textures
     for (auto texture : textures) {
         glDeleteTextures(1, &texture.second);
     }
     textures.clear();
     
-    // de-allocate vertex shaders
     for (auto vshader : vshaders) {
         glDeleteShader(vshader.second);
     }
     vshaders.clear();
 
-    // de-allocate fragment shaders
     for (auto fshader : fshaders) {
         glDeleteShader(fshader.second);
     }
     fshaders.clear();
 
-    // de-allocate shader programs 
     for (auto program : shaderPrograms) {
         glDeleteProgram(program.second);
     }
     shaderPrograms.clear();
+
+    /*
+    for (auto v : vertices) {
+        std::vector<float>().swap(v.second);
+    }
+    vertices.clear();
+    sizeVertices.clear();
+
+    for (auto tc : textureCoordinates) {
+        std::vector<float>().swap(tc.second);
+    }
+    textureCoordinates.clear();
+    sizeTextureCoordinates.clear();
+
+    for (auto i : indices) {
+        std::vector<int>().swap(i.second);
+    }
+    indices.clear();
+    sizeIndices.clear();
+    */
 }
 
+// checkShaderErrors(): --------------------------------------------------------
 void AssetManager::checkShaderErrors(unsigned int shader, std::string type) {
     int success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -249,6 +384,7 @@ void AssetManager::checkShaderErrors(unsigned int shader, std::string type) {
     }
 }
 
+// checkShaderProgramErrors(): -------------------------------------------------
 void AssetManager::checkShaderProgramErrors(unsigned int program) {
     int success;
     glGetProgramiv(program, GL_LINK_STATUS, &success);

@@ -2,20 +2,20 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_boxbody.hpp
-//  header: component to hold box2d bodies
+// component_body_chain.hpp
+//  header: component to hold Box2D chain bodies
 // -----------------------------------------------------------------------------
-#ifndef COMPONENT_BOXBODY_HPP
-#define COMPONENT_BOXBODY_HPP
+#ifndef COMPONENT_BODY_CHAIN_HPP
+#define COMPONENT_BODY_CHAIN_HPP
 
 #include "box2d/b2_body.h"
 #include "box2d/box2d.h"
 
-struct BoxBodyComponent {
+struct BodyChainComponent {
     b2BodyDef m_bodyDef;
     b2Body* m_body;
-    b2PolygonShape m_polygonShape;
+    b2ChainShape m_chainShape;
     b2FixtureDef m_fixtureDef;
 };
 
-#endif // COMPONENT_BOXBODY_HPP
+#endif // COMPONENT_BODY_CHAIN_HPP

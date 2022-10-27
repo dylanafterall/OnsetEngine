@@ -5,18 +5,9 @@
 // core_game.cpp
 //  implementation of Game class, controls game loop  
 // -----------------------------------------------------------------------------
-// TODO: allow user to change refresh rate and monitor
-//          add ability to change framerate? 
-//          interpolate rendering based on renderFactor
 
 #include "core_game.hpp"
-#include "component_texture.hpp"
-#include "component_shader.hpp"
-#include "component_shaderprogram.hpp"
-#include "component_boxbody.hpp"
-
-#include "system_movement.hpp"
-#include "system_render.hpp"
+#include "component_all.hpp"
 
 #include "spdlog/spdlog.h"
 #include "glm/glm.hpp"
@@ -63,33 +54,118 @@ void Game::setup() {
 
     // Box2D ...................................................................
     // make bottom static box
-    BoxBodyComponent bottomBox;
+    BodyPolygonComponent bottomBox;
     bottomBox.m_bodyDef.position.Set(0.0f, -10.0f);
     bottomBox.m_body = m_world->CreateBody(&bottomBox.m_bodyDef);
     bottomBox.m_polygonShape.SetAsBox(50.0f, 10.0f);
     bottomBox.m_body->CreateFixture(&bottomBox.m_polygonShape, 0.0f);
 
-    // make top dynamic box
-    BoxBodyComponent topBox;
-    topBox.m_bodyDef.type = b2_dynamicBody;
-    topBox.m_bodyDef.position.Set(0.0f, 4.0f);
-    topBox.m_body = m_world->CreateBody(&topBox.m_bodyDef);
-    topBox.m_polygonShape.SetAsBox(1.0f, 1.0f);
-    topBox.m_fixtureDef.shape = &topBox.m_polygonShape;
-    topBox.m_fixtureDef.density = 1.0f;
-    topBox.m_fixtureDef.friction = 0.3f;
-    topBox.m_body->CreateFixture(&topBox.m_fixtureDef);
+    // make dynamic triangle
+    BodyPolygonComponent triangle;
+    ShapeTriangleComponent triangleShape;
+    triangle.m_bodyDef.type = b2_dynamicBody;
+    triangle.m_bodyDef.position.Set(-9.0f, 4.0f);
+    triangle.m_body = m_world->CreateBody(&triangle.m_bodyDef);
+    triangle.m_polygonShape.Set(triangleShape.m_vertices, triangleShape.m_vertexCount);
+    triangle.m_fixtureDef.shape = &triangle.m_polygonShape;
+    triangle.m_fixtureDef.density = 1.0f;
+    triangle.m_fixtureDef.friction = 0.3f;
+    triangle.m_body->CreateFixture(&triangle.m_fixtureDef);
+
+    // make dynamic square
+    BodyPolygonComponent square;
+    ShapeSquareComponent squareShape;
+    square.m_bodyDef.type = b2_dynamicBody;
+    square.m_bodyDef.position.Set(-6.0f, 4.0f);
+    square.m_body = m_world->CreateBody(&square.m_bodyDef);
+    square.m_polygonShape.Set(squareShape.m_vertices, squareShape.m_vertexCount);
+    square.m_fixtureDef.shape = &square.m_polygonShape;
+    square.m_fixtureDef.density = 1.0f;
+    square.m_fixtureDef.friction = 0.3f;
+    square.m_body->CreateFixture(&square.m_fixtureDef);
+
+    // make dynamic pentagon
+    BodyPolygonComponent pentagon; 
+    ShapePentagonComponent pentagonShape;
+    pentagon.m_bodyDef.type = b2_dynamicBody;
+    pentagon.m_bodyDef.position.Set(-3.0f, 4.0f);
+    pentagon.m_body = m_world->CreateBody(&pentagon.m_bodyDef);
+    pentagon.m_polygonShape.Set(pentagonShape.m_vertices, pentagonShape.m_vertexCount);
+    pentagon.m_fixtureDef.shape = &pentagon.m_polygonShape;
+    pentagon.m_fixtureDef.density = 1.0f;
+    pentagon.m_fixtureDef.friction = 0.3f;
+    pentagon.m_body->CreateFixture(&pentagon.m_fixtureDef);
+    
+    // make dynamic hexagon
+    BodyPolygonComponent hexagon;
+    ShapeHexagonComponent hexagonShape;
+    hexagon.m_bodyDef.type = b2_dynamicBody;
+    hexagon.m_bodyDef.position.Set(0.0f, 4.0f);
+    hexagon.m_body = m_world->CreateBody(&hexagon.m_bodyDef);
+    hexagon.m_polygonShape.Set(hexagonShape.m_vertices, hexagonShape.m_vertexCount);
+    hexagon.m_fixtureDef.shape = &hexagon.m_polygonShape;
+    hexagon.m_fixtureDef.density = 1.0f;
+    hexagon.m_fixtureDef.friction = 0.3f;
+    hexagon.m_body->CreateFixture(&hexagon.m_fixtureDef);
+
+    // make dynamic heptagon
+    BodyPolygonComponent heptagon;
+    ShapeHeptagonComponent heptagonShape;
+    heptagon.m_bodyDef.type = b2_dynamicBody;
+    heptagon.m_bodyDef.position.Set(3.0f, 4.0f);
+    heptagon.m_body = m_world->CreateBody(&heptagon.m_bodyDef);
+    heptagon.m_polygonShape.Set(heptagonShape.m_vertices, heptagonShape.m_vertexCount);
+    heptagon.m_fixtureDef.shape = &heptagon.m_polygonShape;
+    heptagon.m_fixtureDef.density = 1.0f;
+    heptagon.m_fixtureDef.friction = 0.3f;
+    heptagon.m_body->CreateFixture(&heptagon.m_fixtureDef);
+
+    // make dynamic octagon
+    BodyPolygonComponent octagon;
+    ShapeOctagonComponent octagonShape; 
+    octagon.m_bodyDef.type = b2_dynamicBody;
+    octagon.m_bodyDef.position.Set(6.0f, 4.0f);
+    octagon.m_body = m_world->CreateBody(&octagon.m_bodyDef);
+    octagon.m_polygonShape.Set(octagonShape.m_vertices, octagonShape.m_vertexCount);
+    octagon.m_fixtureDef.shape = &octagon.m_polygonShape;
+    octagon.m_fixtureDef.density = 1.0f;
+    octagon.m_fixtureDef.friction = 0.3f;
+    octagon.m_body->CreateFixture(&octagon.m_fixtureDef);
+
+    // make dynamic circle
+    BodyCircleComponent circle;
+    circle.m_bodyDef.type = b2_dynamicBody;
+    circle.m_bodyDef.position.Set(9.0f, 4.0f);
+    circle.m_body = m_world->CreateBody(&circle.m_bodyDef);
+    circle.m_circleShape.m_p.Set(0.0f, 0.0f);
+    circle.m_circleShape.m_radius = 0.5642f;
+    circle.m_fixtureDef.shape = &circle.m_circleShape;
+    circle.m_fixtureDef.density = 1.0f;
+    circle.m_fixtureDef.friction = 0.3f;
+    circle.m_body->CreateFixture(&circle.m_fixtureDef);
 
     // EnTT ....................................................................
     auto player = m_registry.create();
     m_registry.emplace<TextureComponent>(player, m_assetManager.getTexture("container"));
     m_registry.emplace<ShaderProgramComponent>(player, m_assetManager.getShaderProgram("vert&frag"));
 
-    auto lowerBox = m_registry.create();
-    m_registry.emplace<BoxBodyComponent>(lowerBox, bottomBox);
-    auto upperBox = m_registry.create();
-    m_registry.emplace<BoxBodyComponent>(upperBox, topBox);
+    auto groundEntity = m_registry.create();
+    m_registry.emplace<BodyPolygonComponent>(groundEntity, bottomBox);
 
+    auto triangleEntity = m_registry.create();
+    m_registry.emplace<BodyPolygonComponent>(triangleEntity, triangle);
+    auto squareEntity = m_registry.create();
+    m_registry.emplace<BodyPolygonComponent>(squareEntity, square);
+    auto pentagonEntity = m_registry.create();
+    m_registry.emplace<BodyPolygonComponent>(pentagonEntity, pentagon);
+    auto hexagonEntity = m_registry.create();
+    m_registry.emplace<BodyPolygonComponent>(hexagonEntity, hexagon);
+    auto heptagonEntity = m_registry.create();
+    m_registry.emplace<BodyPolygonComponent>(heptagonEntity, heptagon);
+    auto octagonEntity = m_registry.create();
+    m_registry.emplace<BodyPolygonComponent>(octagonEntity, octagon);
+    auto circleEntity = m_registry.create();
+    m_registry.emplace<BodyCircleComponent>(circleEntity, circle);
 }
 
 // _____________________________________________________________________________

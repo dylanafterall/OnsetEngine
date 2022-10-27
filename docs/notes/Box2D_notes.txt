@@ -1,0 +1,135 @@
+# ------------------------------------------------------------------------------
+DYNAMICS MODULE:
+# ------------------------------------------------------------------------------
+-fixture class
+-rigid body class
+-contact class
+-joint classes
+-world class
+-listener classes
+
+BODIES:
+	bodies have position and velocity. 
+	can apply forces, torques, and impulses to bodies
+	can be static, kinematic, or dynamic
+	bodies are backbone for fixtures (shapes)
+		bodies carry fixtures and move them around in the world
+	always rigid bodies in Box2D
+		two fixtures attached to same rigid body never move relative to each other
+		fixtures attached to the same body don’t collide
+
+	Creating bodies:
+		Define a body with position, damping, etc.
+		Use the world object to create the body.
+		Define fixtures with a shape, friction, density, etc. 
+		Create fixtures on the body.
+
+Body Definitions:
+
+3 Body Types:
+b2_staticBody
+	does not move under simulation
+	behaves as if it has infinite mass
+	can be moved manually by user
+	zero velocity
+	static bodies do not collide with other static or kinematic bodies
+b2_kinematicBody
+	moves under simulation according to its velocity
+	do not respond to forces
+	can be moved manually by user
+	normally moved by setting its velocity
+	behaves as if it has infinite mass
+	kinematic bodies do not collide with other kinematic or static bodies
+b2_dynamicBody
+	fully simulated
+	can be moved manually by user
+	normally move according to forces
+	dynamic body can collide with all body types
+	has finite, non-zero mass
+
+Position
+Angle
+Damping
+Gravity Scale
+Sleep Parameters
+Fixed Rotation
+
+
+# ------------------------------------------------------------------------------
+COLLISION MODULE:
+# ------------------------------------------------------------------------------
+SHAPES:
+b2Shape
+	b2ChainShape
+		connects multiple edges together to create static game worlds
+		automatically eliminate ghost collisions 
+			provides one-sided collision
+		easiest way to use chain shapes is to create loops ::CreateLoop()
+			provide array of vertices (b2Vec2’s)
+			edge normal depends on winding order
+				CCW order orients the normal outward 
+				CW order orients the normal inwards
+		self-intersection of chain shapes is not supported
+		each edge in chain is treated as a child shape, can be accessed by index
+		when connected to a body, each edge gets own bounding box in broad-phase collision tree
+	b2CircleShape
+		position and radius
+		solid, never hollow
+	b2EdgeShape
+		line segments - requires 2 b2Vec2’s
+		to assist in making free-form static environment for game
+		can collide with circles and polygons, but not themselves (collision algo requires 1 volume)
+	b2PolygonShape
+		solid, never hollow
+		convex
+		3 or more vertices
+		CCW winding, with respect to right-handed coordinate system (z-axis pointing out)
+		can create by passing in vertex array - array of b2Vec2’s 
+			maximal size = b2_maxPolygonVertices. Defaults to 8
+			b2PolygonShape::Set()
+				computes convex hull
+				establishes proper winding order
+			instead of ::Set(), can use ::SetAsBox() for convenience
+		inherit a radius from b2Shape 
+			creates skin around the polygon (keeps polygons separated in stacking scenarios)
+			helps prevent tunneling
+			creates small gaps between shapes. Make textures larger than polygon to hide.
+
+::TestPoint() 
+	tests a point for overlap with a shape
+	edge and chain shapes always return false, even if chain is a loop
+::RayCast()
+	casts ray at a shape to get point of first intersection and normal vector
+	child index included for chain shapes (ray cast will only check single edge at a time)
+::b2TestOverlap()
+	tests two shapes for overlap
+	for chain shapes, must provide child indices
+::b2Distance()
+	used to compute distance between two shapes
+::b2TimeOfImpact
+	determines when two moving shapes collide (TOI)
+	main purpose is for tunnel prevention - tunneling outside of static level geometry
+	accounts for rotation and translation of both shapes
+
+b2Manifold (structure) - holds a normal vector and up to two contact points
+	for overlapping shapes
+	for circle-circle or circle-polygon, one contact point and one normal
+	for polygon-polygon, two contact points and one normal
+	normal and points are held in local coordinates
+
+b2DynamicTree (class)
+	organizes large numbers of shapes efficiently
+	does not know about shapes
+		instead operates on axis-aligned bounding boxes (AABBs) with user data pointers
+	hierarchical AABB tree
+	each internal node in the tree has two children
+	a leaf node is a single user AABB
+	allows for efficient ray casts and region queries (perform ray casts against the tree)
+		traverses the ray through the tree (skipping large numbers of shapes)
+		region query uses tree to find all leaf AABBs that overlap a query AABB
+		faster than brute force approach - skips shapes
+
+b2BroadPhase
+	in narrow-phase collision processing, we compute contact points between pairs of shapes
+	broad phase reduces the load of brute force narrow-phase collision processing
+		uses a dynamic tree for pair management, reducing number of narrow-phase calls

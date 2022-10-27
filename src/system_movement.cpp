@@ -9,12 +9,21 @@
 #include "system_movement.hpp"
 
 void MovementSystem::update(const float timeStep, entt::registry& registry) {
-    // retrieve a view of entities with the BoxBodyComponent
-    auto view = registry.view<BoxBodyComponent>();
+    // retrieve a view of entities with the BodyPolygonComponent
+    auto polygons = registry.view<BodyPolygonComponent>();
     // iterate over each entity in the view
-    view.each([&](const auto& box) {
-        b2Vec2 position = box.m_body->GetPosition();
-        float angle = box.m_body->GetAngle();
+    polygons.each([&](const auto& body) {
+        b2Vec2 position = body.m_body->GetPosition();
+        float angle = body.m_body->GetAngle();
+        printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);       
+    });
+
+    // retrieve a view of entities with the BodyCircleComponent
+    auto circles = registry.view<BodyCircleComponent>();
+    // iterate over each entity in the view
+    circles.each([&](const auto& body) {
+        b2Vec2 position = body.m_body->GetPosition();
+        float angle = body.m_body->GetAngle();
         printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);       
     });
 }

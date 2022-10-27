@@ -10,12 +10,11 @@
 
 #include "core_assetmanager.hpp"
 #include "core_window.hpp"
+#include "system_all.hpp"
 
 #include "GLFW/glfw3.h"
 #include "entt/entt.hpp"
 #include "box2d/box2d.h"
-#include "system_movement.hpp"
-#include "system_render.hpp"
 
 #include <memory>
 

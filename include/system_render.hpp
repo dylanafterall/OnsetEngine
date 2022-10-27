@@ -8,12 +8,16 @@
 #ifndef SYSTEM_RENDER_HPP
 #define SYSTEM_RENDER_HPP
 
-#include "component_boxbody.hpp"
+#include "component_body_circle.hpp"
+#include "component_body_polygon.hpp"
+#include "component_body_edge.hpp"
+#include "component_body_chain.hpp"
+#include "component_shader_program.hpp"
 #include "component_shader.hpp"
-#include "component_shaderprogram.hpp"
 #include "component_texture.hpp"
 
 #include "entt/entt.hpp"
+#include "box2d/box2d.h"
 
 class RenderSystem final {
 public:

@@ -13,9 +13,9 @@ struct ShaderComponent {
     unsigned int m_fragmentShader;
 
     // receive shaders from AssetManager shader maps, getVShader and getFShader
-    ShaderComponent(unsigned int vertexShader, unsigned int fragmentShader) {
-        m_vertexShader = vertexShader;
-        m_fragmentShader = fragmentShader;
+    ShaderComponent(unsigned int vertexShader, unsigned int fragmentShader) :
+        m_vertexShader(vertexShader), 
+        m_fragmentShader(fragmentShader) {
     }
 };
 

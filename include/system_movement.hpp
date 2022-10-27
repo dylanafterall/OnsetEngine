@@ -8,7 +8,10 @@
 #ifndef SYSTEM_MOVEMENT_HPP
 #define SYSTEM_MOVEMENT_HPP
 
-#include "component_boxbody.hpp"
+#include "component_body_circle.hpp"
+#include "component_body_polygon.hpp"
+#include "component_body_edge.hpp"
+#include "component_body_chain.hpp"
 
 #include "entt/entt.hpp"
 
