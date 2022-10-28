@@ -7,12 +7,11 @@
 // -----------------------------------------------------------------------------
 
 #include "core_game.hpp"
+#include "GLFW/glfw3.h"
 #include "component_all.hpp"
 
 #include "spdlog/spdlog.h"
 #include "glm/glm.hpp"
-// #include "glm/gtc/matrix_transform.hpp"
-// #include "glm/gtc/type_ptr.hpp"
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -38,15 +37,15 @@ void Game::initialize() {
     m_window.initialize();
 
     // configure global opengl state
-    glEnable(GL_DEPTH_TEST);    // used for z-buffer 
+    // glEnable(GL_DEPTH_TEST);    // used for z-buffer 
 }
 
 void Game::setup() {
     // AssetManager ............................................................
-    m_assetManager.setVShader("vert", "../asset/shader/v.vert");
-    m_assetManager.setFShader("frag", "../asset/shader/f.frag");
-    m_assetManager.setTexture("container", "../asset/texture/container.jpg");
-    m_assetManager.setTexture("awesomeface", "../asset/texture/awesomeface.png");    
+    m_assetManager.setVShader("vert", "../assets/shaders/v.vert");
+    m_assetManager.setFShader("frag", "../assets/shaders/f.frag");
+    m_assetManager.setTexture("regularOctagon", "../assets/textures/polygons/octagon.png"); 
+    m_assetManager.setTexture("awesomeface", "../assets/textures/awesomeface.png");
 
     unsigned int vertex = m_assetManager.getVShader("vert");
     unsigned int fragment = m_assetManager.getFShader("frag");
@@ -60,69 +59,12 @@ void Game::setup() {
     bottomBox.m_polygonShape.SetAsBox(50.0f, 10.0f);
     bottomBox.m_body->CreateFixture(&bottomBox.m_polygonShape, 0.0f);
 
-    // make dynamic triangle
-    BodyPolygonComponent triangle;
-    ShapeTriangleComponent triangleShape;
-    triangle.m_bodyDef.type = b2_dynamicBody;
-    triangle.m_bodyDef.position.Set(-9.0f, 4.0f);
-    triangle.m_body = m_world->CreateBody(&triangle.m_bodyDef);
-    triangle.m_polygonShape.Set(triangleShape.m_vertices, triangleShape.m_vertexCount);
-    triangle.m_fixtureDef.shape = &triangle.m_polygonShape;
-    triangle.m_fixtureDef.density = 1.0f;
-    triangle.m_fixtureDef.friction = 0.3f;
-    triangle.m_body->CreateFixture(&triangle.m_fixtureDef);
-
-    // make dynamic square
-    BodyPolygonComponent square;
-    ShapeSquareComponent squareShape;
-    square.m_bodyDef.type = b2_dynamicBody;
-    square.m_bodyDef.position.Set(-6.0f, 4.0f);
-    square.m_body = m_world->CreateBody(&square.m_bodyDef);
-    square.m_polygonShape.Set(squareShape.m_vertices, squareShape.m_vertexCount);
-    square.m_fixtureDef.shape = &square.m_polygonShape;
-    square.m_fixtureDef.density = 1.0f;
-    square.m_fixtureDef.friction = 0.3f;
-    square.m_body->CreateFixture(&square.m_fixtureDef);
-
-    // make dynamic pentagon
-    BodyPolygonComponent pentagon; 
-    ShapePentagonComponent pentagonShape;
-    pentagon.m_bodyDef.type = b2_dynamicBody;
-    pentagon.m_bodyDef.position.Set(-3.0f, 4.0f);
-    pentagon.m_body = m_world->CreateBody(&pentagon.m_bodyDef);
-    pentagon.m_polygonShape.Set(pentagonShape.m_vertices, pentagonShape.m_vertexCount);
-    pentagon.m_fixtureDef.shape = &pentagon.m_polygonShape;
-    pentagon.m_fixtureDef.density = 1.0f;
-    pentagon.m_fixtureDef.friction = 0.3f;
-    pentagon.m_body->CreateFixture(&pentagon.m_fixtureDef);
-    
-    // make dynamic hexagon
-    BodyPolygonComponent hexagon;
-    ShapeHexagonComponent hexagonShape;
-    hexagon.m_bodyDef.type = b2_dynamicBody;
-    hexagon.m_bodyDef.position.Set(0.0f, 4.0f);
-    hexagon.m_body = m_world->CreateBody(&hexagon.m_bodyDef);
-    hexagon.m_polygonShape.Set(hexagonShape.m_vertices, hexagonShape.m_vertexCount);
-    hexagon.m_fixtureDef.shape = &hexagon.m_polygonShape;
-    hexagon.m_fixtureDef.density = 1.0f;
-    hexagon.m_fixtureDef.friction = 0.3f;
-    hexagon.m_body->CreateFixture(&hexagon.m_fixtureDef);
-
-    // make dynamic heptagon
-    BodyPolygonComponent heptagon;
-    ShapeHeptagonComponent heptagonShape;
-    heptagon.m_bodyDef.type = b2_dynamicBody;
-    heptagon.m_bodyDef.position.Set(3.0f, 4.0f);
-    heptagon.m_body = m_world->CreateBody(&heptagon.m_bodyDef);
-    heptagon.m_polygonShape.Set(heptagonShape.m_vertices, heptagonShape.m_vertexCount);
-    heptagon.m_fixtureDef.shape = &heptagon.m_polygonShape;
-    heptagon.m_fixtureDef.density = 1.0f;
-    heptagon.m_fixtureDef.friction = 0.3f;
-    heptagon.m_body->CreateFixture(&heptagon.m_fixtureDef);
-
     // make dynamic octagon
     BodyPolygonComponent octagon;
-    ShapeOctagonComponent octagonShape; 
+    ShapeOctagonComponent octagonShape;
+    TextureComponent octagonTexture = TextureComponent(m_assetManager.getTexture("awesomeface"));
+    ShaderProgramComponent octagonShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
+    RenderBuffersComponent octagonBuffers;
     octagon.m_bodyDef.type = b2_dynamicBody;
     octagon.m_bodyDef.position.Set(6.0f, 4.0f);
     octagon.m_body = m_world->CreateBody(&octagon.m_bodyDef);
@@ -132,40 +74,63 @@ void Game::setup() {
     octagon.m_fixtureDef.friction = 0.3f;
     octagon.m_body->CreateFixture(&octagon.m_fixtureDef);
 
-    // make dynamic circle
-    BodyCircleComponent circle;
-    circle.m_bodyDef.type = b2_dynamicBody;
-    circle.m_bodyDef.position.Set(9.0f, 4.0f);
-    circle.m_body = m_world->CreateBody(&circle.m_bodyDef);
-    circle.m_circleShape.m_p.Set(0.0f, 0.0f);
-    circle.m_circleShape.m_radius = 0.5642f;
-    circle.m_fixtureDef.shape = &circle.m_circleShape;
-    circle.m_fixtureDef.density = 1.0f;
-    circle.m_fixtureDef.friction = 0.3f;
-    circle.m_body->CreateFixture(&circle.m_fixtureDef);
+    /*
+    // make test object
+    ShapeTestComponent testShape;
+    TextureComponent testTexture = TextureComponent(m_assetManager.getTexture("awesomeface"));
+    ShaderProgramComponent testShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
+    RenderBuffersComponent testBuffers;
+    */
 
     // EnTT ....................................................................
-    auto player = m_registry.create();
-    m_registry.emplace<TextureComponent>(player, m_assetManager.getTexture("container"));
-    m_registry.emplace<ShaderProgramComponent>(player, m_assetManager.getShaderProgram("vert&frag"));
-
     auto groundEntity = m_registry.create();
     m_registry.emplace<BodyPolygonComponent>(groundEntity, bottomBox);
 
-    auto triangleEntity = m_registry.create();
-    m_registry.emplace<BodyPolygonComponent>(triangleEntity, triangle);
-    auto squareEntity = m_registry.create();
-    m_registry.emplace<BodyPolygonComponent>(squareEntity, square);
-    auto pentagonEntity = m_registry.create();
-    m_registry.emplace<BodyPolygonComponent>(pentagonEntity, pentagon);
-    auto hexagonEntity = m_registry.create();
-    m_registry.emplace<BodyPolygonComponent>(hexagonEntity, hexagon);
-    auto heptagonEntity = m_registry.create();
-    m_registry.emplace<BodyPolygonComponent>(heptagonEntity, heptagon);
     auto octagonEntity = m_registry.create();
     m_registry.emplace<BodyPolygonComponent>(octagonEntity, octagon);
-    auto circleEntity = m_registry.create();
-    m_registry.emplace<BodyCircleComponent>(circleEntity, circle);
+    m_registry.emplace<ShapeOctagonComponent>(octagonEntity, octagonShape);
+    m_registry.emplace<TextureComponent>(octagonEntity, octagonTexture);
+    m_registry.emplace<ShaderProgramComponent>(octagonEntity, octagonShaderProgram);
+
+    /*
+    auto testEntity = m_registry.create();
+    m_registry.emplace<TextureComponent>(testEntity, testTexture);
+    m_registry.emplace<ShaderProgramComponent>(testEntity, testShaderProgram);
+    */
+
+    // BIG TEST TIME ***********************************************************
+    // *************************************************************************
+    // *************************************************************************
+    // *************************************************************************
+    // *************************************************************************
+    glGenVertexArrays(1, &octagonBuffers.m_VAO);
+    glGenBuffers(1, &octagonBuffers.m_VBO);
+    glGenBuffers(1, &octagonBuffers.m_EBO);
+
+    glBindVertexArray(octagonBuffers.m_VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, octagonBuffers.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(octagonShape.m_verticesRender), octagonShape.m_verticesRender, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, octagonBuffers.m_EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(octagonShape.m_indices), octagonShape.m_indices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // texture coord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    m_registry.emplace<RenderBuffersComponent>(octagonEntity, octagonBuffers);
+
+    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+    glUseProgram(octagonShaderProgram.m_shaderProgram);
+    // set it manually like so:
+    glUniform1i(glGetUniformLocation(octagonShaderProgram.m_shaderProgram, "ourTexture"), 0);
 }
 
 // _____________________________________________________________________________
@@ -194,7 +159,7 @@ void Game::run() {
             lag -= TIME_STEP;
         }
         // normalize renderFactor [0, 1.0], used  to interpolate rendering
-        render(lag / TIME_STEP); 
+        render(lag / TIME_STEP);
     }
 }
 
@@ -212,17 +177,15 @@ void Game::update(const float timeStep, const int32 velocityIterations, const in
 
     // Box2D simulation
     m_world->Step(timeStep, velocityIterations, positionIterations);
-    m_movementSystem.update(timeStep, m_registry);
+    //m_movementSystem.update(timeStep, m_registry);
 }
 
-void Game::render(double renderFactor) {
+void Game::render(float renderFactor) {
     // specify color values to then use in filling color buffer
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);   // R, G, B, Alpha
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /*
-    m_renderSystem.update()
-    */
+    m_renderSystem.update(renderFactor, m_registry);
 
     // swap front and back buffers (drawing to back buffer, displaying front)
     glfwSwapBuffers(m_window.m_glfwWindow);
@@ -233,8 +196,4 @@ void Game::render(double renderFactor) {
 // Post - Game Loop
 
 void Game::destroy() {
-    // de-allocate GL shader program and array, buffer, and element objects
-    //glDeleteVertexArrays(1, &VAO);
-    //glDeleteBuffers(1, &VBO);
-    //glDeleteBuffers(1, &EBO);
 }

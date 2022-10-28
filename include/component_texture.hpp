@@ -12,8 +12,7 @@ struct TextureComponent {
     unsigned int m_texture;
 
     // receive texture from AssetManager texture map using getTexture
-    explicit TextureComponent(unsigned int texture) :
-        m_texture(texture) {
+    explicit TextureComponent(unsigned int texture) : m_texture(texture) {
     }
 };
 

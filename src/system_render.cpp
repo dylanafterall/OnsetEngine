@@ -8,40 +8,30 @@
 
 #include "system_render.hpp"
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 void RenderSystem::update(const float timeStep, entt::registry& registry) {
-    // retrieve a view of entities with the BodyPolygonComponent
-    auto polygons = registry.view<BodyPolygonComponent>();
+    // retrieve a view of entities with applicable components
+    auto polygons = registry.view<
+        ShapeOctagonComponent,
+        TextureComponent, 
+        ShaderProgramComponent,
+        RenderBuffersComponent
+    >();
     // iterate over each entity in the view
-    polygons.each([&](const auto& body) {
-        int vertexCount = body.m_polygonShape.m_count;
-    	int vertexDataPoints = vertexCount * 8;
-    	
-        // construct an array of vertex info for OpenGL with:
-    	//	3 floats for position x/y/z,
-    	//	3 floats for color r/g/b,
-    	//	2 floats for texture coords,
-        // for each vertex point
-    	float vertices[vertexDataPoints];
+    polygons.each([&](
+        auto& shape,
+        auto& texture,
+        auto& shader,
+        auto& vao
+    ) {
+        // bind textures on corresponding texture units
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture.m_texture);
 
-    	// populate the array
-        for (int i = 0; i < vertexCount; i++) {
-    		b2Vec2 vertex = body.m_polygonShape.m_vertices[i];
-    		float x = vertex.x;
-    		float y = vertex.y;
-    		vertices[(i * 8)] = x;			// position x coord
-    		vertices[(i * 8) + 1] = y;		// position y coord
-    		vertices[(i * 8) + 2] = 0.0f;	// position z coord
-    		vertices[(i * 8) + 3] = 1.0f;	// color r value	
-    		vertices[(i * 8) + 4] = 1.0f;	// color g value
-    		vertices[(i * 8) + 5] = 1.0f;	// color b value
-    		vertices[(i * 8) + 6] = 1.0f;
-    		vertices[(i * 8) + 7] = 1.0f;
-    	}      
-    });
-
-    // retrieve a view of entities with the BodyCircleComponent
-    auto circles = registry.view<BodyCircleComponent>();
-    // iterate over each entity in the view
-    circles.each([&](const auto& body) {     
+        glUseProgram(shader.m_shaderProgram);
+        glBindVertexArray(vao.m_VAO);
+        glDrawElements(GL_TRIANGLES, sizeof(shape.m_indices)/sizeof(shape.m_indices[0]), GL_UNSIGNED_INT, 0);
     });
 }

@@ -32,7 +32,7 @@ public:
     void run();
     void processInput();
     void update(const float timeStep, const int32 velocityIterations, const int32 positionIterations);
-    void render(double renderFactor);
+    void render(float renderFactor);
 
     // Post - Game Loop
     void destroy();

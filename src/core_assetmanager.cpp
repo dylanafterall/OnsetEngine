@@ -45,9 +45,9 @@ void AssetManager::setTexture(const std::string& assetId, const char* texturePat
     glTexParameteri(        // acts on currently active/bound texture
         GL_TEXTURE_2D,      // specify texture target (texture is in 2D)
         GL_TEXTURE_WRAP_S,  // what option to set and for which texture axis 
-        GL_REPEAT           // wrapping mode
+        GL_CLAMP_TO_BORDER           // wrapping mode
     );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
     // set texture FILTERING parameters
     glTexParameteri(
@@ -72,11 +72,11 @@ void AssetManager::setTexture(const std::string& assetId, const char* texturePat
         glTexImage2D(
             GL_TEXTURE_2D,      // texture target (1D/2D/3D) 
             0,                  // level of detail (0 to nth mipmap reduction) 
-            GL_RGB,             // number of color components (RGBA for .png) 
+            GL_RGBA,            // number of color components (RGBA for .png) 
             width,       
             height, 
             0,                  // border, value must be 0 
-            GL_RGB,             // format of pixel data (RGBA for .png) 
+            GL_RGBA,            // format of pixel data (RGBA for .png) 
             GL_UNSIGNED_BYTE,   // data type of pixel data 
             data                // pointer to image data in memory
         );
