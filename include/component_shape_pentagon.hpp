@@ -25,6 +25,7 @@ struct ShapePentagonComponent {
     b2Vec2 m_vertices[5];
 
     // for rendering system
+    int m_indexCount;
     float m_verticesRender[40] = {
         // positions x y z                  // colors r g b     // tex coords u v
         0.000000f,  1.000000f,  0.000000f,  1.0f, 1.0f, 1.0f,   0.500000f,  0.994614f,  // vertex (0)
@@ -43,7 +44,7 @@ struct ShapePentagonComponent {
     // vertex coordinates for a regular pentagon
     // centered at origin
     // for physics, rotates CCW
-    ShapePentagonComponent() : m_vertexCount(5) {
+    ShapePentagonComponent() : m_vertexCount(5), m_indexCount(9) {
         m_vertices[0].Set(0.000000f, 1.000000f);    // vertex (0)
         m_vertices[1].Set(-0.951057f, 0.309017f);   // vertex (1)
         m_vertices[2].Set(-0.587785f, -0.809017f);  // vertex (2)

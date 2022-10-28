@@ -19,11 +19,15 @@ const unsigned int SCR_HEIGHT = 600;
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // Constructor and Destructor
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
 
+// Game(): ---------------------------------------------------------------------
 Game::Game() {
     spdlog::info("Game Constructor called!");
 }
 
+// ~Game(): --------------------------------------------------------------------
 Game::~Game() {
     spdlog::info("Game Destructor called!");
 }
@@ -31,7 +35,10 @@ Game::~Game() {
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // Pre - Game Loop
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
 
+// initialize(): ---------------------------------------------------------------
 void Game::initialize() {
     // initialize GLFW window and GLAD
     m_window.initialize();
@@ -40,18 +47,18 @@ void Game::initialize() {
     // glEnable(GL_DEPTH_TEST);    // used for z-buffer 
 }
 
+// setup(): --------------------------------------------------------------------
 void Game::setup() {
     // AssetManager ............................................................
     m_assetManager.setVShader("vert", "../assets/shaders/v.vert");
     m_assetManager.setFShader("frag", "../assets/shaders/f.frag");
-    m_assetManager.setTexture("regularOctagon", "../assets/textures/polygons/octagon.png"); 
     m_assetManager.setTexture("awesomeface", "../assets/textures/awesomeface.png");
 
     unsigned int vertex = m_assetManager.getVShader("vert");
     unsigned int fragment = m_assetManager.getFShader("frag");
     m_assetManager.setShaderProgram("vert&frag", vertex, fragment);
 
-    // Box2D ...................................................................
+    // Prepare Entities ........................................................
     // make bottom static box
     BodyPolygonComponent bottomBox;
     bottomBox.m_bodyDef.position.Set(0.0f, -10.0f);
@@ -59,12 +66,14 @@ void Game::setup() {
     bottomBox.m_polygonShape.SetAsBox(50.0f, 10.0f);
     bottomBox.m_body->CreateFixture(&bottomBox.m_polygonShape, 0.0f);
 
-    // make dynamic octagon
+    // making a polygon ( 1) components -> 2) Box2D -> 3) OpenGL )
+    // 1) components
     BodyPolygonComponent octagon;
     ShapeOctagonComponent octagonShape;
     TextureComponent octagonTexture = TextureComponent(m_assetManager.getTexture("awesomeface"));
     ShaderProgramComponent octagonShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
     RenderBuffersComponent octagonBuffers;
+    // 2) Box2D
     octagon.m_bodyDef.type = b2_dynamicBody;
     octagon.m_bodyDef.position.Set(6.0f, 4.0f);
     octagon.m_body = m_world->CreateBody(&octagon.m_bodyDef);
@@ -73,14 +82,29 @@ void Game::setup() {
     octagon.m_fixtureDef.density = 1.0f;
     octagon.m_fixtureDef.friction = 0.3f;
     octagon.m_body->CreateFixture(&octagon.m_fixtureDef);
+    // 3) OpenGL
+    glGenVertexArrays(1, &octagonBuffers.m_VAO);
+    glGenBuffers(1, &octagonBuffers.m_VBO);
+    glGenBuffers(1, &octagonBuffers.m_EBO);
+    glBindVertexArray(octagonBuffers.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, octagonBuffers.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(octagonShape.m_verticesRender), octagonShape.m_verticesRender, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, octagonBuffers.m_EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(octagonShape.m_indices), octagonShape.m_indices, GL_STATIC_DRAW);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // texture coord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+    glUseProgram(octagonShaderProgram.m_shaderProgram);
+    // set it manually like so:
+    glUniform1i(glGetUniformLocation(octagonShaderProgram.m_shaderProgram, "ourTexture"), 0);
 
-    /*
-    // make test object
-    ShapeTestComponent testShape;
-    TextureComponent testTexture = TextureComponent(m_assetManager.getTexture("awesomeface"));
-    ShaderProgramComponent testShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
-    RenderBuffersComponent testBuffers;
-    */
 
     // EnTT ....................................................................
     auto groundEntity = m_registry.create();
@@ -91,52 +115,16 @@ void Game::setup() {
     m_registry.emplace<ShapeOctagonComponent>(octagonEntity, octagonShape);
     m_registry.emplace<TextureComponent>(octagonEntity, octagonTexture);
     m_registry.emplace<ShaderProgramComponent>(octagonEntity, octagonShaderProgram);
-
-    /*
-    auto testEntity = m_registry.create();
-    m_registry.emplace<TextureComponent>(testEntity, testTexture);
-    m_registry.emplace<ShaderProgramComponent>(testEntity, testShaderProgram);
-    */
-
-    // BIG TEST TIME ***********************************************************
-    // *************************************************************************
-    // *************************************************************************
-    // *************************************************************************
-    // *************************************************************************
-    glGenVertexArrays(1, &octagonBuffers.m_VAO);
-    glGenBuffers(1, &octagonBuffers.m_VBO);
-    glGenBuffers(1, &octagonBuffers.m_EBO);
-
-    glBindVertexArray(octagonBuffers.m_VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, octagonBuffers.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(octagonShape.m_verticesRender), octagonShape.m_verticesRender, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, octagonBuffers.m_EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(octagonShape.m_indices), octagonShape.m_indices, GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
     m_registry.emplace<RenderBuffersComponent>(octagonEntity, octagonBuffers);
-
-    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
-    glUseProgram(octagonShaderProgram.m_shaderProgram);
-    // set it manually like so:
-    glUniform1i(glGetUniformLocation(octagonShaderProgram.m_shaderProgram, "ourTexture"), 0);
 }
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // Game Loop
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
 
+// run(): ----------------------------------------------------------------------
 void Game::run() {
     // glfwWindowShouldClose() returns GL_FALSE until window instructed to close
     while (!glfwWindowShouldClose(m_window.m_glfwWindow)) {
@@ -163,6 +151,7 @@ void Game::run() {
     }
 }
 
+// processInput(): -------------------------------------------------------------
 void Game::processInput() {
     // query GLFW whether relevant keys pressed/released this frame 
     // close the window if player presses escape key
@@ -171,6 +160,7 @@ void Game::processInput() {
     }
 }
 
+// update(): -------------------------------------------------------------------
 void Game::update(const float timeStep, const int32 velocityIterations, const int32 positionIterations) {
     // call window and input callbacks associated with these events
     glfwPollEvents();
@@ -180,6 +170,7 @@ void Game::update(const float timeStep, const int32 velocityIterations, const in
     //m_movementSystem.update(timeStep, m_registry);
 }
 
+// render(): -------------------------------------------------------------------
 void Game::render(float renderFactor) {
     // specify color values to then use in filling color buffer
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);   // R, G, B, Alpha
@@ -194,6 +185,12 @@ void Game::render(float renderFactor) {
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // Post - Game Loop
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
 
+// destroy(): ------------------------------------------------------------------
 void Game::destroy() {
+    // temporarily deleting buffers here for now
+    // TODO: will need to use this method to delete buffers between game levels
+    m_renderSystem.deleteBuffers(m_registry);
 }

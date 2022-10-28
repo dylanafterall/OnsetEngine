@@ -11,6 +11,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+// update(): -------------------------------------------------------------------
 void RenderSystem::update(const float timeStep, entt::registry& registry) {
     // retrieve a view of entities with applicable components
     auto polygons = registry.view<
@@ -32,6 +33,18 @@ void RenderSystem::update(const float timeStep, entt::registry& registry) {
 
         glUseProgram(shader.m_shaderProgram);
         glBindVertexArray(vao.m_VAO);
-        glDrawElements(GL_TRIANGLES, sizeof(shape.m_indices)/sizeof(shape.m_indices[0]), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, shape.m_indexCount, GL_UNSIGNED_INT, 0);
+    });
+}
+
+// deleteBuffers(): ------------------------------------------------------------
+void RenderSystem::deleteBuffers(entt::registry& registry) {
+    // retrieve a view of entities with applicable components
+    auto buffers = registry.view<RenderBuffersComponent>();
+    // iterate over each entity in the view
+    buffers.each([&](auto& buffer) {
+        glDeleteVertexArrays(1, &buffer.m_VAO);
+        glDeleteBuffers(1, &buffer.m_VBO);
+        glDeleteBuffers(1, &buffer.m_EBO);
     });
 }

@@ -30,6 +30,7 @@ struct ShapeOctagonComponent {
     b2Vec2 m_vertices[8];
 
     // for rendering system
+    int m_indexCount;
     float m_verticesRender[64] = {
         // positions x y z                  // colors r g b     // tex coords u v
         0.000000f,  1.000000f,  0.000000f,  1.0f, 1.0f, 1.0f,   0.500000f,  0.991303f,  // vertex (0)
@@ -54,7 +55,7 @@ struct ShapeOctagonComponent {
     // vertex coordinates for a regular octagon
     // centered at origin
     // for physics, rotates CCW
-    ShapeOctagonComponent() : m_vertexCount(8) {
+    ShapeOctagonComponent() : m_vertexCount(8), m_indexCount(18) {
         m_vertices[0].Set(0.000000f, 1.000000f);    // vertex (0)
         m_vertices[1].Set(-0.707107f, 0.707107f);   // vertex (1)
         m_vertices[2].Set(-1.000000f, 0.000000f);   // vertex (2)

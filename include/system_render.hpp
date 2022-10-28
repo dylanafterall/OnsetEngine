@@ -32,6 +32,7 @@ public:
     ~RenderSystem() = default;
 
     void update(const float timeStep, entt::registry& registry);
+    void deleteBuffers(entt::registry& registry);
 
 private:
 

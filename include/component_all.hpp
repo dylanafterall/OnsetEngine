@@ -18,7 +18,6 @@
 #include "component_shape_hexagon.hpp"
 #include "component_shape_heptagon.hpp"
 #include "component_shape_octagon.hpp"
-#include "component_shape_test.hpp"
 #include "component_shader_program.hpp"
 #include "component_shader.hpp"
 #include "component_texture.hpp"

@@ -26,6 +26,7 @@ struct ShapeHexagonComponent {
     b2Vec2 m_vertices[6];
 
     // for rendering system
+    int m_indexCount;
     float m_verticesRender[48] = {
         // positions x y z                  // colors r g b     // tex coords u v
         0.000000f,  1.000000f,  0.000000f,  1.0f, 1.0f, 1.0f,   0.500000f,  0.994656f,  // vertex (0)
@@ -46,7 +47,7 @@ struct ShapeHexagonComponent {
     // vertex coordinates for a regular hexagon
     // centered at origin
     // for physics, rotates CCW
-    ShapeHexagonComponent() : m_vertexCount(6) {
+    ShapeHexagonComponent() : m_vertexCount(6), m_indexCount(12) {
         m_vertices[0].Set(0.000000f, 1.000000f);    // vertex (0)
         m_vertices[1].Set(-0.866025f, 0.500000f);   // vertex (1)
         m_vertices[2].Set(-0.866025f, -0.500000f);  // vertex (2)
