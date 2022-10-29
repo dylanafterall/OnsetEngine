@@ -15,14 +15,14 @@
 void RenderSystem::update(const float timeStep, entt::registry& registry) {
     // retrieve a view of entities with applicable components
     auto polygons = registry.view<
-        ShapeOctagonComponent,
+        MeshOctagonComponent,
         TextureComponent, 
         ShaderProgramComponent,
         RenderBuffersComponent
     >();
     // iterate over each entity in the view
     polygons.each([&](
-        auto& shape,
+        auto& mesh,
         auto& texture,
         auto& shader,
         auto& vao
@@ -33,7 +33,7 @@ void RenderSystem::update(const float timeStep, entt::registry& registry) {
 
         glUseProgram(shader.m_shaderProgram);
         glBindVertexArray(vao.m_VAO);
-        glDrawElements(GL_TRIANGLES, shape.m_indexCount, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, mesh.m_indexCount, GL_UNSIGNED_INT, 0);
     });
 }
 
