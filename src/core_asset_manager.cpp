@@ -2,11 +2,11 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// core_assetmanager.cpp
+// core_asset_manager.cpp
 //  implementation of AssetManager class, for loading/removing assets
 // -----------------------------------------------------------------------------
 
-#include "core_assetmanager.hpp"
+#include "core_asset_manager.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION    // required before stb include - only once
 #include "stb/stb_image.h"

@@ -11,14 +11,14 @@
 int main(int argc, char* argv[]) {
     Game game;
 
-    // pre - game loop
+    // pre loop
     game.initialize();
     game.setup();
 
     // game loop
     game.run();
 
-    // post - game loop
+    // post loop
     game.destroy();
 
     return 0;

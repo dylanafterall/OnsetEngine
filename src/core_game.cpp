@@ -156,21 +156,12 @@ void Game::run() {
 
 // processInput(): -------------------------------------------------------------
 void Game::processInput() {
-    // query GLFW whether relevant keys pressed/released this frame 
-    // close the window if player presses escape key
-    if (glfwGetKey(m_window.m_glfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(m_window.m_glfwWindow, true);
-    }
 }
 
 // update(): -------------------------------------------------------------------
 void Game::update(const float timeStep, const int32 velocityIterations, const int32 positionIterations) {
-    // call window and input callbacks associated with these events
-    glfwPollEvents();
-
     // Box2D simulation
     m_world->Step(timeStep, velocityIterations, positionIterations);
-    //m_movementSystem.update(timeStep, m_registry);
 }
 
 // render(): -------------------------------------------------------------------
@@ -183,6 +174,8 @@ void Game::render(float renderFactor) {
 
     // swap front and back buffers (drawing to back buffer, displaying front)
     glfwSwapBuffers(m_window.m_glfwWindow);
+    // call window and input callbacks associated with these events
+    glfwPollEvents();
 }
 
 // _____________________________________________________________________________

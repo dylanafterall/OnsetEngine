@@ -11,6 +11,9 @@
 // GLAD before GLFW - glad.h includes OpenGL headers required for GLFW
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
+#include "spdlog/spdlog.h"
+
+#include "core_input_invoker.hpp"
 
 class Window {
 public:

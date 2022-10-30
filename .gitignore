@@ -50,6 +50,7 @@ _deps
 # Project-specific -------------------------------------------------------------
 *.DS_Store
 .cache/
+.vscode/
 compile_commands.json
 external/box2d/
 external/entt/

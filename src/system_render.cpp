@@ -23,8 +23,8 @@ void RenderSystem::update(const float timeStep, entt::registry& registry) {
     // iterate over each entity in the view
     polygons.each([&](
         auto& mesh,
-        auto& texture,
-        auto& shader,
+        const auto& texture,
+        const auto& shader,
         auto& vao
     ) {
         // bind textures on corresponding texture units

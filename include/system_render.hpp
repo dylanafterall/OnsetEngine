@@ -30,8 +30,8 @@ public:
     RenderSystem() = default;
     ~RenderSystem() = default;
 
-    void update(const float timeStep, entt::registry& registry);
-    void deleteBuffers(entt::registry& registry);
+    void update(const float, entt::registry&);
+    void deleteBuffers(entt::registry&);
 
 private:
 

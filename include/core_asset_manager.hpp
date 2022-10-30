@@ -2,11 +2,11 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// core_assetmanager.hpp
+// core_asset_manager.hpp
 //  header of AssetManager class, functionality for adding/removing assets
 // -----------------------------------------------------------------------------
-#ifndef CORE_ASSETMANAGER_HPP
-#define CORE_ASSETMANAGER_HPP
+#ifndef CORE_ASSET_MANAGER_HPP
+#define CORE_ASSET_MANAGER_HPP
 
 #define GLFW_INCLUDE_NONE
 #include "glad/glad.h"
@@ -64,4 +64,4 @@ private:
     //std::map<std::string, unsigned int> sizeIndices;
 };
 
-#endif // CORE_ASSETMANAGER_HPP
+#endif // CORE_ASSET_MANAGER_HPP
