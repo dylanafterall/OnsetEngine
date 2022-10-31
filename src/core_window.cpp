@@ -78,6 +78,8 @@ void Window::initialize() {
     // make context of window current on the calling thread
     // only one current context per thread, only one thread per current context
     glfwMakeContextCurrent(m_glfwWindow);
+    // register callback function - tell GLFW to call this on window resize
+    glfwSetFramebufferSizeCallback(m_glfwWindow, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
     // glfwGetProcAddress defines the correct function based on OS 
@@ -86,14 +88,12 @@ void Window::initialize() {
         return;
     }
 
-    // register callback function - tell GLFW to call this on window resize
-    glfwSetFramebufferSizeCallback(m_glfwWindow, framebuffer_size_callback);
-
     // before processing keyboard input, need to set initial commands for keys
     invoker.setAKeyCommand(new LeftCommand());
     invoker.setSKeyCommand(new DownCommand());
     invoker.setDKeyCommand(new RightCommand());
     invoker.setWKeyCommand(new UpCommand());
+
     // register callback function - tell GLFW to call this on key press
     glfwSetKeyCallback(m_glfwWindow, key_callback);
     // glfwSetInputMode(m_glfwWindow, GLFW_STICKY_KEYS, 1);

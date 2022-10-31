@@ -44,14 +44,14 @@ void Game::initialize() {
     m_window.initialize();
 
     // configure global opengl state
-    // glEnable(GL_DEPTH_TEST);    // used for z-buffer 
+    // glEnable(GL_DEPTH_TEST);    // used for z-buffer
 }
 
 // setup(): --------------------------------------------------------------------
 void Game::setup() {
     // AssetManager ............................................................
-    m_assetManager.setVShader("vert", "../assets/shaders/v.vert");
-    m_assetManager.setFShader("frag", "../assets/shaders/f.frag");
+    m_assetManager.setVShader("vert", "../assets/shaders/v2.vert");
+    m_assetManager.setFShader("frag", "../assets/shaders/f2.frag");
     m_assetManager.setTexture("awesomeface", "../assets/textures/awesomeface.png");
     m_assetManager.setTexture("marble", "../assets/textures/marble.jpg");
 
