@@ -43,8 +43,11 @@ void Game::initialize() {
     // initialize GLFW window and GLAD
     m_window.initialize();
 
-    // configure global opengl state
-    // glEnable(GL_DEPTH_TEST);    // used for z-buffer
+    // prepare the projection matrix for render (only needed once outside loop)
+    // glm::perspective(FoV, aspect, near, far)
+    m_projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    // glm::ortho(left, right, bottom, top, near, far)
+    // m_projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.1f, 100.0f);
 }
 
 // setup(): --------------------------------------------------------------------
@@ -71,7 +74,7 @@ void Game::setup() {
     // 1) components
     BodyPolygonComponent octagon;
     ShapeOctagonComponent octagonShape;
-    MeshOctagonComponent octagonMesh;
+    MeshCubeComponent octagonMesh;
     TextureComponent octagonTexture = TextureComponent(m_assetManager.getTexture("awesomeface"));
     ShaderProgramComponent octagonShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
     RenderBuffersComponent octagonBuffers;
@@ -115,7 +118,7 @@ void Game::setup() {
     auto octagonEntity = m_registry.create();
     m_registry.emplace<BodyPolygonComponent>(octagonEntity, octagon);
     m_registry.emplace<ShapeOctagonComponent>(octagonEntity, octagonShape);
-    m_registry.emplace<MeshOctagonComponent>(octagonEntity, octagonMesh);
+    m_registry.emplace<MeshCubeComponent>(octagonEntity, octagonMesh);
     m_registry.emplace<TextureComponent>(octagonEntity, octagonTexture);
     m_registry.emplace<ShaderProgramComponent>(octagonEntity, octagonShaderProgram);
     m_registry.emplace<RenderBuffersComponent>(octagonEntity, octagonBuffers);
@@ -170,7 +173,7 @@ void Game::render(float renderFactor) {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);   // R, G, B, Alpha
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_renderSystem.update(renderFactor, m_registry);
+    m_renderSystem.update(renderFactor, m_registry, m_projection);
 
     // swap front and back buffers (drawing to back buffer, displaying front)
     glfwSwapBuffers(m_window.m_glfwWindow);

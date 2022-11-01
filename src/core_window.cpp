@@ -88,6 +88,9 @@ void Window::initialize() {
         return;
     }
 
+    // configure global opengl state
+    glEnable(GL_DEPTH_TEST);    // used for z-buffer
+
     // before processing keyboard input, need to set initial commands for keys
     invoker.setAKeyCommand(new LeftCommand());
     invoker.setSKeyCommand(new DownCommand());

@@ -12,6 +12,7 @@
 #include "component_body_polygon.hpp"
 #include "component_body_edge.hpp"
 #include "component_body_chain.hpp"
+#include "component_mesh_cube.hpp"
 #include "component_mesh_triangle.hpp"
 #include "component_mesh_square.hpp"
 #include "component_mesh_pentagon.hpp"

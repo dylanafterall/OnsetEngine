@@ -12,38 +12,48 @@
 #include <GLFW/glfw3.h>
 
 // update(): -------------------------------------------------------------------
-void RenderSystem::update(const float timeStep, entt::registry& registry) {
+void RenderSystem::update(
+    const float timeStep, 
+    entt::registry& registry,
+    glm::mat4& projection
+    ) {
     // retrieve a view of entities with applicable components
     auto polygons = registry.view<
-        MeshOctagonComponent,
+        MeshCubeComponent,
         TextureComponent, 
         ShaderProgramComponent,
         RenderBuffersComponent
     >();
     // iterate over each entity in the view
     polygons.each([&](
-        auto& mesh,
+        const auto& mesh,
         const auto& texture,
         const auto& shader,
-        auto& vao
+        const auto& vao
     ) {
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.m_texture);
 
-        // prepare transformation matrix for translation, rotation, scale
-        glm::mat4 transform = glm::mat4(1.0f);
-        transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-        transform = glm::scale(transform, glm::vec3(0.5, 0.5, 0.5));
-
-        // get matrix's uniform location and set matrix
+        // create transformations
         glUseProgram(shader.m_shaderProgram);
-        unsigned int transformLoc = glGetUniformLocation(shader.m_shaderProgram, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+        // view matrix acts as 'camera'
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -10.0f));
+
+        // pass transformation matrices to the shader
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
 
         // render the entity
         glBindVertexArray(vao.m_VAO);
+        // calculate the model matrix for each object and pass it to shader before drawing
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+        // glm::rotate(matrix, angle, rotation axis)
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+
         glDrawElements(GL_TRIANGLES, mesh.m_indexCount, GL_UNSIGNED_INT, 0);
     });
 }
