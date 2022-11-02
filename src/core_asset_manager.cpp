@@ -192,7 +192,7 @@ void AssetManager::setFShader(const std::string& assetId, const char* fragmentPa
     checkShaderErrors(fragment, "FRAGMENT");
 
     // add fshader to asset manager's map
-    fshaders.emplace(assetId, fragment); 
+    fshaders.emplace(assetId, fragment);
     spdlog::info("New FShader added to Asset Manager with id = " + assetId);
 }
 
@@ -210,78 +210,6 @@ void AssetManager::setShaderProgram(const std::string& assetId, unsigned int ver
     shaderPrograms.emplace(assetId, shaderProgram);
     spdlog::info("New ShaderProgram added to Asset Manager with id = " + assetId);
 }
-
-/*
-// setModel(): -----------------------------------------------------------------
-void AssetManager::setModel(const std::string& assetId, const char* modelPath) {
-    FILE* file;
-    file = fopen(modelPath, "r");
-    char line[1024];
-
-    // temporary vectors for vertices, tex coords, and indices
-    std::vector<int> v;
-    std::vector<int> tc;
-    std::vector<int> i;
-    vertices.emplace(assetId, v);
-    textureCoordinates.emplace(assetId, tc);
-    indices.emplace(assetId, i);
-
-    while (fgets(line, 1024, file)) {
-        //vertex data
-        if (strncmp(line, "v ", 2) == 0) {
-            float xCoord;
-            float yCoord;
-            float zCoord;
-            // note to future self: I am bad at creating obj files from Blender,
-            // thus the order of vertices in my obj file goes x -> z -> (-1)*y
-            sscanf(line, "v %f %f %f", &xCoord, &zCoord, &yCoord);
-            yCoord *= -1;
-            vertices[assetId].emplace_back(xCoord);
-            vertices[assetId].emplace_back(yCoord);
-            vertices[assetId].emplace_back(zCoord);
-        }
-
-        // texture coordinate data
-        if (strncmp(line, "vt ", 3) == 0) {
-            float uCoord;
-            float vCoord;
-            sscanf(line, "vt %f %f", &uCoord, &vCoord);
-            textureCoordinates[assetId].emplace_back(uCoord);
-            textureCoordinates[assetId].emplace_back(vCoord);
-        }
-
-        // index data
-        if (strncmp(line, "f ", 2) == 0) {
-            // each line contains 3 vertices, A, B, and C
-            // each vertex has a vertex index, texCoord index, normal index
-            int vertexA;
-            int vertexB;
-            int vertexC;
-            int texCoordA;
-            int texCoordB;
-            int texCoordC;
-            int normalA;
-            int normalB;
-            int normalC;
-            sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d", 
-                &vertexA, &texCoordA, &normalA,
-                &vertexB, &texCoordB, &normalB,
-                &vertexC, &texCoordC, &normalC
-            );
-            indices[assetId].emplace_back(vertexA);
-            indices[assetId].emplace_back(vertexB);
-            indices[assetId].emplace_back(vertexC);
-        }
-    }
-
-    unsigned int sizeV = vertices[assetId].size();
-    unsigned int sizeTC = textureCoordinates[assetId].size();
-    unsigned int sizeI = indices[assetId].size();
-    sizeVertices.emplace(assetId, sizeV);
-    sizeTextureCoordinates.emplace(assetId, sizeTC);
-    sizeIndices.emplace(assetId, sizeI);
-}
-*/
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
@@ -308,38 +236,6 @@ unsigned int AssetManager::getFShader(const std::string& assetId) {
 unsigned int AssetManager::getShaderProgram(const std::string& assetId) {
     return shaderPrograms[assetId];
 }
-
-/*
-// getVertices(): --------------------------------------------------------------
-std::vector<float> AssetManager::getVertices(const std::string& assetId) {
-    return vertices[assetId];
-}
-
-// getTextureCoordinates(): ----------------------------------------------------
-std::vector<float> AssetManager::getTextureCoordinates(const std::string& assetId) {
-    return textureCoordinates[assetId];
-}
-
-// getIndices(): ---------------------------------------------------------------
-std::vector<int> AssetManager::getIndices(const std::string& assetId) {
-    return indices[assetId];
-}
-
-// getSizeVertices(): ----------------------------------------------------------
-unsigned int AssetManager::getSizeVertices(const std::string& assetId) {
-    return sizeVertices[assetId];
-}
-
-// getSizeTextureCoordinates(): ------------------------------------------------
-unsigned int AssetManager::getSizeTextureCoordinates(const std::string& assetId) {
-    return sizeTextureCoordinates[assetId];
-}
-
-// getSizeIndices(): -----------------------------------------------------------
-unsigned int AssetManager::getSizeIndices(const std::string& assetId) {
-    return sizeIndices[assetId];
-}
-*/
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
@@ -368,26 +264,6 @@ void AssetManager::clearAssets() {
         glDeleteProgram(program.second);
     }
     shaderPrograms.clear();
-
-    /*
-    for (auto v : vertices) {
-        std::vector<float>().swap(v.second);
-    }
-    vertices.clear();
-    sizeVertices.clear();
-
-    for (auto tc : textureCoordinates) {
-        std::vector<float>().swap(tc.second);
-    }
-    textureCoordinates.clear();
-    sizeTextureCoordinates.clear();
-
-    for (auto i : indices) {
-        std::vector<int>().swap(i.second);
-    }
-    indices.clear();
-    sizeIndices.clear();
-    */
 }
 
 // checkShaderErrors(): --------------------------------------------------------

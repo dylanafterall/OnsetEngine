@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
     src/core_input_commander.cpp
     src/system_movement.cpp
     src/system_render.cpp
+    src/system_camera.cpp
 )
 
 find_package(OpenGL REQUIRED)

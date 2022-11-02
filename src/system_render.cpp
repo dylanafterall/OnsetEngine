@@ -54,7 +54,7 @@ void RenderSystem::update(
         model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
 
-        glDrawElements(GL_TRIANGLES, mesh.m_indexCount, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, mesh.m_vertexCount);
     });
 }
 
@@ -66,6 +66,5 @@ void RenderSystem::deleteBuffers(entt::registry& registry) {
     buffers.each([&](auto& buffer) {
         glDeleteVertexArrays(1, &buffer.m_VAO);
         glDeleteBuffers(1, &buffer.m_VBO);
-        glDeleteBuffers(1, &buffer.m_EBO);
     });
 }

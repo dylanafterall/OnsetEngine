@@ -62,3 +62,5 @@ external/stb/stb/
 external/lua/lua/lua-5.4.4/
 external/lua/lua/lua-5.4.4.tar.gz
 build/
+tools/formatter/external/glm/
+tools/formatter/formatter

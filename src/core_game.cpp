@@ -48,6 +48,11 @@ void Game::initialize() {
     m_projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     // glm::ortho(left, right, bottom, top, near, far)
     // m_projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+    // create camera component and add to EnTT registry
+    CameraComponent camera;
+    auto cameraEntity = m_registry.create();
+    m_registry.emplace<CameraComponent>(cameraEntity, camera);
 }
 
 // setup(): --------------------------------------------------------------------
@@ -55,8 +60,9 @@ void Game::setup() {
     // AssetManager ............................................................
     m_assetManager.setVShader("vert", "../assets/shaders/v2.vert");
     m_assetManager.setFShader("frag", "../assets/shaders/f2.frag");
-    m_assetManager.setTexture("awesomeface", "../assets/textures/awesomeface.png");
-    m_assetManager.setTexture("marble", "../assets/textures/marble.jpg");
+    m_assetManager.setTexture("orion", "../assets/textures/orion.jpg");
+    m_assetManager.setTexture("blackhole", "../assets/textures/blackhole.jpg");
+    m_assetManager.setTexture("milkyway", "../assets/textures/milkyway.jpg");
 
     unsigned int vertex = m_assetManager.getVShader("vert");
     unsigned int fragment = m_assetManager.getFShader("frag");
@@ -75,7 +81,7 @@ void Game::setup() {
     BodyPolygonComponent octagon;
     ShapeOctagonComponent octagonShape;
     MeshCubeComponent octagonMesh;
-    TextureComponent octagonTexture = TextureComponent(m_assetManager.getTexture("awesomeface"));
+    TextureComponent octagonTexture = TextureComponent(m_assetManager.getTexture("milkyway"));
     ShaderProgramComponent octagonShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
     RenderBuffersComponent octagonBuffers;
     // 2) Box2D
@@ -90,12 +96,9 @@ void Game::setup() {
     // 3) OpenGL
     glGenVertexArrays(1, &octagonBuffers.m_VAO);
     glGenBuffers(1, &octagonBuffers.m_VBO);
-    glGenBuffers(1, &octagonBuffers.m_EBO);
     glBindVertexArray(octagonBuffers.m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, octagonBuffers.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(octagonMesh.m_vertices), octagonMesh.m_vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, octagonBuffers.m_EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(octagonMesh.m_indices), octagonMesh.m_indices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, octagonMesh.m_verticesSize, octagonMesh.m_vertices, GL_STATIC_DRAW);
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -108,7 +111,7 @@ void Game::setup() {
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     glUseProgram(octagonShaderProgram.m_shaderProgram);
     // set it manually like so:
-    glUniform1i(glGetUniformLocation(octagonShaderProgram.m_shaderProgram, "ourTexture"), 0);
+    glUniform1i(glGetUniformLocation(octagonShaderProgram.m_shaderProgram, "texture1"), 0);
 
 
     // EnTT ....................................................................
@@ -165,6 +168,7 @@ void Game::processInput() {
 void Game::update(const float timeStep, const int32 velocityIterations, const int32 positionIterations) {
     // Box2D simulation
     m_world->Step(timeStep, velocityIterations, positionIterations);
+    m_cameraSystem.update(timeStep, m_registry);
 }
 
 // render(): -------------------------------------------------------------------

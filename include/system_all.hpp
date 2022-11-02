@@ -10,5 +10,6 @@
 
 #include "system_movement.hpp"
 #include "system_render.hpp"
+#include "system_camera.hpp"
 
 #endif // SYSTEM_ALL_HPP

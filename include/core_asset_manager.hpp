@@ -28,18 +28,11 @@ public:
     void setVShader(const std::string&, const char*);
     void setFShader(const std::string&, const char*);
     void setShaderProgram(const std::string&, unsigned int, unsigned int);
-    //void setModel(const std::string&, const char*);
 
     unsigned int getTexture(const std::string&);
     unsigned int getVShader(const std::string&);
     unsigned int getFShader(const std::string&);
     unsigned int getShaderProgram(const std::string&);
-    //std::vector<float> getVertices(const std::string&);
-    //std::vector<float> getTextureCoordinates(const std::string&);
-    //std::vector<int> getIndices(const std::string&);
-    //unsigned int getSizeVertices(const std::string&);
-    //unsigned int getSizeTextureCoordinates(const std::string&);
-    //unsigned int getSizeIndices(const std::string&);
 
     void clearAssets();
     void checkShaderErrors(unsigned int, std::string);
@@ -53,15 +46,6 @@ private:
     std::map<std::string, unsigned int> fshaders;
     // shader program data
     std::map<std::string, unsigned int> shaderPrograms;
-    // model vertex data
-    //std::map<std::string, std::vector<float>> vertices;
-    //std::map<std::string, unsigned int> sizeVertices;
-    // model tex coord data
-    //std::map<std::string, std::vector<float>> textureCoordinates;
-    //std::map<std::string, unsigned int> sizeTextureCoordinates;
-    // model index data
-    //std::map<std::string, std::vector<int>> indices;
-    //std::map<std::string, unsigned int> sizeIndices;
 };
 
 #endif // CORE_ASSET_MANAGER_HPP

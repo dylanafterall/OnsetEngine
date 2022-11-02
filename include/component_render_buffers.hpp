@@ -9,7 +9,7 @@
 #define COMPONENT_RENDER_BUFFERS_HPP
 
 struct RenderBuffersComponent {
-    unsigned int m_VBO, m_VAO, m_EBO;
+    unsigned int m_VBO, m_VAO;
 };
 
 #endif // COMPONENT_RENDER_BUFFERS_HPP

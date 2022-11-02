@@ -17,5 +17,7 @@ git submodule add https://github.com/ThePhD/sol2.git external/sol2
 git submodule add https://github.com/gabime/spdlog.git external/spdlog
 git submodule add https://github.com/google/googletest.git external/googletest
 
+git submodule add https://github.com/g-truc/glm.git tools/formatter/external/glm
+
 echo "CONFIGURING CMAKE"
 cmake -S . -B build/

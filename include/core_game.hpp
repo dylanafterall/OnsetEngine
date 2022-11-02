@@ -51,12 +51,13 @@ private:
     glm::mat4 m_projection = glm::mat4(1.0f);
     // EnTT 
     entt::registry m_registry;
-    // core Classes
+    // core classes
     Window m_window;
     AssetManager m_assetManager;
-    // system Classes
+    // system classes
     RenderSystem m_renderSystem;
     MovementSystem m_movementSystem;
+    CameraSystem m_cameraSystem;
 };
 
 #endif // CORE_GAME_HPP
