@@ -20,6 +20,8 @@ const unsigned int SCR_HEIGHT = 600;
 void framebuffer_size_callback(GLFWwindow*, int, int);
 InputInvoker invoker;
 void key_callback(GLFWwindow*, int, int, int, int);
+void mouse_callback(GLFWwindow*, double, double);
+void scroll_callback(GLFWwindow*, double, double);
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
@@ -126,4 +128,14 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 // key_callback(): -------------------------------------------------------------
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     invoker.handleInput(window, key, action);
+}
+
+// mouse_callback(): -----------------------------------------------------------
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
+
+}
+
+// scroll_callback(): ----------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    
 }

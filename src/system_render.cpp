@@ -15,8 +15,22 @@
 void RenderSystem::update(
     const float timeStep, 
     entt::registry& registry,
-    glm::mat4& projection
-    ) {
+    const unsigned int SCR_WIDTH,
+    const unsigned int SCR_HEIGHT
+) {
+    float cameraZoom;
+    glm::vec3 cameraPosition;
+    glm::vec3 cameraFront;
+    glm::vec3 cameraUp;
+
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](const auto& camera) {
+        cameraZoom = camera.m_zoom;
+        cameraPosition = camera.m_position;
+        cameraFront = camera.m_front;
+        cameraUp = camera.m_up;
+    });
+
     // retrieve a view of entities with applicable components
     auto polygons = registry.view<
         MeshCubeComponent,
@@ -37,20 +51,19 @@ void RenderSystem::update(
 
         // create transformations
         glUseProgram(shader.m_shaderProgram);
-        // view matrix acts as 'camera'
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -10.0f));
+        glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // m_projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
 
         // pass transformation matrices to the shader
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
 
-        // render the entity
+        // rendering the entity
         glBindVertexArray(vao.m_VAO);
         // calculate the model matrix for each object and pass it to shader before drawing
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        // glm::rotate(matrix, angle, rotation axis)
         model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
 

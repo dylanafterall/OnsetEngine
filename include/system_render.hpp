@@ -12,6 +12,7 @@
 #include "component_body_polygon.hpp"
 #include "component_body_edge.hpp"
 #include "component_body_chain.hpp"
+#include "component_camera.hpp"
 #include "component_mesh_cube.hpp"
 #include "component_mesh_triangle.hpp"
 #include "component_mesh_square.hpp"
@@ -34,7 +35,7 @@ public:
     RenderSystem() = default;
     ~RenderSystem() = default;
 
-    void update(const float, entt::registry&, glm::mat4&);
+    void update(const float, entt::registry&, const unsigned int, const unsigned int);
     void deleteBuffers(entt::registry&);
 
 private:

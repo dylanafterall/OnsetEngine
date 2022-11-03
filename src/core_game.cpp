@@ -43,14 +43,8 @@ void Game::initialize() {
     // initialize GLFW window and GLAD
     m_window.initialize();
 
-    // prepare the projection matrix for render (only needed once outside loop)
-    // glm::perspective(FoV, aspect, near, far)
-    m_projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    // glm::ortho(left, right, bottom, top, near, far)
-    // m_projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.1f, 100.0f);
-
     // create camera component and add to EnTT registry
-    CameraComponent camera;
+    CameraComponent camera(glm::vec3(0.0f, 0.0f, 10.0f));
     auto cameraEntity = m_registry.create();
     m_registry.emplace<CameraComponent>(cameraEntity, camera);
 }
@@ -174,10 +168,10 @@ void Game::update(const float timeStep, const int32 velocityIterations, const in
 // render(): -------------------------------------------------------------------
 void Game::render(float renderFactor) {
     // specify color values to then use in filling color buffer
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);   // R, G, B, Alpha
+    glClearColor(0.2f, 0.3f, 0.6f, 1.0f);   // R, G, B, Alpha
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_renderSystem.update(renderFactor, m_registry, m_projection);
+    m_renderSystem.update(renderFactor, m_registry, SCR_WIDTH, SCR_HEIGHT);
 
     // swap front and back buffers (drawing to back buffer, displaying front)
     glfwSwapBuffers(m_window.m_glfwWindow);

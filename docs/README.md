@@ -42,8 +42,8 @@ new techniques and practices over time.
 <p>Tools:
 <ul>
     <li>OS: Ubuntu / macOS </li>
-    <li>Editor: Neovim </li>
-    <li>Build System: CMake </li>
+    <li>Editor: Neovim / VS Code </li>
+    <li>Build System: CMake / GNU Make </li>
     <li>LSP: clangd </li>
     <li>Static Analysis: Cppcheck, Clang-Tidy </li>
     <li>Dynamic Analysis: LLDB, Valgrind (Memcheck, Cachegrind) </li>
@@ -120,11 +120,11 @@ new techniques and practices over time.
 
 <p>This project was inspired by:<br>
 <ul> 
+    <li>The online reference <a href="https://learnopengl.com/">"LearnOpenGL"</a>, by Joey deVries </li>
     <li>The online tutorial series <a href="https://pikuma.com/courses">"C++ 2D Game Engine Development"</a>, by Gustavo
     Pezzi </li>
-    <li>The online article <a href="https://www.gafferongames.com/post/fix_your_timestep/">"Fix Your Timestep!"</a>, by Glenn Fiedler </li>
     <li>The book <a href="https://gameprogrammingpatterns.com/">"Game Programming Patterns"</a>, by Robert Nystrom </li>
-    <li>The online reference <a href="https://learnopengl.com/">"LearnOpenGL"</a>, by Joey deVries </li>
+    <li>The online article <a href="https://www.gafferongames.com/post/fix_your_timestep/">"Fix Your Timestep!"</a>, by Glenn Fiedler </li>
     <li>The online reference <a href="https://thebookofshaders.com/">"The Book of Shaders"</a>, by Patricio Gonzalez Vivo and Jen Lowe </li>
 </ul>
 </p>

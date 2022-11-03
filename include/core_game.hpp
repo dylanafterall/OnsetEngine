@@ -47,8 +47,6 @@ private:
     const int32 POSITION_ITERATIONS = 3;    // 3 is recommended by Box2D
     std::unique_ptr<b2Vec2> m_gravity = std::make_unique<b2Vec2>(0.0f, -10.0f);
     std::unique_ptr<b2World> m_world = std::make_unique<b2World>(*m_gravity);
-    // projection matrix (to pass into m_renderSystem)
-    glm::mat4 m_projection = glm::mat4(1.0f);
     // EnTT 
     entt::registry m_registry;
     // core classes

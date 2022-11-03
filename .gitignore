@@ -39,7 +39,6 @@ CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Testing
-Makefile
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
@@ -61,6 +60,9 @@ external/spdlog/
 external/stb/stb/
 external/lua/lua/lua-5.4.4/
 external/lua/lua/lua-5.4.4.tar.gz
+external/glad/Makefile
+external/lua/Makefile
+external/stb/Makefile
 build/
 tools/formatter/external/glm/
 tools/formatter/formatter
