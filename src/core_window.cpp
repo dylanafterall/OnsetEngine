@@ -15,8 +15,6 @@
 // -----------------------------------------------------------------------------
 
 void framebuffer_size_callback(GLFWwindow*, int, int);
-void mouse_callback(GLFWwindow*, double, double);
-void scroll_callback(GLFWwindow*, double, double);
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
@@ -79,10 +77,9 @@ void Window::initialize() {
         return;
     }
 
-    // make context of window current on the calling thread
     // only one current context per thread, only one thread per current context
     glfwMakeContextCurrent(m_glfwWindow);
-    // register callback function - tell GLFW to call this on window resize
+    // tell GLFW to call this on window resize
     glfwSetFramebufferSizeCallback(m_glfwWindow, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
@@ -95,20 +92,38 @@ void Window::initialize() {
     // configure global opengl state
     glEnable(GL_DEPTH_TEST);    // used for z-buffer
 
+    // handling user input -----------------------------------------------------
+
     // before processing keyboard input, need to set initial commands for keys
     m_invoker->setAKeyCommand(new LeftCommand());
     m_invoker->setSKeyCommand(new DownCommand());
     m_invoker->setDKeyCommand(new RightCommand());
     m_invoker->setWKeyCommand(new UpCommand());
 
-    // keyboard callback -------------------------------------------------------
+    // callback functions for user input
     glfwSetWindowUserPointer(m_glfwWindow, m_invoker);
+
+    // keyboard input
     auto key_callback = [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleInput(window, key, action);
+        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleKeyInput(window, key, action);
     };
     glfwSetKeyCallback(m_glfwWindow, key_callback);
     // glfwSetInputMode(m_glfwWindow, GLFW_STICKY_KEYS, 1);
     // glfwSetInputMode(window, GLFW_LOCK_KEY_MODS, GLFW_TRUE);
+
+    // mouse input
+    auto mouse_callback = [](GLFWwindow* window, double xposIn, double yposIn) {
+        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleMouseInput(window, xposIn, yposIn);
+    };
+    glfwSetCursorPosCallback(m_glfwWindow, mouse_callback);
+    // tell GLFW to capture our mouse
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    
+    // scroll input
+    auto scroll_callback = [](GLFWwindow* window, double xoffset, double yoffset) {
+        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleScrollInput(window, xoffset, yoffset);
+    };
+    glfwSetScrollCallback(m_glfwWindow, scroll_callback);
 }
 
 // _____________________________________________________________________________
@@ -129,14 +144,4 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
         width,      // width of viewport 
         height      // height of viewport
     );
-}
-
-// mouse_callback(): -----------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
-
-}
-
-// scroll_callback(): ----------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-    
 }

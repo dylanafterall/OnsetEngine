@@ -42,9 +42,13 @@ Game::~Game() {
 
 // initialize(): ---------------------------------------------------------------
 void Game::initialize() {
+    // have to set window's invoker before initializing it 
     m_windowPtr->setInvoker(m_invokerPtr);
     // initialize GLFW window and GLAD
     m_windowPtr->initialize();
+
+    // pass our registry to the invoker, which needs to pass into InputCommander
+    m_invokerPtr->setInvokerRegistry(&m_registry);
 
     // create camera component and add to EnTT registry
     CameraComponent camera(glm::vec3(0.0f, 0.0f, 10.0f));

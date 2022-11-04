@@ -27,14 +27,18 @@ public:
     InputInvoker();
     ~InputInvoker();
 
+    void setInvokerRegistry(entt::registry*);
     void setAKeyCommand(IInputCommand*);
     void setSKeyCommand(IInputCommand*);
     void setDKeyCommand(IInputCommand*);
     void setWKeyCommand(IInputCommand*);
 
-    void handleInput(GLFWwindow*, int, int);
+    void handleKeyInput(GLFWwindow*, int, int);
+    void handleMouseInput(GLFWwindow*, double, double);
+    void handleScrollInput(GLFWwindow*, double, double);
 
 private:
+    entt::registry* m_registryPtr;
     IInputCommand* m_keyA;
     IInputCommand* m_keyS;
     IInputCommand* m_keyD;

@@ -23,6 +23,11 @@ InputInvoker::~InputInvoker() {
     spdlog::info("InputInvoker destructor called!");
 }
 
+// setInvokerRegistry(): -------------------------------------------------------
+void InputInvoker::setInvokerRegistry(entt::registry* registryPtr) {
+    m_registryPtr = registryPtr;
+}
+
 // setAKeyCommand(): -----------------------------------------------------------
 void InputInvoker::setAKeyCommand(IInputCommand* command) {
     m_keyA = command;
@@ -43,21 +48,31 @@ void InputInvoker::setWKeyCommand(IInputCommand* command) {
     m_keyW = command;
 }
 
-// handleInput(): --------------------------------------------------------------
-void InputInvoker::handleInput(GLFWwindow* window, int key, int action) {
+// handleKeyInput(): -----------------------------------------------------------
+void InputInvoker::handleKeyInput(GLFWwindow* window, int key, int action) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
     else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-        m_keyA->execute();
+        m_keyA->execute(*m_registryPtr);
     }
     else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-        m_keyS->execute();
+        m_keyS->execute(*m_registryPtr);
     }
     else if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-        m_keyD->execute();
+        m_keyD->execute(*m_registryPtr);
     }
     else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-        m_keyW->execute();
+        m_keyW->execute(*m_registryPtr);
     }
+}
+
+// handleMouseInput(): ---------------------------------------------------------
+void InputInvoker::handleMouseInput(GLFWwindow* window, double xposIn, double yposIn) {
+
+}
+
+// handleScrollInput(): --------------------------------------------------------
+void InputInvoker::handleScrollInput(GLFWwindow* window, double xoffset, double yoffset) {
+
 }
