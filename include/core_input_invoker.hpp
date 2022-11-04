@@ -28,17 +28,43 @@ public:
     ~InputInvoker();
 
     void setInvokerRegistry(entt::registry*);
+    void setInvokerAspect(unsigned int, unsigned int);
+
+    void setCursorLeftCommand(IInputCommand*);
+    void setCursorDownCommand(IInputCommand*);
+    void setCursorRightCommand(IInputCommand*);
+    void setCursorUpCommand(IInputCommand*);
+    void setCursorUp_rightCommand(IInputCommand*);
+    void setCursorUp_leftCommand(IInputCommand*);
+    void setCursorDown_leftCommand(IInputCommand*);
+    void setCursorDown_rightCommand(IInputCommand*);
+    
     void setAKeyCommand(IInputCommand*);
     void setSKeyCommand(IInputCommand*);
     void setDKeyCommand(IInputCommand*);
     void setWKeyCommand(IInputCommand*);
 
     void handleKeyInput(GLFWwindow*, int, int);
-    void handleMouseInput(GLFWwindow*, double, double);
-    void handleScrollInput(GLFWwindow*, double, double);
+    void handleMouseInput(double, double);
+    void handleScrollInput(float);
 
 private:
     entt::registry* m_registryPtr;
+
+    unsigned int m_screenWidth; // game class will initially set to scr_width
+    unsigned int m_screenHeight; // game class will initially set to scr_height
+    float m_lastX; // game class will initially set to scr_width / 2
+    float m_lastY; // game class will initially set to scr_height / 2
+    bool m_firstMouse = true;
+
+    IInputCommand* m_cursorLeftMove;
+    IInputCommand* m_cursorDownMove;
+    IInputCommand* m_cursorRightMove;
+    IInputCommand* m_cursorUpMove;
+    IInputCommand* m_cursorUp_rightMove;
+    IInputCommand* m_cursorUp_leftMove;
+    IInputCommand* m_cursorDown_leftMove;
+    IInputCommand* m_cursorDown_rightMove;
     IInputCommand* m_keyA;
     IInputCommand* m_keyS;
     IInputCommand* m_keyD;

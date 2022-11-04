@@ -10,6 +10,8 @@
 #ifndef CORE_INPUT_COMMANDER_HPP
 #define CORE_INPUT_COMMANDER_HPP
 
+#include "component_camera.hpp"
+
 #include "entt/entt.hpp"
 
 #include <iostream>
@@ -46,6 +48,47 @@ public:
 };
 
 class UpCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+
+class NorthCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class WestCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class SouthCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class EastCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class NortheastCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class NorthwestCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class SouthwestCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class SoutheastCommand : public IInputCommand {
 public:
 	void execute(entt::registry&) const override;
 };

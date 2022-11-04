@@ -95,6 +95,14 @@ void Window::initialize() {
     // handling user input -----------------------------------------------------
 
     // before processing keyboard input, need to set initial commands for keys
+    m_invoker->setCursorLeftCommand(new WestCommand());
+    m_invoker->setCursorDownCommand(new SouthCommand());
+    m_invoker->setCursorRightCommand(new EastCommand());
+    m_invoker->setCursorUpCommand(new NorthCommand());
+    m_invoker->setCursorUp_rightCommand(new NortheastCommand());
+    m_invoker->setCursorUp_leftCommand(new NorthwestCommand());
+    m_invoker->setCursorDown_leftCommand(new SouthwestCommand());
+    m_invoker->setCursorDown_rightCommand(new SoutheastCommand());
     m_invoker->setAKeyCommand(new LeftCommand());
     m_invoker->setSKeyCommand(new DownCommand());
     m_invoker->setDKeyCommand(new RightCommand());
@@ -113,7 +121,7 @@ void Window::initialize() {
 
     // mouse input
     auto mouse_callback = [](GLFWwindow* window, double xposIn, double yposIn) {
-        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleMouseInput(window, xposIn, yposIn);
+        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleMouseInput(xposIn, yposIn);
     };
     glfwSetCursorPosCallback(m_glfwWindow, mouse_callback);
     // tell GLFW to capture our mouse
@@ -121,7 +129,7 @@ void Window::initialize() {
     
     // scroll input
     auto scroll_callback = [](GLFWwindow* window, double xoffset, double yoffset) {
-        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleScrollInput(window, xoffset, yoffset);
+        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleScrollInput(static_cast<float>(yoffset));
     };
     glfwSetScrollCallback(m_glfwWindow, scroll_callback);
 }
