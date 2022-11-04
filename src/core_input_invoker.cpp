@@ -9,10 +9,12 @@
 
 #include "core_input_invoker.hpp"
 
+// InputInvoker(): -------------------------------------------------------------
 InputInvoker::InputInvoker() {
     spdlog::info("InputInvoker constructor called!");
 }
 
+// ~InputInvoker(): ------------------------------------------------------------
 InputInvoker::~InputInvoker() {
     delete m_keyA;
     delete m_keyS;
@@ -21,22 +23,27 @@ InputInvoker::~InputInvoker() {
     spdlog::info("InputInvoker destructor called!");
 }
 
+// setAKeyCommand(): -----------------------------------------------------------
 void InputInvoker::setAKeyCommand(IInputCommand* command) {
     m_keyA = command;
 }
 
+// setSKeyCommand(): -----------------------------------------------------------
 void InputInvoker::setSKeyCommand(IInputCommand* command) {
     m_keyS = command;
 }
 
+// setDKeyCommand(): -----------------------------------------------------------
 void InputInvoker::setDKeyCommand(IInputCommand* command) {
     m_keyD = command;
 }
 
+// setWKeyCommand(): -----------------------------------------------------------
 void InputInvoker::setWKeyCommand(IInputCommand* command) {
     m_keyW = command;
 }
 
+// handleInput(): --------------------------------------------------------------
 void InputInvoker::handleInput(GLFWwindow* window, int key, int action) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);

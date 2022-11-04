@@ -8,3 +8,19 @@
 // -----------------------------------------------------------------------------
 
 #include "core_input_commander.hpp"
+
+void LeftCommand::execute() const {
+    std::cout << "Move left" << std::endl;
+}
+
+void DownCommand::execute() const {
+    std::cout << "Move down" << std::endl;
+}
+
+void RightCommand::execute() const {
+    std::cout << "Move right" << std::endl;
+}
+
+void UpCommand::execute() const {
+    std::cout << "Move up" << std::endl;
+}

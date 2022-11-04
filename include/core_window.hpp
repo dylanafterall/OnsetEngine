@@ -17,11 +17,15 @@
 
 class Window {
 public:
-    Window();
+    Window(unsigned int, unsigned int);
     ~Window();
 
     void initialize();
+    void setInvoker(InputInvoker*);
 
+    unsigned int m_screenWidth;
+    unsigned int m_screenHeight;
+    InputInvoker* m_invoker;
     GLFWwindow* m_glfwWindow;
 };
 

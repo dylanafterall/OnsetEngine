@@ -8,9 +8,6 @@
 
 #include "core_window.hpp"
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
-
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // Callback Function Declarations 
@@ -18,8 +15,6 @@ const unsigned int SCR_HEIGHT = 600;
 // -----------------------------------------------------------------------------
 
 void framebuffer_size_callback(GLFWwindow*, int, int);
-InputInvoker invoker;
-void key_callback(GLFWwindow*, int, int, int, int);
 void mouse_callback(GLFWwindow*, double, double);
 void scroll_callback(GLFWwindow*, double, double);
 
@@ -30,7 +25,9 @@ void scroll_callback(GLFWwindow*, double, double);
 // -----------------------------------------------------------------------------
 
 // Window(): -------------------------------------------------------------------
-Window::Window() {
+Window::Window(unsigned int screenWidth, unsigned int screenHeight) {
+    m_screenWidth = screenWidth;
+    m_screenHeight = screenHeight;
     spdlog::info("Window constructor called!");
 }
 
@@ -43,9 +40,14 @@ Window::~Window() {
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
-// initialize
+// Setup
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
+
+// setInvoker(): ---------------------------------------------------------------
+void Window::setInvoker(InputInvoker* invoker) {
+    m_invoker = invoker;
+}
 
 // initialize(): ---------------------------------------------------------------
 void Window::initialize() {
@@ -65,8 +67,8 @@ void Window::initialize() {
 
     // create a GLFW window 
     m_glfwWindow = glfwCreateWindow(
-        SCR_WIDTH,
-        SCR_HEIGHT,
+        m_screenWidth,
+        m_screenHeight,
         "",             // initial window title
         NULL,           // glfwGetPrimaryMonitor() or NULL for windowed mode
         NULL            // which window whose context to share resources with
@@ -94,12 +96,16 @@ void Window::initialize() {
     glEnable(GL_DEPTH_TEST);    // used for z-buffer
 
     // before processing keyboard input, need to set initial commands for keys
-    invoker.setAKeyCommand(new LeftCommand());
-    invoker.setSKeyCommand(new DownCommand());
-    invoker.setDKeyCommand(new RightCommand());
-    invoker.setWKeyCommand(new UpCommand());
+    m_invoker->setAKeyCommand(new LeftCommand());
+    m_invoker->setSKeyCommand(new DownCommand());
+    m_invoker->setDKeyCommand(new RightCommand());
+    m_invoker->setWKeyCommand(new UpCommand());
 
-    // register callback function - tell GLFW to call this on key press
+    // keyboard callback -------------------------------------------------------
+    glfwSetWindowUserPointer(m_glfwWindow, m_invoker);
+    auto key_callback = [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleInput(window, key, action);
+    };
     glfwSetKeyCallback(m_glfwWindow, key_callback);
     // glfwSetInputMode(m_glfwWindow, GLFW_STICKY_KEYS, 1);
     // glfwSetInputMode(window, GLFW_LOCK_KEY_MODS, GLFW_TRUE);
@@ -123,11 +129,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
         width,      // width of viewport 
         height      // height of viewport
     );
-}
-
-// key_callback(): -------------------------------------------------------------
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    invoker.handleInput(window, key, action);
 }
 
 // mouse_callback(): -----------------------------------------------------------

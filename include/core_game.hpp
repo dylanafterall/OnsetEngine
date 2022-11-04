@@ -38,6 +38,10 @@ public:
     void destroy();
 
 private:
+    unsigned int m_screenWidth = 800;
+    unsigned int m_screenHeight = 600;
+    Window* m_windowPtr;
+    InputInvoker* m_invokerPtr;
     // timestep variables (specifically) for rendering
     double previousTime = 0.0;
     double lag = 0.0;
@@ -50,7 +54,6 @@ private:
     // EnTT 
     entt::registry m_registry;
     // core classes
-    Window m_window;
     AssetManager m_assetManager;
     // system classes
     RenderSystem m_renderSystem;

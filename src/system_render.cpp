@@ -32,14 +32,14 @@ void RenderSystem::update(
     });
 
     // retrieve a view of entities with applicable components
-    auto polygons = registry.view<
+    auto models = registry.view<
         MeshCubeComponent,
         TextureComponent, 
         ShaderProgramComponent,
         RenderBuffersComponent
     >();
     // iterate over each entity in the view
-    polygons.each([&](
+    models.each([&](
         const auto& mesh,
         const auto& texture,
         const auto& shader,

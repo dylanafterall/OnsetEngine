@@ -30,30 +30,22 @@ public:
 // -----------------------------------------------------------------------------
 class LeftCommand : public IInputCommand {
 public:
-	void execute() const override {
-		std::cout << "Move left" << std::endl;
-	}
+	void execute() const override;
 };
 
 class DownCommand : public IInputCommand {
 public:
-	void execute() const override {
-		std::cout << "Move down" << std::endl;
-	}
+	void execute() const override;
 };
 
 class RightCommand : public IInputCommand {
 public:
-	void execute() const override {
-		std::cout << "Move right" << std::endl;
-	}
+	void execute() const override;
 };
 
 class UpCommand : public IInputCommand {
 public:
-	void execute() const override {
-		std::cout << "Move up" << std::endl;
-	}
+	void execute() const override;
 };
 
 #endif // CORE_INPUT_COMMANDER_HPP

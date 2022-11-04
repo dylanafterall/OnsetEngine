@@ -7,14 +7,12 @@
 // -----------------------------------------------------------------------------
 
 #include "core_game.hpp"
-#include "GLFW/glfw3.h"
 #include "component_all.hpp"
+
+#include "GLFW/glfw3.h"
 
 #include "spdlog/spdlog.h"
 #include "glm/glm.hpp"
-
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
@@ -24,11 +22,15 @@ const unsigned int SCR_HEIGHT = 600;
 
 // Game(): ---------------------------------------------------------------------
 Game::Game() {
+    m_windowPtr = new Window(m_screenWidth, m_screenHeight);
+    m_invokerPtr = new InputInvoker();
     spdlog::info("Game Constructor called!");
 }
 
 // ~Game(): --------------------------------------------------------------------
 Game::~Game() {
+    delete m_windowPtr;
+    delete m_invokerPtr;
     spdlog::info("Game Destructor called!");
 }
 
@@ -40,8 +42,9 @@ Game::~Game() {
 
 // initialize(): ---------------------------------------------------------------
 void Game::initialize() {
+    m_windowPtr->setInvoker(m_invokerPtr);
     // initialize GLFW window and GLAD
-    m_window.initialize();
+    m_windowPtr->initialize();
 
     // create camera component and add to EnTT registry
     CameraComponent camera(glm::vec3(0.0f, 0.0f, 10.0f));
@@ -130,7 +133,7 @@ void Game::setup() {
 // run(): ----------------------------------------------------------------------
 void Game::run() {
     // glfwWindowShouldClose() returns GL_FALSE until window instructed to close
-    while (!glfwWindowShouldClose(m_window.m_glfwWindow)) {
+    while (!glfwWindowShouldClose(m_windowPtr->m_glfwWindow)) {
         // find time-step ...................................................... 
         double currentTime = glfwGetTime();    // returns time in secs
         double deltaTime = currentTime - previousTime;
@@ -168,13 +171,13 @@ void Game::update(const float timeStep, const int32 velocityIterations, const in
 // render(): -------------------------------------------------------------------
 void Game::render(float renderFactor) {
     // specify color values to then use in filling color buffer
-    glClearColor(0.2f, 0.3f, 0.6f, 1.0f);   // R, G, B, Alpha
+    glClearColor(0.3f, 0.3f, 0.5f, 1.0f);   // R, G, B, Alpha
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_renderSystem.update(renderFactor, m_registry, SCR_WIDTH, SCR_HEIGHT);
+    m_renderSystem.update(renderFactor, m_registry, m_screenWidth, m_screenHeight);
 
     // swap front and back buffers (drawing to back buffer, displaying front)
-    glfwSwapBuffers(m_window.m_glfwWindow);
+    glfwSwapBuffers(m_windowPtr->m_glfwWindow);
     // call window and input callbacks associated with these events
     glfwPollEvents();
 }
