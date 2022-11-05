@@ -12,6 +12,9 @@
 
 #include "component_camera.hpp"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "entt/entt.hpp"
 
 #include <iostream>
@@ -52,7 +55,7 @@ public:
 	void execute(entt::registry&) const override;
 };
 
-
+// -----------------------------------------------------------------------------
 class NorthCommand : public IInputCommand {
 public:
 	void execute(entt::registry&) const override;
@@ -93,4 +96,44 @@ public:
 	void execute(entt::registry&) const override;
 };
 
+// -----------------------------------------------------------------------------
+class CameraUpCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class CameraDownCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class CameraLeftCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class CameraRightCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class CameraForwardCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class CameraBackwardCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class CameraZoomInCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class CameraZoomOutCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
 #endif // CORE_INPUT_COMMANDER_HPP

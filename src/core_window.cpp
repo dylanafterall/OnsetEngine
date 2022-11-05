@@ -95,6 +95,9 @@ void Window::initialize() {
     // handling user input -----------------------------------------------------
 
     // before processing keyboard input, need to set initial commands for keys
+    m_invoker->setScrollUpCommand(new CameraZoomInCommand());
+    m_invoker->setScrollDownCommand(new CameraZoomOutCommand());
+
     m_invoker->setCursorLeftCommand(new WestCommand());
     m_invoker->setCursorDownCommand(new SouthCommand());
     m_invoker->setCursorRightCommand(new EastCommand());
@@ -103,10 +106,17 @@ void Window::initialize() {
     m_invoker->setCursorUp_leftCommand(new NorthwestCommand());
     m_invoker->setCursorDown_leftCommand(new SouthwestCommand());
     m_invoker->setCursorDown_rightCommand(new SoutheastCommand());
+
     m_invoker->setAKeyCommand(new LeftCommand());
     m_invoker->setSKeyCommand(new DownCommand());
     m_invoker->setDKeyCommand(new RightCommand());
     m_invoker->setWKeyCommand(new UpCommand());
+    m_invoker->setHKeyCommand(new CameraLeftCommand());
+    m_invoker->setJKeyCommand(new CameraDownCommand());
+    m_invoker->setKKeyCommand(new CameraUpCommand());
+    m_invoker->setLKeyCommand(new CameraRightCommand());
+    m_invoker->setUKeyCommand(new CameraForwardCommand());
+    m_invoker->setIKeyCommand(new CameraBackwardCommand());
 
     // callback functions for user input
     glfwSetWindowUserPointer(m_glfwWindow, m_invoker);

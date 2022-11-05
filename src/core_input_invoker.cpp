@@ -16,6 +16,9 @@ InputInvoker::InputInvoker() {
 
 // ~InputInvoker(): ------------------------------------------------------------
 InputInvoker::~InputInvoker() {
+    delete m_scrollUpMove;
+    delete m_scrollDownMove;
+
     delete m_cursorLeftMove;
     delete m_cursorDownMove;
     delete m_cursorRightMove;
@@ -24,10 +27,17 @@ InputInvoker::~InputInvoker() {
     delete m_cursorUp_leftMove;
     delete m_cursorDown_leftMove;
     delete m_cursorDown_rightMove;
+
     delete m_keyA;
     delete m_keyS;
     delete m_keyD;
     delete m_keyW;
+    delete m_keyH;
+    delete m_keyJ;
+    delete m_keyK;
+    delete m_keyL;
+    delete m_keyU;
+    delete m_keyI;
     spdlog::info("InputInvoker destructor called!");
 }
 
@@ -48,6 +58,22 @@ void InputInvoker::setInvokerAspect(unsigned int screenWidth, unsigned int scree
     m_screenHeight = screenHeight;
     m_lastX = screenWidth / 2;
     m_lastY = screenHeight / 2;
+}
+
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
+// setting scroll wheel 
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
+
+// setScrollUpCommand(): -------------------------------------------------------
+void InputInvoker::setScrollUpCommand(IInputCommand* command) {
+    m_scrollUpMove = command;
+}
+
+// setScrollDownCommand(): -----------------------------------------------------
+void InputInvoker::setScrollDownCommand(IInputCommand* command) {
+    m_scrollDownMove = command;
 }
 
 // _____________________________________________________________________________
@@ -122,6 +148,36 @@ void InputInvoker::setWKeyCommand(IInputCommand* command) {
     m_keyW = command;
 }
 
+// setHKeyCommand(): -----------------------------------------------------------
+void InputInvoker::setHKeyCommand(IInputCommand* command) {
+    m_keyH = command;
+}
+
+// setJKeyCommand(): -----------------------------------------------------------
+void InputInvoker::setJKeyCommand(IInputCommand* command) {
+    m_keyJ = command;
+}
+
+// setKKeyCommand(): -----------------------------------------------------------
+void InputInvoker::setKKeyCommand(IInputCommand* command) {
+    m_keyK = command;
+}
+
+// setLKeyCommand(): -----------------------------------------------------------
+void InputInvoker::setLKeyCommand(IInputCommand* command) {
+    m_keyL = command;
+}
+
+// setLKeyCommand(): -----------------------------------------------------------
+void InputInvoker::setUKeyCommand(IInputCommand* command) {
+    m_keyU = command;
+}
+
+// setLKeyCommand(): -----------------------------------------------------------
+void InputInvoker::setIKeyCommand(IInputCommand* command) {
+    m_keyI = command;
+}
+
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // handling inputs
@@ -144,6 +200,24 @@ void InputInvoker::handleKeyInput(GLFWwindow* window, int key, int action) {
     }
     else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
         m_keyW->execute(*m_registryPtr);
+    }
+    else if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+        m_keyH->execute(*m_registryPtr);
+    }
+    else if (key == GLFW_KEY_J && action == GLFW_PRESS) {
+        m_keyJ->execute(*m_registryPtr);
+    }
+    else if (key == GLFW_KEY_K && action == GLFW_PRESS) {
+        m_keyK->execute(*m_registryPtr);
+    }
+    else if (key == GLFW_KEY_L && action == GLFW_PRESS) {
+        m_keyL->execute(*m_registryPtr);
+    }
+    else if (key == GLFW_KEY_U && action == GLFW_PRESS) {
+        m_keyU->execute(*m_registryPtr);
+    }
+    else if (key == GLFW_KEY_I && action == GLFW_PRESS) {
+        m_keyI->execute(*m_registryPtr);
     }
 }
 
@@ -168,40 +242,27 @@ void InputInvoker::handleMouseInput(double xposIn, double yposIn) {
     // call InputCommander
     // if cursor is moving to the right
     if (xoffset > 0) {
-        if (yoffset > 0) {
-            m_cursorUp_rightMove->execute(*m_registryPtr);
-        }
-        else if (yoffset < 0) {
-            m_cursorDown_rightMove->execute(*m_registryPtr);
-        }
-        else {
-            m_cursorRightMove->execute(*m_registryPtr);
-        }
+        if (yoffset > 0) {m_cursorUp_rightMove->execute(*m_registryPtr);}
+        else if (yoffset < 0) {m_cursorDown_rightMove->execute(*m_registryPtr);}
+        else {m_cursorRightMove->execute(*m_registryPtr);}
     }
     // else if cursor is moving to the left
     else if (xoffset < 0) {
-        if (yoffset > 0) {
-            m_cursorUp_leftMove->execute(*m_registryPtr);
-        }
-        else if (yoffset < 0) {
-            m_cursorDown_leftMove->execute(*m_registryPtr);
-        }
-        else {
-            m_cursorLeftMove->execute(*m_registryPtr);
-        }
+        if (yoffset > 0) {m_cursorUp_leftMove->execute(*m_registryPtr);}
+        else if (yoffset < 0) {m_cursorDown_leftMove->execute(*m_registryPtr);}
+        else {m_cursorLeftMove->execute(*m_registryPtr);}
     }
     // else cursor is moving, but not left or right
     else {
-        if (yoffset > 0) {
-            m_cursorUpMove->execute(*m_registryPtr);
-        }
-        else {
-            m_cursorDownMove->execute(*m_registryPtr);
-        }
+        if (yoffset > 0) {m_cursorUpMove->execute(*m_registryPtr);}
+        else {m_cursorDownMove->execute(*m_registryPtr);}
     }
 }
 
 // handleScrollInput(): --------------------------------------------------------
 void InputInvoker::handleScrollInput(float yoffset) {
-
+    // positive yoffset means scroll down
+    if (yoffset > 0) {m_scrollDownMove->execute(*m_registryPtr);}
+    // negative yoffset is scroll up
+    else {m_scrollUpMove->execute(*m_registryPtr);}
 }

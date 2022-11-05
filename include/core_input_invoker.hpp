@@ -30,6 +30,9 @@ public:
     void setInvokerRegistry(entt::registry*);
     void setInvokerAspect(unsigned int, unsigned int);
 
+    void setScrollUpCommand(IInputCommand*);
+    void setScrollDownCommand(IInputCommand*);
+
     void setCursorLeftCommand(IInputCommand*);
     void setCursorDownCommand(IInputCommand*);
     void setCursorRightCommand(IInputCommand*);
@@ -43,6 +46,12 @@ public:
     void setSKeyCommand(IInputCommand*);
     void setDKeyCommand(IInputCommand*);
     void setWKeyCommand(IInputCommand*);
+    void setHKeyCommand(IInputCommand*);
+    void setJKeyCommand(IInputCommand*);
+    void setKKeyCommand(IInputCommand*);
+    void setLKeyCommand(IInputCommand*);
+    void setUKeyCommand(IInputCommand*);
+    void setIKeyCommand(IInputCommand*);
 
     void handleKeyInput(GLFWwindow*, int, int);
     void handleMouseInput(double, double);
@@ -57,6 +66,9 @@ private:
     float m_lastY; // game class will initially set to scr_height / 2
     bool m_firstMouse = true;
 
+    IInputCommand* m_scrollUpMove;
+    IInputCommand* m_scrollDownMove;
+
     IInputCommand* m_cursorLeftMove;
     IInputCommand* m_cursorDownMove;
     IInputCommand* m_cursorRightMove;
@@ -65,10 +77,17 @@ private:
     IInputCommand* m_cursorUp_leftMove;
     IInputCommand* m_cursorDown_leftMove;
     IInputCommand* m_cursorDown_rightMove;
+    
     IInputCommand* m_keyA;
     IInputCommand* m_keyS;
     IInputCommand* m_keyD;
     IInputCommand* m_keyW; 
+    IInputCommand* m_keyH;
+    IInputCommand* m_keyJ;
+    IInputCommand* m_keyK;
+    IInputCommand* m_keyL;
+    IInputCommand* m_keyU;
+    IInputCommand* m_keyI;
 };
 
 #endif // CORE_INPUT_INVOKER_HPP

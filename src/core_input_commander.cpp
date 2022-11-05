@@ -58,3 +58,62 @@ void SouthwestCommand::execute(entt::registry& registry) const {
 void SoutheastCommand::execute(entt::registry& registry) const {
     std::cout << "Moved Southeast" << std::endl;
 }
+
+// -----------------------------------------------------------------------------
+void CameraUpCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_position += camera.m_up * camera.m_speed;
+    });
+}
+
+void CameraDownCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_position -= camera.m_up * camera.m_speed;
+    });
+}
+
+void CameraLeftCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_position -= camera.m_right * camera.m_speed;
+    });
+}
+
+void CameraRightCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_position += camera.m_right * camera.m_speed;
+    });
+}
+
+void CameraForwardCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_position += camera.m_front * camera.m_speed;
+    });
+}
+
+void CameraBackwardCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_position -= camera.m_front * camera.m_speed;
+    });
+}
+
+void CameraZoomInCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_zoom -= camera.m_speed;
+        if (camera.m_zoom < 1.0f) {camera.m_zoom = 1.0f;}
+    });
+}
+
+void CameraZoomOutCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_zoom += camera.m_speed;
+        if (camera.m_zoom > 45.0f) {camera.m_zoom = 45.0f;}
+    });
+}
