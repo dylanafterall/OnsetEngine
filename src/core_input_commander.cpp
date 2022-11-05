@@ -105,7 +105,7 @@ void CameraBackwardCommand::execute(entt::registry& registry) const {
 void CameraZoomInCommand::execute(entt::registry& registry) const {
     auto cameras = registry.view<CameraComponent>();
     cameras.each([&](auto& camera) {
-        camera.m_zoom -= camera.m_speed;
+        camera.m_zoom -= camera.m_sensitivity;
         if (camera.m_zoom < 1.0f) {camera.m_zoom = 1.0f;}
     });
 }
@@ -113,7 +113,69 @@ void CameraZoomInCommand::execute(entt::registry& registry) const {
 void CameraZoomOutCommand::execute(entt::registry& registry) const {
     auto cameras = registry.view<CameraComponent>();
     cameras.each([&](auto& camera) {
-        camera.m_zoom += camera.m_speed;
+        camera.m_zoom += camera.m_sensitivity;
         if (camera.m_zoom > 45.0f) {camera.m_zoom = 45.0f;}
+    });
+}
+
+void CameraPitchUpCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_pitch += camera.m_sensitivity;
+        if (camera.m_pitch > 89.0f) {camera.m_pitch = 89.0f;}
+        // update vectors
+        glm::vec3 front;
+        front.x = cos(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
+        front.y = sin(glm::radians(camera.m_pitch));
+        front.z = sin(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
+        camera.m_front = glm::normalize(front);
+        camera.m_right = glm::normalize(glm::cross(camera.m_front, camera.m_worldUp));
+        camera.m_up = glm::normalize(glm::cross(camera.m_right, camera.m_front));
+    });
+}
+
+void CameraPitchDownCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_pitch -= camera.m_sensitivity;
+        if (camera.m_pitch < -89.0f) {camera.m_pitch = -89.0f;}
+        // update vectors
+        glm::vec3 front;
+        front.x = cos(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
+        front.y = sin(glm::radians(camera.m_pitch));
+        front.z = sin(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
+        camera.m_front = glm::normalize(front);
+        camera.m_right = glm::normalize(glm::cross(camera.m_front, camera.m_worldUp));
+        camera.m_up = glm::normalize(glm::cross(camera.m_right, camera.m_front));
+    });
+}
+
+void CameraYawLeftCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_yaw -= camera.m_sensitivity;
+        // update vectors
+        glm::vec3 front;
+        front.x = cos(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
+        front.y = sin(glm::radians(camera.m_pitch));
+        front.z = sin(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
+        camera.m_front = glm::normalize(front);
+        camera.m_right = glm::normalize(glm::cross(camera.m_front, camera.m_worldUp));
+        camera.m_up = glm::normalize(glm::cross(camera.m_right, camera.m_front));
+    });
+}
+
+void CameraYawRightCommand::execute(entt::registry& registry) const {
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_yaw += camera.m_sensitivity;
+        // update vectors
+        glm::vec3 front;
+        front.x = cos(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
+        front.y = sin(glm::radians(camera.m_pitch));
+        front.z = sin(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
+        camera.m_front = glm::normalize(front);
+        camera.m_right = glm::normalize(glm::cross(camera.m_front, camera.m_worldUp));
+        camera.m_up = glm::normalize(glm::cross(camera.m_right, camera.m_front));
     });
 }

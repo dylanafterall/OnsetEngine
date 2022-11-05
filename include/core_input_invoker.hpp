@@ -52,6 +52,10 @@ public:
     void setLKeyCommand(IInputCommand*);
     void setUKeyCommand(IInputCommand*);
     void setIKeyCommand(IInputCommand*);
+    void set7KeyCommand(IInputCommand*);
+    void set8KeyCommand(IInputCommand*);
+    void set9KeyCommand(IInputCommand*);
+    void set0KeyCommand(IInputCommand*);
 
     void handleKeyInput(GLFWwindow*, int, int);
     void handleMouseInput(double, double);
@@ -88,6 +92,10 @@ private:
     IInputCommand* m_keyL;
     IInputCommand* m_keyU;
     IInputCommand* m_keyI;
+    IInputCommand* m_key7;
+    IInputCommand* m_key8;
+    IInputCommand* m_key9;
+    IInputCommand* m_key0;
 };
 
 #endif // CORE_INPUT_INVOKER_HPP

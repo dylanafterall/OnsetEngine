@@ -117,6 +117,10 @@ void Window::initialize() {
     m_invoker->setLKeyCommand(new CameraRightCommand());
     m_invoker->setUKeyCommand(new CameraForwardCommand());
     m_invoker->setIKeyCommand(new CameraBackwardCommand());
+    m_invoker->set7KeyCommand(new CameraPitchUpCommand());
+    m_invoker->set8KeyCommand(new CameraPitchDownCommand());
+    m_invoker->set9KeyCommand(new CameraYawLeftCommand());
+    m_invoker->set0KeyCommand(new CameraYawRightCommand());
 
     // callback functions for user input
     glfwSetWindowUserPointer(m_glfwWindow, m_invoker);

@@ -38,6 +38,11 @@ InputInvoker::~InputInvoker() {
     delete m_keyL;
     delete m_keyU;
     delete m_keyI;
+    delete m_key7;
+    delete m_key8;
+    delete m_key9;
+    delete m_key0;
+
     spdlog::info("InputInvoker destructor called!");
 }
 
@@ -168,14 +173,34 @@ void InputInvoker::setLKeyCommand(IInputCommand* command) {
     m_keyL = command;
 }
 
-// setLKeyCommand(): -----------------------------------------------------------
+// setUKeyCommand(): -----------------------------------------------------------
 void InputInvoker::setUKeyCommand(IInputCommand* command) {
     m_keyU = command;
 }
 
-// setLKeyCommand(): -----------------------------------------------------------
+// setIKeyCommand(): -----------------------------------------------------------
 void InputInvoker::setIKeyCommand(IInputCommand* command) {
     m_keyI = command;
+}
+
+// set7KeyCommand(): -----------------------------------------------------------
+void InputInvoker::set7KeyCommand(IInputCommand* command) {
+    m_key7 = command;
+}
+
+// set8KeyCommand(): -----------------------------------------------------------
+void InputInvoker::set8KeyCommand(IInputCommand* command) {
+    m_key8 = command;
+}
+
+// set9KeyCommand(): -----------------------------------------------------------
+void InputInvoker::set9KeyCommand(IInputCommand* command) {
+    m_key9 = command;
+}
+
+// set0KeyCommand(): -----------------------------------------------------------
+void InputInvoker::set0KeyCommand(IInputCommand* command) {
+    m_key0 = command;
 }
 
 // _____________________________________________________________________________
@@ -218,6 +243,18 @@ void InputInvoker::handleKeyInput(GLFWwindow* window, int key, int action) {
     }
     else if (key == GLFW_KEY_I && action == GLFW_PRESS) {
         m_keyI->execute(*m_registryPtr);
+    }
+    else if (key == GLFW_KEY_7 && action == GLFW_PRESS) {
+        m_key7->execute(*m_registryPtr);
+    }
+    else if (key == GLFW_KEY_8 && action == GLFW_PRESS) {
+        m_key8->execute(*m_registryPtr);
+    }
+    else if (key == GLFW_KEY_9 && action == GLFW_PRESS) {
+        m_key9->execute(*m_registryPtr);
+    }
+    else if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
+        m_key0->execute(*m_registryPtr);
     }
 }
 

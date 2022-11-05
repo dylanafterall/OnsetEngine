@@ -136,4 +136,25 @@ class CameraZoomOutCommand : public IInputCommand {
 public:
 	void execute(entt::registry&) const override;
 };
+
+class CameraPitchUpCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class CameraPitchDownCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class CameraYawLeftCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+class CameraYawRightCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
 #endif // CORE_INPUT_COMMANDER_HPP
