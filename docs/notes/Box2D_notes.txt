@@ -19,7 +19,11 @@ BODIES:
 		fixtures attached to the same body don’t collide
 
 	Creating bodies:
-		Define a body with position, damping, etc.
+		Define a body with position, angle, damping, grav scale, sleep params, etc
+			You can recycle/reuse a body definition for multiple bodies
+				(definition is copied, not pointed to)
+		Set body type (static/kinematic/dynamic)
+			Changing body type is very expensive, establish at creation
 		Use the world object to create the body.
 		Define fixtures with a shape, friction, density, etc. 
 		Create fixtures on the body.

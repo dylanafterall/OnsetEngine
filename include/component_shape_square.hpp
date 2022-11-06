@@ -10,26 +10,16 @@
 
 #include "box2d/box2d.h"
 
-//             (0)
-//
-//
-//
-//    (1)               (3)
-//
-//
-//
-//             (2)
-
 struct ShapeSquareComponent {
     // for physics engine
     int32 m_vertexCount;
     b2Vec2 m_vertices[4];  
 
     ShapeSquareComponent() : m_vertexCount(4) {
-        m_vertices[0].Set(0.000000f, 1.000000f);    // vertex (0)
-        m_vertices[1].Set(-1.000000f, 0.000000f);   // vertex (1)
-        m_vertices[2].Set(0.000000f, -1.000000f);   // vertex (2)
-        m_vertices[3].Set(1.000000f, 0.000000f);    // vertex (3)
+        m_vertices[0].Set(1.000000f, 1.000000f);    // top right 
+        m_vertices[1].Set(-1.000000f, 1.000000f);   // top left
+        m_vertices[2].Set(-1.000000f, -1.000000f);  // bottom left 
+        m_vertices[3].Set(1.000000f, -1.000000f);   // bottom right 
     };
 };
 

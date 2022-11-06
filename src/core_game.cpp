@@ -66,41 +66,43 @@ void Game::setup() {
     m_assetManager.setTexture("blackhole", "../assets/textures/blackhole.jpg");
     m_assetManager.setTexture("milkyway", "../assets/textures/milkyway.jpg");
 
+    m_assetManager.setTexture("earth", "../assets/textures/earth.jpg");
+    m_assetManager.setTexture("nebulae", "../assets/textures/nebulae.jpg");
+    m_assetManager.setTexture("star", "../assets/textures/star.jpg");
+    m_assetManager.setTexture("starcluster", "../assets/textures/starcluster.jpg");
+
     unsigned int vertex = m_assetManager.getVShader("vert");
     unsigned int fragment = m_assetManager.getFShader("frag");
     m_assetManager.setShaderProgram("vert&frag", vertex, fragment);
 
     // Prepare Entities ........................................................
     // make bottom static box
-    BodyPolygonComponent bottomBox;
-    bottomBox.m_bodyDef.position.Set(0.0f, -10.0f);
-    bottomBox.m_body = m_world->CreateBody(&bottomBox.m_bodyDef);
-    bottomBox.m_polygonShape.SetAsBox(50.0f, 10.0f);
-    bottomBox.m_body->CreateFixture(&bottomBox.m_polygonShape, 0.0f);
+    BodyPolygonComponent groundBody;
+    groundBody.m_bodyDef.position.Set(0.0f, -10.0f);
+    groundBody.m_body = m_world->CreateBody(&groundBody.m_bodyDef);
+    groundBody.m_polygonShape.SetAsBox(50.0f, 10.0f);
+    groundBody.m_body->CreateFixture(&groundBody.m_polygonShape, 0.0f);
 
-    // making a polygon ( 1) components -> 2) Box2D -> 3) OpenGL )
-    // 1) components
-    BodyPolygonComponent octagon;
-    ShapeOctagonComponent octagonShape;
-    MeshCubeComponent octagonMesh;
-    TextureComponent octagonTexture = TextureComponent(m_assetManager.getTexture("milkyway"));
-    ShaderProgramComponent octagonShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
-    RenderBuffersComponent octagonBuffers;
-    // 2) Box2D
-    octagon.m_bodyDef.type = b2_dynamicBody;
-    octagon.m_bodyDef.position.Set(6.0f, 4.0f);
-    octagon.m_body = m_world->CreateBody(&octagon.m_bodyDef);
-    octagon.m_polygonShape.Set(octagonShape.m_vertices, octagonShape.m_vertexCount);
-    octagon.m_fixtureDef.shape = &octagon.m_polygonShape;
-    octagon.m_fixtureDef.density = 1.0f;
-    octagon.m_fixtureDef.friction = 0.3f;
-    octagon.m_body->CreateFixture(&octagon.m_fixtureDef);
-    // 3) OpenGL
-    glGenVertexArrays(1, &octagonBuffers.m_VAO);
-    glGenBuffers(1, &octagonBuffers.m_VBO);
-    glBindVertexArray(octagonBuffers.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, octagonBuffers.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, octagonMesh.m_verticesSize, octagonMesh.m_vertices, GL_STATIC_DRAW);
+    // make a cube 1) components -> 2) Box2D -> 3) OpenGL
+    BodyPolygonComponent cubeBody;
+    ShapeSquareComponent cubeShape;
+    MeshCubeComponent cubeMesh;
+    TextureComponent cubeTexture = TextureComponent(m_assetManager.getTexture("milkyway"));
+    ShaderProgramComponent cubeShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
+    RenderBuffersComponent cubeBuffers;
+    cubeBody.m_bodyDef.type = b2_dynamicBody;
+    cubeBody.m_bodyDef.position.Set(6.0f, 5.0f);
+    cubeBody.m_body = m_world->CreateBody(&cubeBody.m_bodyDef);
+    cubeBody.m_polygonShape.Set(cubeShape.m_vertices, cubeShape.m_vertexCount);
+    cubeBody.m_fixtureDef.shape = &cubeBody.m_polygonShape;
+    cubeBody.m_fixtureDef.density = 1.0f;
+    cubeBody.m_fixtureDef.friction = 0.3f;
+    cubeBody.m_body->CreateFixture(&cubeBody.m_fixtureDef);
+    glGenVertexArrays(1, &cubeBuffers.m_VAO);
+    glGenBuffers(1, &cubeBuffers.m_VBO);
+    glBindVertexArray(cubeBuffers.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeBuffers.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, cubeMesh.m_verticesSize, cubeMesh.m_vertices, GL_STATIC_DRAW);
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -111,22 +113,63 @@ void Game::setup() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
-    glUseProgram(octagonShaderProgram.m_shaderProgram);
+    glUseProgram(cubeShaderProgram.m_shaderProgram);
     // set it manually like so:
-    glUniform1i(glGetUniformLocation(octagonShaderProgram.m_shaderProgram, "texture1"), 0);
+    glUniform1i(glGetUniformLocation(cubeShaderProgram.m_shaderProgram, "texture1"), 0);
+
+    // make a sphere 1) components -> 2) Box2D -> 3) OpenGL
+    BodyCircleComponent sphereBody;
+    MeshSphereComponent sphereMesh;
+    TextureComponent sphereTexture = TextureComponent(m_assetManager.getTexture("nebulae"));
+    ShaderProgramComponent sphereShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
+    RenderBuffersComponent sphereBuffers;
+    sphereBody.m_bodyDef.type = b2_dynamicBody;
+    sphereBody.m_bodyDef.position.Set(0.0f, 5.0f);
+    sphereBody.m_body = m_world->CreateBody(&sphereBody.m_bodyDef);
+    sphereBody.m_circleShape.m_p.Set(0.0f, 0.0f);
+    sphereBody.m_circleShape.m_radius = 1.0f;
+    sphereBody.m_fixtureDef.shape = &sphereBody.m_circleShape;
+    sphereBody.m_fixtureDef.density = 1.0f;
+    sphereBody.m_fixtureDef.friction = 0.3f;
+    sphereBody.m_body->CreateFixture(&sphereBody.m_fixtureDef);
+    glGenVertexArrays(1, &sphereBuffers.m_VAO);
+    glGenBuffers(1, &sphereBuffers.m_VBO);
+    glBindVertexArray(sphereBuffers.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, sphereBuffers.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // texture coord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+    glUseProgram(sphereShaderProgram.m_shaderProgram);
+    // set it manually like so:
+    glUniform1i(glGetUniformLocation(sphereShaderProgram.m_shaderProgram, "texture1"), 0);
 
 
     // EnTT ....................................................................
     auto groundEntity = m_registry.create();
-    m_registry.emplace<BodyPolygonComponent>(groundEntity, bottomBox);
+    m_registry.emplace<BodyPolygonComponent>(groundEntity, groundBody);
 
-    auto octagonEntity = m_registry.create();
-    m_registry.emplace<BodyPolygonComponent>(octagonEntity, octagon);
-    m_registry.emplace<ShapeOctagonComponent>(octagonEntity, octagonShape);
-    m_registry.emplace<MeshCubeComponent>(octagonEntity, octagonMesh);
-    m_registry.emplace<TextureComponent>(octagonEntity, octagonTexture);
-    m_registry.emplace<ShaderProgramComponent>(octagonEntity, octagonShaderProgram);
-    m_registry.emplace<RenderBuffersComponent>(octagonEntity, octagonBuffers);
+    auto cubeEntity = m_registry.create();
+    m_registry.emplace<BodyPolygonComponent>(cubeEntity, cubeBody);
+    m_registry.emplace<ShapeSquareComponent>(cubeEntity, cubeShape);
+    m_registry.emplace<MeshCubeComponent>(cubeEntity, cubeMesh);
+    m_registry.emplace<TextureComponent>(cubeEntity, cubeTexture);
+    m_registry.emplace<ShaderProgramComponent>(cubeEntity, cubeShaderProgram);
+    m_registry.emplace<RenderBuffersComponent>(cubeEntity, cubeBuffers);
+
+    auto sphereEntity = m_registry.create();
+    m_registry.emplace<BodyCircleComponent>(sphereEntity, sphereBody);
+    m_registry.emplace<MeshSphereComponent>(sphereEntity, sphereMesh);
+    m_registry.emplace<TextureComponent>(sphereEntity, sphereTexture);
+    m_registry.emplace<ShaderProgramComponent>(sphereEntity, sphereShaderProgram);
+    m_registry.emplace<RenderBuffersComponent>(sphereEntity, sphereBuffers);
 }
 
 // _____________________________________________________________________________

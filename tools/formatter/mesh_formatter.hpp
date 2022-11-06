@@ -22,11 +22,15 @@ public:
 	MeshFormatter() = default;
 	~MeshFormatter() = default;
 
+	std::string formatName(const char*);
 	std::string formatMesh(const char*);
-	std::string formatIncludeGuards(const char*);
+	std::string formatMeshIncludeGuards(const char*);
+	std::string formatShape(const char*);
+	std::string formatShapeIncludeGuards(const char*);
+
+	std::string m_name;
 
 private:
-
 };
 
 #endif // MESH_FORMATTER_HPP

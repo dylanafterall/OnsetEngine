@@ -8,6 +8,27 @@
 
 #include "mesh_formatter.hpp"
 
+// formatName(): ---------------------------------------------------------------
+std::string MeshFormatter::formatName(const char* input) {
+	std::string name = "";
+	
+	int i = 0;
+	char ch;
+	while (input[i] && input[i] != '.') {
+		ch = input[i];
+		if (i == 0) {
+			name += toupper(ch);
+		}
+		else {
+			name += ch;
+		}
+		i++;
+	}
+
+	return name;
+}
+
+// formatMesh(): ---------------------------------------------------------------
 std::string MeshFormatter::formatMesh(const char* input) {
 	std::string str = "";
 	std::string header = "";
@@ -105,7 +126,9 @@ std::string MeshFormatter::formatMesh(const char* input) {
 	str = str + "}; \n\n";
 
 	// had to wait until after reading file to make header - needed faceCount
-	header += "struct MeshCubeComponent { \n";
+	header += "struct Mesh";
+	header += m_name;
+	header += "Component { \n";
 	header += "\t" "float m_vertices[";
 	header += std::to_string(faceCount * 3 * 8);
 	header += "] = { \n";
@@ -115,10 +138,38 @@ std::string MeshFormatter::formatMesh(const char* input) {
 	return str;
 }
 
-std::string MeshFormatter::formatIncludeGuards(const char* input) {
+// formatMeshIncludeGuards(): --------------------------------------------------
+std::string MeshFormatter::formatMeshIncludeGuards(const char* input) {
 	std::string str;
 
 	str += "COMPONENT_MESH_";
+	
+	int i = 0;
+	char ch;
+
+	while (input[i] && input[i] != '.') {
+		ch = input[i];
+		str += toupper(ch);
+		i++;
+	}
+
+	str += "_HPP";
+
+	return str;
+}
+
+// formatShape(): --------------------------------------------------------------
+std::string MeshFormatter::formatShape(const char* input) {
+	std::string str = "";
+
+	return str;
+}
+
+// formatShapeIncludeGuards(): -------------------------------------------------
+std::string MeshFormatter::formatShapeIncludeGuards(const char* input) {
+	std::string str;
+
+	str += "COMPONENT_SHAPE_";
 	
 	int i = 0;
 	char ch;
