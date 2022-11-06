@@ -35,7 +35,7 @@ struct CameraComponent {
 
     // constructor
     CameraComponent(
-        glm::vec3 position = glm::vec3(0.0f, 0.0f, 10.0f), 
+        glm::vec3 position = glm::vec3(0.0f, 0.0f, 20.0f), 
         glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f), 
         float yaw = YAW, 
         float pitch = PITCH

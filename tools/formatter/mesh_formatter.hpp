@@ -25,8 +25,6 @@ public:
 	std::string formatName(const char*);
 	std::string formatMesh(const char*);
 	std::string formatMeshIncludeGuards(const char*);
-	std::string formatShape(const char*);
-	std::string formatShapeIncludeGuards(const char*);
 
 	std::string m_name;
 

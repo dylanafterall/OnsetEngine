@@ -14,6 +14,7 @@
 #include "component_body_chain.hpp"
 #include "component_camera.hpp"
 #include "component_mesh_cube.hpp"
+#include "component_mesh_ground.hpp"
 #include "component_mesh_sphere.hpp"
 #include "component_render_buffers.hpp"
 #include "component_shader.hpp"

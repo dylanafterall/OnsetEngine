@@ -9,11 +9,25 @@
 #include "system_camera.hpp"
 
 void CameraSystem::update(const float timeStep, entt::registry& registry) {
-    // retrieve a view of entities with applicable components
-    auto cameras = registry.view<CameraComponent>();
-    // iterate over each entity in the view
-    cameras.each([&](auto& camera) {
+    // get the player position, in order to provide translate transform to camera
+    glm::vec3 translate = glm::vec3(0.0f, 0.0f, 0.0f);
+    auto player = registry.view<
+        PlayerComponent,
+        BodyCircleComponent
+    >();
+    player.each([&](
+        auto& player,
+        auto& body
+    ) {
+        b2Vec2 position = body.m_body->GetPosition();
+        translate[0] = position.x;
+        translate[1] = position.y;
+    });
 
+    auto cameras = registry.view<CameraComponent>();
+    cameras.each([&](auto& camera) {
+        camera.m_position[0] = translate[0];
+        camera.m_position[1] = translate[1];
     });
 }
 

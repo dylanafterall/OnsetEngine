@@ -2,11 +2,14 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// system_movement.cpp
-//  implementation of Movement System to change positions of Box2D bodies
+// component_texture.hpp
+//  header: component to designate the player entity in EnTT
 // -----------------------------------------------------------------------------
+#ifndef COMPONENT_PLAYER_HPP
+#define COMPONENT_PLAYER_HPP
 
-#include "system_movement.hpp"
+struct PlayerComponent {
+    int m_id = 0;
+};
 
-void MovementSystem::update(const float timeStep, entt::registry& registry) {
-}
+#endif // COMPONENT_PLAYER_HPP

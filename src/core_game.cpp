@@ -52,7 +52,7 @@ void Game::initialize() {
     m_windowPtr->initialize();
 
     // create camera component and add to EnTT registry
-    CameraComponent camera(glm::vec3(0.0f, 0.0f, 10.0f));
+    CameraComponent camera(glm::vec3(0.0f, 0.0f, 20.0f));
     auto cameraEntity = m_registry.create();
     m_registry.emplace<CameraComponent>(cameraEntity, camera);
 }
@@ -65,6 +65,7 @@ void Game::setup() {
     m_assetManager.setTexture("orion", "../assets/textures/orion.jpg");
     m_assetManager.setTexture("blackhole", "../assets/textures/blackhole.jpg");
     m_assetManager.setTexture("milkyway", "../assets/textures/milkyway.jpg");
+    m_assetManager.setTexture("stripes", "../assets/textures/stripes.jpg");
 
     m_assetManager.setTexture("earth", "../assets/textures/earth.jpg");
     m_assetManager.setTexture("nebulae", "../assets/textures/nebulae.jpg");
@@ -78,10 +79,32 @@ void Game::setup() {
     // Prepare Entities ........................................................
     // make bottom static box
     BodyPolygonComponent groundBody;
-    groundBody.m_bodyDef.position.Set(0.0f, -10.0f);
+    MeshGroundComponent groundMesh;
+    TextureComponent groundTexture = TextureComponent(m_assetManager.getTexture("stripes"));
+    ShaderProgramComponent groundShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
+    RenderBuffersComponent groundBuffers;
+    groundBody.m_bodyDef.position.Set(0.0f, -1.0f);
     groundBody.m_body = m_world->CreateBody(&groundBody.m_bodyDef);
-    groundBody.m_polygonShape.SetAsBox(50.0f, 10.0f);
+    groundBody.m_polygonShape.SetAsBox(50.0f, 1.0f); // (SetAsBox(half-width, half-height))
     groundBody.m_body->CreateFixture(&groundBody.m_polygonShape, 0.0f);
+    glGenVertexArrays(1, &groundBuffers.m_VAO);
+    glGenBuffers(1, &groundBuffers.m_VBO);
+    glBindVertexArray(groundBuffers.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, groundBuffers.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, groundMesh.m_verticesSize, groundMesh.m_vertices, GL_STATIC_DRAW);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // texture coord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+    glUseProgram(groundShaderProgram.m_shaderProgram);
+    // set it manually like so:
+    glUniform1i(glGetUniformLocation(groundShaderProgram.m_shaderProgram, "texture1"), 0);
 
     // make a cube 1) components -> 2) Box2D -> 3) OpenGL
     BodyPolygonComponent cubeBody;
@@ -118,9 +141,10 @@ void Game::setup() {
     glUniform1i(glGetUniformLocation(cubeShaderProgram.m_shaderProgram, "texture1"), 0);
 
     // make a sphere 1) components -> 2) Box2D -> 3) OpenGL
+    PlayerComponent spherePlayer;
     BodyCircleComponent sphereBody;
     MeshSphereComponent sphereMesh;
-    TextureComponent sphereTexture = TextureComponent(m_assetManager.getTexture("nebulae"));
+    TextureComponent sphereTexture = TextureComponent(m_assetManager.getTexture("orion"));
     ShaderProgramComponent sphereShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
     RenderBuffersComponent sphereBuffers;
     sphereBody.m_bodyDef.type = b2_dynamicBody;
@@ -155,6 +179,10 @@ void Game::setup() {
     // EnTT ....................................................................
     auto groundEntity = m_registry.create();
     m_registry.emplace<BodyPolygonComponent>(groundEntity, groundBody);
+    m_registry.emplace<MeshGroundComponent>(groundEntity, groundMesh);
+    m_registry.emplace<TextureComponent>(groundEntity, groundTexture);
+    m_registry.emplace<ShaderProgramComponent>(groundEntity, groundShaderProgram);
+    m_registry.emplace<RenderBuffersComponent>(groundEntity, groundBuffers);
 
     auto cubeEntity = m_registry.create();
     m_registry.emplace<BodyPolygonComponent>(cubeEntity, cubeBody);
@@ -165,6 +193,7 @@ void Game::setup() {
     m_registry.emplace<RenderBuffersComponent>(cubeEntity, cubeBuffers);
 
     auto sphereEntity = m_registry.create();
+    m_registry.emplace<PlayerComponent>(sphereEntity, spherePlayer);
     m_registry.emplace<BodyCircleComponent>(sphereEntity, sphereBody);
     m_registry.emplace<MeshSphereComponent>(sphereEntity, sphereMesh);
     m_registry.emplace<TextureComponent>(sphereEntity, sphereTexture);

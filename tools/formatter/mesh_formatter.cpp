@@ -157,30 +157,3 @@ std::string MeshFormatter::formatMeshIncludeGuards(const char* input) {
 
 	return str;
 }
-
-// formatShape(): --------------------------------------------------------------
-std::string MeshFormatter::formatShape(const char* input) {
-	std::string str = "";
-
-	return str;
-}
-
-// formatShapeIncludeGuards(): -------------------------------------------------
-std::string MeshFormatter::formatShapeIncludeGuards(const char* input) {
-	std::string str;
-
-	str += "COMPONENT_SHAPE_";
-	
-	int i = 0;
-	char ch;
-
-	while (input[i] && input[i] != '.') {
-		ch = input[i];
-		str += toupper(ch);
-		i++;
-	}
-
-	str += "_HPP";
-
-	return str;
-}
