@@ -150,6 +150,7 @@ void Game::setup() {
     sphereBody.m_bodyDef.type = b2_dynamicBody;
     sphereBody.m_bodyDef.position.Set(0.0f, 5.0f);
     sphereBody.m_body = m_world->CreateBody(&sphereBody.m_bodyDef);
+    // sphereBody.m_body->SetFixedRotation(true);
     sphereBody.m_circleShape.m_p.Set(0.0f, 0.0f);
     sphereBody.m_circleShape.m_radius = 1.0f;
     sphereBody.m_fixtureDef.shape = &sphereBody.m_circleShape;

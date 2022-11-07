@@ -11,19 +11,59 @@
 
 // -----------------------------------------------------------------------------
 void LeftCommand::execute(entt::registry& registry) const {
-    std::cout << "Move left" << std::endl;
+    auto player = registry.view<
+        PlayerComponent,
+        BodyCircleComponent
+    >();
+    player.each([&](
+        auto& player,
+        auto& body
+    ) {
+        b2Vec2 force = b2Vec2(-500.0f, 0.0f);
+        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+    });
 }
 
 void DownCommand::execute(entt::registry& registry) const {
-    std::cout << "Move down" << std::endl;
+    auto player = registry.view<
+        PlayerComponent,
+        BodyCircleComponent
+    >();
+    player.each([&](
+        auto& player,
+        auto& body
+    ) {
+        b2Vec2 force = b2Vec2(0.0f, -2000.0f);
+        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+    });
 }
 
 void RightCommand::execute(entt::registry& registry) const {
-    std::cout << "Move right" << std::endl;
+    auto player = registry.view<
+        PlayerComponent,
+        BodyCircleComponent
+    >();
+    player.each([&](
+        auto& player,
+        auto& body
+    ) {
+        b2Vec2 force = b2Vec2(500.0f, 0.0f);
+        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+    });
 }
 
 void UpCommand::execute(entt::registry& registry) const {
-    std::cout << "Move up" << std::endl;
+    auto player = registry.view<
+        PlayerComponent,
+        BodyCircleComponent
+    >();
+    player.each([&](
+        auto& player,
+        auto& body
+    ) {
+        b2Vec2 force = b2Vec2(0.0f, 2000.0f);
+        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+    });
 }
 
 // -----------------------------------------------------------------------------
