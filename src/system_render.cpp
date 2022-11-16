@@ -6,7 +6,7 @@
 //  implementation of Render System 
 // -----------------------------------------------------------------------------
 
-#include "system_render.hpp"
+#include "system_render.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

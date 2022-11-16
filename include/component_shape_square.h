@@ -2,11 +2,11 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_shape_square.hpp
+// component_shape_square.h
 //  header: component to hold Box2D square shape (array of b2Vec2 vertices)
 // -----------------------------------------------------------------------------
-#ifndef COMPONENT_SHAPE_SQUARE_HPP
-#define COMPONENT_SHAPE_SQUARE_HPP
+#ifndef COMPONENT_SHAPE_SQUARE_H
+#define COMPONENT_SHAPE_SQUARE_H
 
 #include "box2d/box2d.h"
 
@@ -23,4 +23,4 @@ struct ShapeSquareComponent {
     };
 };
 
-#endif // COMPONENT_SHAPE_SQUARE_HPP
+#endif // COMPONENT_SHAPE_SQUARE_H

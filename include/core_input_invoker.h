@@ -2,15 +2,15 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// core_input_invoker.hpp
+// core_input_invoker.h
 //  uses COMMANDER design pattern
 //  layer of abstraction, allowing user to set/reset keybinds
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_INPUT_INVOKER_HPP
-#define CORE_INPUT_INVOKER_HPP
+#ifndef CORE_INPUT_INVOKER_H
+#define CORE_INPUT_INVOKER_H
 
-#include "core_input_commander.hpp"
+#include "core_input_commander.h"
 
 #include "GLFW/glfw3.h"
 #include "entt/entt.hpp"
@@ -98,4 +98,4 @@ private:
     IInputCommand* m_key0;
 };
 
-#endif // CORE_INPUT_INVOKER_HPP
+#endif // CORE_INPUT_INVOKER_H

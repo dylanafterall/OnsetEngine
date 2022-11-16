@@ -2,11 +2,11 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_shader.hpp
+// component_shader.h
 //  header: component to hold shader ID  
 // -----------------------------------------------------------------------------
-#ifndef COMPONENT_SHADER_HPP
-#define COMPONENT_SHADER_HPP
+#ifndef COMPONENT_SHADER_H
+#define COMPONENT_SHADER_H
 
 struct ShaderComponent {
     unsigned int m_vertexShader;
@@ -19,4 +19,4 @@ struct ShaderComponent {
     }
 };
 
-#endif // COMPONENT_SHADER_HPP
+#endif // COMPONENT_SHADER_H

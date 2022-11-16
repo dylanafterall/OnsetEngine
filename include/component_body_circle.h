@@ -2,20 +2,20 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_body_edge.hpp
-//  header: component to hold Box2D edge bodies
+// component_body_circle.h
+//  header: component to hold Box2D circle bodies
 // -----------------------------------------------------------------------------
-#ifndef COMPONENT_BODY_EDGE_HPP
-#define COMPONENT_BODY_EDGE_HPP
+#ifndef COMPONENT_BODY_CIRCLE_H
+#define COMPONENT_BODY_CIRCLE_H
 
 #include "box2d/b2_body.h"
 #include "box2d/box2d.h"
 
-struct BodyEdgeComponent {
+struct BodyCircleComponent {
     b2BodyDef m_bodyDef;
     b2Body* m_body;
-    b2EdgeShape m_edgeShape;
+    b2CircleShape m_circleShape;
     b2FixtureDef m_fixtureDef;
 };
 
-#endif // COMPONENT_BODY_EDGE_HPP
+#endif // COMPONENT_BODY_CIRLCE_H

@@ -2,15 +2,15 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// core_game.hpp
+// core_game.h
 //  header of Game class, controls game loop  
 // -----------------------------------------------------------------------------
-#ifndef CORE_GAME_HPP
-#define CORE_GAME_HPP
+#ifndef CORE_GAME_H
+#define CORE_GAME_H
 
-#include "core_asset_manager.hpp"
-#include "core_window.hpp"
-#include "system_all.hpp"
+#include "core_asset_manager.h"
+#include "core_window.h"
+#include "system_all.h"
 
 #include "GLFW/glfw3.h"
 #include "entt/entt.hpp"
@@ -60,4 +60,4 @@ private:
     CameraSystem m_cameraSystem;
 };
 
-#endif // CORE_GAME_HPP
+#endif // CORE_GAME_H

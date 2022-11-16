@@ -7,7 +7,7 @@
 //  contains code to execute for all input commands (via keyboard, mouse, etc)
 // -----------------------------------------------------------------------------
 
-#include "core_input_commander.hpp"
+#include "core_input_commander.h"
 
 // -----------------------------------------------------------------------------
 void LeftCommand::execute(entt::registry& registry) const {

@@ -2,12 +2,12 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_mesh_sphere.hpp
+// component_mesh_sphere.h
 //  component to hold vertex (x,y,z / r,g,b / u,v) data for OpenGL rendering 
 // -----------------------------------------------------------------------------
 
-#ifndef COMPONENT_MESH_SPHERE_HPP
-#define COMPONENT_MESH_SPHERE_HPP
+#ifndef COMPONENT_MESH_SPHERE_H
+#define COMPONENT_MESH_SPHERE_H
 
 struct MeshSphereComponent { 
 	float m_vertices[46080] = { 
@@ -5778,4 +5778,4 @@ struct MeshSphereComponent {
 	int m_vertexCount = 5760;
 }; 
 
-#endif // COMPONENT_MESH_SPHERE_HPP
+#endif // COMPONENT_MESH_SPHERE_H

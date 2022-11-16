@@ -6,7 +6,7 @@
 //  implementation of Movement System to change positions of Box2D bodies
 // -----------------------------------------------------------------------------
 
-#include "system_movement.hpp"
+#include "system_movement.h"
 
 void MovementSystem::update(const float timeStep, entt::registry& registry) {
 }

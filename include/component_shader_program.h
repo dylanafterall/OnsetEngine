@@ -2,11 +2,11 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_shader_program.hpp
+// component_shader_program.h
 //  header: component to hold shader program (two linked shaders)
 // -----------------------------------------------------------------------------
-#ifndef COMPONENT_SHADER_PROGRAM_HPP
-#define COMPONENT_SHADER_PROGRAM_HPP
+#ifndef COMPONENT_SHADER_PROGRAM_H
+#define COMPONENT_SHADER_PROGRAM_H
 
 struct ShaderProgramComponent {
     unsigned int m_shaderProgram;
@@ -17,4 +17,4 @@ struct ShaderProgramComponent {
     }
 };
 
-#endif // COMPONENT_SHADER_PROGRAM_HPP
+#endif // COMPONENT_SHADER_PROGRAM_H

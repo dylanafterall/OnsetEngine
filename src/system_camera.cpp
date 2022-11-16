@@ -6,7 +6,7 @@
 //  system to control camera movement
 // -----------------------------------------------------------------------------
 
-#include "system_camera.hpp"
+#include "system_camera.h"
 
 void CameraSystem::update(const float timeStep, entt::registry& registry) {
     // get the player position, in order to provide translate transform to camera

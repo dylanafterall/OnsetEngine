@@ -6,7 +6,7 @@
 //  implementation of AssetManager class, for loading/removing assets
 // -----------------------------------------------------------------------------
 
-#include "core_asset_manager.hpp"
+#include "core_asset_manager.h"
 
 #define STB_IMAGE_IMPLEMENTATION    // required before stb include - only once
 #include "stb_image.h"

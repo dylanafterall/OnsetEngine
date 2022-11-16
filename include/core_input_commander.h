@@ -2,18 +2,18 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// core_input_commander.hpp
+// core_input_commander.h
 //	uses COMMANDER design pattern
 //  contains code to execute for all input commands (via keyboard, mouse, etc)
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_INPUT_COMMANDER_HPP
-#define CORE_INPUT_COMMANDER_HPP
+#ifndef CORE_INPUT_COMMANDER_H
+#define CORE_INPUT_COMMANDER_H
 
-#include "component_camera.hpp"
-#include "component_player.hpp"
-#include "component_body_circle.hpp"
-#include "component_body_polygon.hpp"
+#include "component_camera.h"
+#include "component_player.h"
+#include "component_body_circle.h"
+#include "component_body_polygon.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -161,4 +161,4 @@ public:
 	void execute(entt::registry&) const override;
 };
 
-#endif // CORE_INPUT_COMMANDER_HPP
+#endif // CORE_INPUT_COMMANDER_H

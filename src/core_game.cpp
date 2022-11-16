@@ -6,8 +6,8 @@
 //  implementation of Game class, controls game loop  
 // -----------------------------------------------------------------------------
 
-#include "core_game.hpp"
-#include "component_all.hpp"
+#include "core_game.h"
+#include "component_all.h"
 
 #include "GLFW/glfw3.h"
 

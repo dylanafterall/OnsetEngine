@@ -2,16 +2,16 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// system_movement.hpp
+// system_movement.h
 //  header: Movement System to change positions of Box2D bodies
 // -----------------------------------------------------------------------------
-#ifndef SYSTEM_MOVEMENT_HPP
-#define SYSTEM_MOVEMENT_HPP
+#ifndef SYSTEM_MOVEMENT_H
+#define SYSTEM_MOVEMENT_H
 
-#include "component_body_circle.hpp"
-#include "component_body_polygon.hpp"
-#include "component_body_edge.hpp"
-#include "component_body_chain.hpp"
+#include "component_body_circle.h"
+#include "component_body_polygon.h"
+#include "component_body_edge.h"
+#include "component_body_chain.h"
 
 #include "entt/entt.hpp"
 #include "glm/glm.hpp"
@@ -29,4 +29,4 @@ private:
 
 };
 
-#endif // SYSTEM_MOVEMENT_HPP
+#endif // SYSTEM_MOVEMENT_H

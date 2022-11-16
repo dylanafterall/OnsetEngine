@@ -2,17 +2,16 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// system_camera.hpp
+// system_camera.h
 //  header: system to control camera movement
 // -----------------------------------------------------------------------------
+#ifndef SYSTEM_CAMERA_H
+#define SYSTEM_CAMERA_H
 
-#ifndef SYSTEM_CAMERA_HPP
-#define SYSTEM_CAMERA_HPP
-
-#include "component_camera.hpp"
-#include "component_player.hpp"
-#include "component_body_circle.hpp"
-#include "component_body_polygon.hpp"
+#include "component_camera.h"
+#include "component_player.h"
+#include "component_body_circle.h"
+#include "component_body_polygon.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -31,4 +30,4 @@ private:
 
 };
 
-#endif // SYSTEM_CAMERA_HPP
+#endif // SYSTEM_CAMERA_H

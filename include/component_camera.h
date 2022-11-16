@@ -2,7 +2,7 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_camera.hpp
+// component_camera.h
 //  header: component to hold camera data
 // -----------------------------------------------------------------------------
 

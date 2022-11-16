@@ -2,12 +2,12 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_mesh_ground.hpp
+// component_mesh_ground.h
 //  component to hold vertex (x,y,z / r,g,b / u,v) data for OpenGL rendering 
 // -----------------------------------------------------------------------------
 
-#ifndef COMPONENT_MESH_GROUND_HPP
-#define COMPONENT_MESH_GROUND_HPP
+#ifndef COMPONENT_MESH_GROUND_H
+#define COMPONENT_MESH_GROUND_H
 
 struct MeshGroundComponent { 
 	float m_vertices[288] = { 
@@ -54,4 +54,4 @@ struct MeshGroundComponent {
 	int m_vertexCount = 36;
 }; 
 
-#endif // COMPONENT_MESH_GROUND_HPP
+#endif // COMPONENT_MESH_GROUND_H

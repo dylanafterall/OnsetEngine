@@ -2,12 +2,12 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_mesh_cube.hpp
+// component_mesh_cube.h
 //  component to hold vertex (x,y,z / r,g,b / u,v) data for OpenGL rendering 
 // -----------------------------------------------------------------------------
 
-#ifndef COMPONENT_MESH_CUBE_HPP
-#define COMPONENT_MESH_CUBE_HPP
+#ifndef COMPONENT_MESH_CUBE_H
+#define COMPONENT_MESH_CUBE_H
 
 struct MeshCubeComponent { 
 	float m_vertices[288] = { 
@@ -54,4 +54,4 @@ struct MeshCubeComponent {
 	int m_vertexCount = 36;
 }; 
 
-#endif // COMPONENT_MESH_CUBE_HPP
+#endif // COMPONENT_MESH_CUBE_H

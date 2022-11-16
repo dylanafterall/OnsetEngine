@@ -7,7 +7,7 @@
 //  layer of abstraction, allowing user to set/reset keybinds 
 // -----------------------------------------------------------------------------
 
-#include "core_input_invoker.hpp"
+#include "core_input_invoker.h"
 
 // InputInvoker(): -------------------------------------------------------------
 InputInvoker::InputInvoker() {

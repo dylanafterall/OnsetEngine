@@ -2,14 +2,14 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// component_texture.hpp
-//  header: component to designate the player entity in EnTT
+// system_all.h
+//  header of all system headers 
 // -----------------------------------------------------------------------------
-#ifndef COMPONENT_PLAYER_HPP
-#define COMPONENT_PLAYER_HPP
+#ifndef SYSTEM_ALL_H
+#define SYSTEM_ALL_H
 
-struct PlayerComponent {
-    int m_id = 0;
-};
+#include "system_movement.h"
+#include "system_render.h"
+#include "system_camera.h"
 
-#endif // COMPONENT_PLAYER_HPP
+#endif // SYSTEM_ALL_H
