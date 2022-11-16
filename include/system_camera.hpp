@@ -25,7 +25,6 @@ public:
     ~CameraSystem() = default;
 
     void update(const float, entt::registry&);
-    glm::mat4 getViewMatrix(entt::registry&);
 
 private:
     void updateCameraVectors(entt::registry&);

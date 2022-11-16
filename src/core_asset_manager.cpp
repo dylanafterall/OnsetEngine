@@ -9,7 +9,7 @@
 #include "core_asset_manager.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION    // required before stb include - only once
-#include "stb/stb_image.h"
+#include "stb_image.h"
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------

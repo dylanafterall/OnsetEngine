@@ -3,7 +3,6 @@
 # https://github.com/dylanafterall/OnsetEngine
 # ------------------------------------------------------------------------------
 
-
 # C++ --------------------------------------------------------------------------
 # Prerequisites
 *.d
@@ -49,20 +48,5 @@ _deps
 # Project-specific -------------------------------------------------------------
 *.DS_Store
 .cache/
-.vscode/
-compile_commands.json
-external/box2d/
-external/entt/
-external/glm/
-external/googletest/
-external/sol2/
-external/spdlog/
-external/stb/stb/
-external/lua/lua/lua-5.4.4/
-external/lua/lua/lua-5.4.4.tar.gz
-external/glad/Makefile
-external/lua/Makefile
-external/stb/Makefile
+external/vcpkg/
 build/
-tools/formatter/external/glm/
-tools/formatter/formatter

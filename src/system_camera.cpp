@@ -31,16 +31,6 @@ void CameraSystem::update(const float timeStep, entt::registry& registry) {
     });
 }
 
-// getViewMatrix(): returns the view matrix 
-glm::mat4 CameraSystem::getViewMatrix(entt::registry& registry) {
-    // retrieve a view of entities with applicable components
-    auto cameras = registry.view<CameraComponent>();
-    // iterate over each entity in the view
-    cameras.each([&](const auto& camera) {
-        return glm::lookAt(camera.m_position, camera.m_position + camera.m_front, camera.m_up);
-    });
-}
-
 // updateCameraVectors(): calculates the front vector from updated Euler Angles
 void CameraSystem::updateCameraVectors(entt::registry& registry) {
     // retrieve a view of entities with applicable components

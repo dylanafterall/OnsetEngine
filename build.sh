@@ -1,3 +1,3 @@
 #! /bin/zsh
 
-cd build/ ; make
+cmake --build build

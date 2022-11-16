@@ -1,0 +1,47 @@
+{
+    "name": "onset-engine",
+    "version": "0.1.0",
+    "dependencies": [
+        {
+            "name": "opengl",
+            "version>=": "2022-03-14#1"
+        },
+        {
+            "name": "opengl-registry",
+            "version>=": "2021-11-17"
+        },
+        {
+            "name": "glad",
+            "version>=": "0.1.36"
+        },
+        {
+            "name": "glfw3",
+            "version>=": "3.3.8#1"
+        },
+        {
+            "name": "glm",
+            "version>=": "0.9.9.8#1"
+        },
+        {
+            "name": "entt",
+            "version>=": "3.11.0"
+        },
+        {
+            "name": "box2d",
+            "version>=": "2.4.1#2"
+        },
+        {
+            "name": "spdlog",
+            "version>=": "1.10.0#2"
+        },
+        {
+            "name": "imgui",
+            "version>=": "1.88#1"
+        },
+        {
+            "name": "stb",
+            "version>=": "2021-09-10#1"
+        }
+    ],
+    "builtin-baseline": "6e4fbee0d1e6daffaab50f4c055cd3ccfd3d929a"
+}

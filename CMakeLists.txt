@@ -3,17 +3,23 @@
 # https://github.com/dylanafterall/OnsetEngine
 # ------------------------------------------------------------------------------
 
-# cmake --version
+# SETTINGS ---------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.24.1)
 
-# set project name
+# EnTT requires at least c++17
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -O0 -Wall -Werror")
+
+set(CMAKE_TOOLCHAIN_FILE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/vcpkg/scripts/buildsystems/vcpkg.cmake 
+    CACHE STRING "vcpkg toolchain file"
+)
+
+# PROJECT ----------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 project(OnsetEngine)
 
-# set c++ language standard (for gcc and clang)
-# EnTT requires at least C++17
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-
-# Create the executable
 add_executable(${PROJECT_NAME}
     src/main.cpp
     src/core_game.cpp
@@ -27,48 +33,42 @@ add_executable(${PROJECT_NAME}
 )
 
 find_package(OpenGL REQUIRED)
-include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/src
-    ${OPENGL_INCLUDE_DIRS}
-)
+find_package(glad CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
+find_package(box2d CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
+find_path(STB_INCLUDE_DIRS "stb_c_lexer.h")
 
-add_subdirectory(external/box2d)
-add_subdirectory(external/glad)
-add_subdirectory(external/entt)
-add_subdirectory(external/glm)
-add_subdirectory(external/googletest)
-add_subdirectory(external/lua)
-add_subdirectory(external/sol2)
-add_subdirectory(external/spdlog)
-add_subdirectory(external/stb)
-
-# set the directories to INCLUDE in build command
-target_include_directories(${PROJECT_NAME}
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/box2d/include
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/box2d/extern
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/box2d/extern/glfw/include
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/glad/include
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/entt/src
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/glm
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/googletest/googletest/include
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/lua/lua/lua-5.4.4/src
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/sol2/include
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/spdlog/include
-    PUBLIC ${PROJECT_SOURCE_DIR}/external/stb
+include_directories(${PROJECT_NAME}
+    PRIVATE ${PROJECT_SOURCE_DIR}/include
+    PRIVATE ${PROJECT_SOURCE_DIR}/src
+    PRIVATE ${STB_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
-    box2d
-    EnTT
-    sub_glad
-    glfw
-    glm
-    gtest
-    imgui
-    lua
-    sol2
-    spdlog
-    stb
-    OpenGL::GL
+    PRIVATE glad::glad
+    PRIVATE glfw
+    PRIVATE glm::glm
+    PRIVATE EnTT::EnTT
+    PRIVATE box2d::box2d
+    PRIVATE spdlog::spdlog
+    PRIVATE spdlog::spdlog_header_only
+    PRIVATE imgui::imgui
+)
+
+# TOOLS ------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
+add_executable(MeshFormatter
+    tools/formatter/main.cpp
+    tools/formatter/mesh_formatter.cpp
+)
+include_directories(MeshFormatter 
+    PUBLIC tools/formatter
+)
+target_link_libraries(MeshFormatter
+    PUBLIC glm::glm
 )

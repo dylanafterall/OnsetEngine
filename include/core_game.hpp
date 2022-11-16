@@ -57,7 +57,6 @@ private:
     AssetManager m_assetManager;
     // system classes
     RenderSystem m_renderSystem;
-    MovementSystem m_movementSystem;
     CameraSystem m_cameraSystem;
 };
 

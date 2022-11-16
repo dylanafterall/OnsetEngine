@@ -1,3 +1,3 @@
 #! /bin/zsh
 
-cd build ; ./OnsetEngine
+cd build && ./OnsetEngine

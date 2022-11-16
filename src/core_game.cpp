@@ -60,17 +60,11 @@ void Game::initialize() {
 // setup(): --------------------------------------------------------------------
 void Game::setup() {
     // AssetManager ............................................................
-    m_assetManager.setVShader("vert", "../assets/shaders/v2.vert");
-    m_assetManager.setFShader("frag", "../assets/shaders/f2.frag");
+    m_assetManager.setVShader("vert", "../assets/shaders/v.vert");
+    m_assetManager.setFShader("frag", "../assets/shaders/f.frag");
     m_assetManager.setTexture("orion", "../assets/textures/orion.jpg");
-    m_assetManager.setTexture("blackhole", "../assets/textures/blackhole.jpg");
     m_assetManager.setTexture("milkyway", "../assets/textures/milkyway.jpg");
     m_assetManager.setTexture("stripes", "../assets/textures/stripes.jpg");
-
-    m_assetManager.setTexture("earth", "../assets/textures/earth.jpg");
-    m_assetManager.setTexture("nebulae", "../assets/textures/nebulae.jpg");
-    m_assetManager.setTexture("star", "../assets/textures/star.jpg");
-    m_assetManager.setTexture("starcluster", "../assets/textures/starcluster.jpg");
 
     unsigned int vertex = m_assetManager.getVShader("vert");
     unsigned int fragment = m_assetManager.getFShader("frag");
