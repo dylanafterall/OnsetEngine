@@ -11,7 +11,6 @@
 
 // InputInvoker(): -------------------------------------------------------------
 InputInvoker::InputInvoker() {
-    spdlog::info("InputInvoker constructor called!");
 }
 
 // ~InputInvoker(): ------------------------------------------------------------
@@ -42,8 +41,6 @@ InputInvoker::~InputInvoker() {
     delete m_key8;
     delete m_key9;
     delete m_key0;
-
-    spdlog::info("InputInvoker destructor called!");
 }
 
 // _____________________________________________________________________________

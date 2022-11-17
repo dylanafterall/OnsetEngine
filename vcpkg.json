@@ -32,7 +32,7 @@
         },
         {
             "name": "spdlog",
-            "version>=": "1.10.0#2"
+            "version>=": "1.11.0"
         },
         {
             "name": "imgui",
@@ -43,5 +43,5 @@
             "version>=": "2021-09-10#1"
         }
     ],
-    "builtin-baseline": "6e4fbee0d1e6daffaab50f4c055cd3ccfd3d929a"
+    "builtin-baseline": "2c102ee932e38799d4152da09359b3633e5993b8"
 }

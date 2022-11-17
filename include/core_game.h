@@ -8,11 +8,18 @@
 #ifndef CORE_GAME_H
 #define CORE_GAME_H
 
+#define ONSET_CONFIG_DEBUG
+#define ONSET_PLATFORM_MAC
+
+#include "component_all.h"
 #include "core_asset_manager.h"
 #include "core_window.h"
+#include "core_log_manager.h"
+#include "core_log_macros.h"
 #include "system_all.h"
 
 #include "GLFW/glfw3.h"
+#include "glm/glm.hpp"
 #include "entt/entt.hpp"
 #include "box2d/box2d.h"
 
@@ -25,6 +32,7 @@ public:
     ~Game();
 
     // pre loop
+    void getInfo();
     void initialize();
     void setup();
 
@@ -55,6 +63,7 @@ private:
     entt::registry m_registry;
     // core classes
     AssetManager m_assetManager;
+    LogManager m_logManager;
     // system classes
     RenderSystem m_renderSystem;
     CameraSystem m_cameraSystem;

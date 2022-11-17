@@ -6,7 +6,7 @@
 //  entry point for the mesh formatter tool 
 // -----------------------------------------------------------------------------
 
-#include "mesh_formatter.hpp"
+#include "mesh_formatter.h"
 
 int main(int argc, char* argv[]) {
 	MeshFormatter formatter;

@@ -8,10 +8,11 @@
 #ifndef CORE_ASSET_MANAGER_H
 #define CORE_ASSET_MANAGER_H
 
+#include "core_log_macros.h"
+
 #define GLFW_INCLUDE_NONE
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "spdlog/spdlog.h"
 #include "box2d/box2d.h"
 
 #include <map>
@@ -21,8 +22,8 @@
 
 class AssetManager {
 public:
-    AssetManager();
-    ~AssetManager();
+    AssetManager() = default;
+    ~AssetManager() = default;
 
     void setTexture(const std::string&, const char*);
     void setVShader(const std::string&, const char*);

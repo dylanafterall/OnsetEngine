@@ -14,14 +14,13 @@
 #include "component_player.h"
 #include "component_body_circle.h"
 #include "component_body_polygon.h"
+#include "core_log_macros.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "entt/entt.hpp"
 #include "box2d/box2d.h"
-
-#include <iostream>
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------

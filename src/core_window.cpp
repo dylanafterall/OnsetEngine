@@ -26,14 +26,12 @@ void framebuffer_size_callback(GLFWwindow*, int, int);
 Window::Window(unsigned int screenWidth, unsigned int screenHeight) {
     m_screenWidth = screenWidth;
     m_screenHeight = screenHeight;
-    spdlog::info("Window constructor called!");
 }
 
 // ~Window(): ------------------------------------------------------------------
 Window::~Window() {
     // destroy windows, de-allocate GLFW resources, set library to uninitialized 
     glfwTerminate();
-    spdlog::info("Window destructor called!");
 }
 
 // _____________________________________________________________________________
@@ -51,7 +49,7 @@ void Window::setInvoker(InputInvoker* invoker) {
 void Window::initialize() {
     // initialize GLFW library  
     if (!glfwInit()) {
-        spdlog::critical("Failed to initialize GLFW");
+        ONSET_FATAL("Failed to initialize GLFW");
         return;
     }
     // set hints for next call to glfwCreateWindow()
@@ -72,7 +70,7 @@ void Window::initialize() {
         NULL            // which window whose context to share resources with
     );
     if (!m_glfwWindow) {
-        spdlog::critical("Failed to create GLFW window");
+        ONSET_FATAL("Failed to create GLFW window");
         glfwTerminate();
         return;
     }
@@ -85,7 +83,7 @@ void Window::initialize() {
     // glad: load all OpenGL function pointers
     // glfwGetProcAddress defines the correct function based on OS 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        spdlog::critical("Failed to initialize GLAD");
+        ONSET_FATAL("Failed to initialize GLAD");
         return;
     }
 

@@ -2,12 +2,12 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// mesh_formatter.hpp
+// mesh_formatter.h
 //  header for tool that reads in wavefront obj, converts to vertices[] 
 // -----------------------------------------------------------------------------
 
-#ifndef MESH_FORMATTER_HPP
-#define MESH_FORMATTER_HPP
+#ifndef MESH_FORMATTER_H
+#define MESH_FORMATTER_H
 
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
@@ -31,4 +31,4 @@ public:
 private:
 };
 
-#endif // MESH_FORMATTER_HPP
+#endif // MESH_FORMATTER_H

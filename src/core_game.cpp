@@ -7,12 +7,6 @@
 // -----------------------------------------------------------------------------
 
 #include "core_game.h"
-#include "component_all.h"
-
-#include "GLFW/glfw3.h"
-
-#include "spdlog/spdlog.h"
-#include "glm/glm.hpp"
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
@@ -22,16 +16,11 @@
 
 // Game(): ---------------------------------------------------------------------
 Game::Game() {
-    m_windowPtr = new Window(m_screenWidth, m_screenHeight);
-    m_invokerPtr = new InputInvoker();
-    spdlog::info("Game Constructor called!");
+    m_logManager.initialize();
 }
 
 // ~Game(): --------------------------------------------------------------------
 Game::~Game() {
-    delete m_windowPtr;
-    delete m_invokerPtr;
-    spdlog::info("Game Destructor called!");
 }
 
 // _____________________________________________________________________________
@@ -40,9 +29,35 @@ Game::~Game() {
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
+// getInfo(): ------------------------------------------------------------------
+void Game::getInfo() {
+    ONSET_INFO("Onset Engine v{}.{}.{}", 0, 1, 0);
+
+#ifdef ONSET_CONFIG_DEBUG
+    ONSET_INFO("Configuration: DEBUG");
+#endif
+#ifdef ONSET_CONFIG_RELEASE
+    ONSET_INFO("Configuration: RELEASE");
+#endif
+#ifdef ONSET_PLATFORM_WINDOWS
+    ONSET_INFO("Platform: WINDOWS");
+#endif
+#ifdef ONSET_PLATFORM_LINUX
+    ONSET_INFO("Platform: LINUX");
+#endif
+#ifdef ONSET_PLATFORM_MAC
+    ONSET_INFO("Platform: MAC");
+#endif
+}
+
 // initialize(): ---------------------------------------------------------------
 void Game::initialize() {
-        // pass our registry to the invoker, for InputCommander execute()'s
+    getInfo();
+
+    m_windowPtr = new Window(m_screenWidth, m_screenHeight);
+    m_invokerPtr = new InputInvoker();
+
+    // pass our registry to the invoker, for InputCommander execute()'s
     m_invokerPtr->setInvokerRegistry(&m_registry);
     m_invokerPtr->setInvokerAspect(m_screenWidth, m_screenHeight);
 
@@ -50,11 +65,6 @@ void Game::initialize() {
     m_windowPtr->setInvoker(m_invokerPtr);
     // initialize GLFW window and GLAD
     m_windowPtr->initialize();
-
-    // create camera component and add to EnTT registry
-    CameraComponent camera(glm::vec3(0.0f, 0.0f, 20.0f));
-    auto cameraEntity = m_registry.create();
-    m_registry.emplace<CameraComponent>(cameraEntity, camera);
 }
 
 // setup(): --------------------------------------------------------------------
@@ -71,6 +81,9 @@ void Game::setup() {
     m_assetManager.setShaderProgram("vert&frag", vertex, fragment);
 
     // Prepare Entities ........................................................
+    // make a camera 
+    CameraComponent camera(glm::vec3(0.0f, 0.0f, 20.0f));
+
     // make bottom static box
     BodyPolygonComponent groundBody;
     MeshGroundComponent groundMesh;
@@ -172,6 +185,9 @@ void Game::setup() {
 
 
     // EnTT ....................................................................
+    auto cameraEntity = m_registry.create();
+    m_registry.emplace<CameraComponent>(cameraEntity, camera);
+
     auto groundEntity = m_registry.create();
     m_registry.emplace<BodyPolygonComponent>(groundEntity, groundBody);
     m_registry.emplace<MeshGroundComponent>(groundEntity, groundMesh);
@@ -212,7 +228,7 @@ void Game::run() {
         // cap the max number of Update() looping - to prevent locking up
         if (deltaTime > 0.25) {
             deltaTime = 0.25;   // max of 25 loops, since SECS_PER_UPDATE = 0.01 
-            spdlog::warn("The calculated deltaTime exceeded 0.25 seconds");
+            ONSET_WARN("The calculated deltaTime exceeded 0.25 seconds");
         }
         previousTime = currentTime;
         lag += deltaTime;
@@ -265,4 +281,8 @@ void Game::destroy() {
     // temporarily deleting buffers here for now
     // TODO: will need to use this method to delete buffers between game levels
     m_renderSystem.deleteBuffers(m_registry);
+    
+    delete m_windowPtr;
+    delete m_invokerPtr;
+    m_logManager.shutdown();
 }

@@ -13,23 +13,6 @@
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
-// Constructor and Destructor
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
-
-// AssetManager(): -------------------------------------------------------------
-AssetManager::AssetManager() {
-    spdlog::info("AssetManager constructor called!");
-}
-
-// ~AssetManager(): ------------------------------------------------------------
-AssetManager::~AssetManager() {
-    spdlog::info("AssetManager destructor called, clearing assets!");
-    clearAssets();
-}
-
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
 // 'Set' functions
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
@@ -85,10 +68,10 @@ void AssetManager::setTexture(const std::string& assetId, const char* texturePat
             glGenerateMipmap(GL_TEXTURE_2D);
             // add new texture to Asset Manager's texture map
             textures.emplace(assetId, texture);
-            spdlog::info("New Texture added to Asset Manager with id = " + assetId);
+            ONSET_INFO("New Texture added to Asset Manager with id = {}", assetId);
         }
         else {
-            spdlog::error("Failed to load texture");
+            ONSET_ERROR("Failed to load texture");
         }
     }
     else {
@@ -107,10 +90,10 @@ void AssetManager::setTexture(const std::string& assetId, const char* texturePat
             glGenerateMipmap(GL_TEXTURE_2D);
             // add new texture to Asset Manager's texture map
             textures.emplace(assetId, texture);
-            spdlog::info("New Texture added to Asset Manager with id = " + assetId);
+            ONSET_INFO("New Texture added to Asset Manager with id = {}", assetId);
         }
         else {
-            spdlog::error("Failed to load texture");
+            ONSET_ERROR("Failed to load texture");
         }
     }
 
@@ -138,7 +121,7 @@ void AssetManager::setVShader(const std::string& assetId, const char* vertexPath
         vertexCode   = vShaderStream.str();
     }
     catch (std::ifstream::failure& e) {
-        spdlog::error("VShader file not successfully read: {}", e.what());
+        ONSET_ERROR("VShader file not successfully read: {}", e.what());
     }
 
     const char* vShaderCode = vertexCode.c_str();
@@ -157,7 +140,7 @@ void AssetManager::setVShader(const std::string& assetId, const char* vertexPath
 
     // add vshader to asset manager's map
     vshaders.emplace(assetId, vertex);
-    spdlog::info("New VShader added to Asset Manager with id = " + assetId);
+    ONSET_INFO("New VShader added to Asset Manager with id = {}", assetId);
 }
  
 // setFShader(): ---------------------------------------------------------------
@@ -180,7 +163,7 @@ void AssetManager::setFShader(const std::string& assetId, const char* fragmentPa
         fragmentCode = fShaderStream.str();
     }
     catch (std::ifstream::failure& e) {
-        spdlog::error("FShader file not successfully read: {}", e.what());
+        ONSET_ERROR("FShader file not successfully read: {}", e.what());
     }
 
     const char* fShaderCode = fragmentCode.c_str();
@@ -193,7 +176,7 @@ void AssetManager::setFShader(const std::string& assetId, const char* fragmentPa
 
     // add fshader to asset manager's map
     fshaders.emplace(assetId, fragment);
-    spdlog::info("New FShader added to Asset Manager with id = " + assetId);
+    ONSET_INFO("New FShader added to Asset Manager with id = {}", assetId);
 }
 
 // setShaderProgram(): ---------------------------------------------------------
@@ -208,7 +191,7 @@ void AssetManager::setShaderProgram(const std::string& assetId, unsigned int ver
 
     // add shaderProgram to asset manager's map 
     shaderPrograms.emplace(assetId, shaderProgram);
-    spdlog::info("New ShaderProgram added to Asset Manager with id = " + assetId);
+    ONSET_INFO("New ShaderProgram added to Asset Manager with id = {}", assetId);
 }
 
 // _____________________________________________________________________________
@@ -271,12 +254,12 @@ void AssetManager::checkShaderErrors(unsigned int shader, std::string type) {
     int success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (success) {
-        spdlog::info("Compiled shader of type: {}", type);
+        ONSET_INFO("Compiled shader of type: {}", type);
     }
     else {
         char infoLog[1024];
         glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-        spdlog::error(
+        ONSET_ERROR(
             "Shader compilation error of type: {}: {}", 
             type, 
             infoLog
@@ -289,12 +272,12 @@ void AssetManager::checkShaderProgramErrors(unsigned int program) {
     int success;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (success) {
-        spdlog::info("Linked shaders into shader program object");
+        ONSET_INFO("Linked shaders into shader program object");
     }
     else {
         char infoLog[1024];
         glGetProgramInfoLog(program, 1024, NULL, infoLog);
-        spdlog::error(
+        ONSET_ERROR(
             "Shader linking error of type: LINKER: {}",
             infoLog
         );

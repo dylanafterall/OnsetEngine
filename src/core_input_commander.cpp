@@ -68,35 +68,35 @@ void UpCommand::execute(entt::registry& registry) const {
 
 // -----------------------------------------------------------------------------
 void NorthCommand::execute(entt::registry& registry) const {
-    std::cout << "Moved North" << std::endl;
+    ONSET_TRACE("moved north");
 }
 
 void WestCommand::execute(entt::registry& registry) const {
-    std::cout << "Moved West" << std::endl;
+    ONSET_TRACE("moved west");
 }
 
 void SouthCommand::execute(entt::registry& registry) const {
-    std::cout << "Moved South" << std::endl;
+    ONSET_TRACE("moved south");
 }
 
 void EastCommand::execute(entt::registry& registry) const {
-    std::cout << "Moved East" << std::endl;
+    ONSET_TRACE("moved east");
 }
 
 void NortheastCommand::execute(entt::registry& registry) const {
-    std::cout << "Moved Northeast" << std::endl;
+    ONSET_TRACE("moved northeast");
 }
 
 void NorthwestCommand::execute(entt::registry& registry) const {
-    std::cout << "Moved Northwest" << std::endl;
+    ONSET_TRACE("moved northwest");
 }
 
 void SouthwestCommand::execute(entt::registry& registry) const {
-    std::cout << "Moved Southwest" << std::endl;
+    ONSET_TRACE("moved southwest");
 }
 
 void SoutheastCommand::execute(entt::registry& registry) const {
-    std::cout << "Moved Southeast" << std::endl;
+    ONSET_TRACE("moved southeast");
 }
 
 // -----------------------------------------------------------------------------

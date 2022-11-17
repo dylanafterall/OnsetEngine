@@ -14,7 +14,6 @@
 
 #include "GLFW/glfw3.h"
 #include "entt/entt.hpp"
-#include "spdlog/spdlog.h"
 
 
 // _____________________________________________________________________________

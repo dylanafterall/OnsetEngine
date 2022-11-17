@@ -6,7 +6,7 @@
 //  implementation for tool that reads in wavefront obj, converts to vertices[] 
 // -----------------------------------------------------------------------------
 
-#include "mesh_formatter.hpp"
+#include "mesh_formatter.h"
 
 // formatName(): ---------------------------------------------------------------
 std::string MeshFormatter::formatName(const char* input) {
@@ -153,7 +153,7 @@ std::string MeshFormatter::formatMeshIncludeGuards(const char* input) {
 		i++;
 	}
 
-	str += "_HPP";
+	str += "_H";
 
 	return str;
 }
