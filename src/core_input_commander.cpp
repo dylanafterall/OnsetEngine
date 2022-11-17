@@ -68,35 +68,35 @@ void UpCommand::execute(entt::registry& registry) const {
 
 // -----------------------------------------------------------------------------
 void NorthCommand::execute(entt::registry& registry) const {
-    ONSET_TRACE("moved north");
+    //ONSET_TRACE("moved north");
 }
 
 void WestCommand::execute(entt::registry& registry) const {
-    ONSET_TRACE("moved west");
+    //ONSET_TRACE("moved west");
 }
 
 void SouthCommand::execute(entt::registry& registry) const {
-    ONSET_TRACE("moved south");
+    //ONSET_TRACE("moved south");
 }
 
 void EastCommand::execute(entt::registry& registry) const {
-    ONSET_TRACE("moved east");
+    //ONSET_TRACE("moved east");
 }
 
 void NortheastCommand::execute(entt::registry& registry) const {
-    ONSET_TRACE("moved northeast");
+    //ONSET_TRACE("moved northeast");
 }
 
 void NorthwestCommand::execute(entt::registry& registry) const {
-    ONSET_TRACE("moved northwest");
+    //ONSET_TRACE("moved northwest");
 }
 
 void SouthwestCommand::execute(entt::registry& registry) const {
-    ONSET_TRACE("moved southwest");
+    //ONSET_TRACE("moved southwest");
 }
 
 void SoutheastCommand::execute(entt::registry& registry) const {
-    ONSET_TRACE("moved southeast");
+    //ONSET_TRACE("moved southeast");
 }
 
 // -----------------------------------------------------------------------------

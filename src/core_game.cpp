@@ -17,6 +17,7 @@
 // Game(): ---------------------------------------------------------------------
 Game::Game() {
     m_logManager.initialize();
+    m_isRunning = true;
 }
 
 // ~Game(): --------------------------------------------------------------------
@@ -221,7 +222,7 @@ void Game::setup() {
 // run(): ----------------------------------------------------------------------
 void Game::run() {
     // glfwWindowShouldClose() returns GL_FALSE until window instructed to close
-    while (!glfwWindowShouldClose(m_windowPtr->m_glfwWindow)) {
+    while (!glfwWindowShouldClose(m_windowPtr->m_glfwWindow) && m_isRunning) {
         // find time-step ...................................................... 
         double currentTime = glfwGetTime();    // returns time in secs
         double deltaTime = currentTime - previousTime;
