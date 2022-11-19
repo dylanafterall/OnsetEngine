@@ -51,3 +51,5 @@ _deps
 external/vcpkg/
 build/
 logs/
+docs/latex/
+docs/html

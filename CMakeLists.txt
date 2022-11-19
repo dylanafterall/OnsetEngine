@@ -15,10 +15,16 @@ set(CMAKE_TOOLCHAIN_FILE
     CACHE STRING "vcpkg toolchain file"
 )
 
+option(BUILD_DOC "Build documentation" ON)
+
 # PROJECT ----------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 
-project(OnsetEngine)
+project(OnsetEngine
+    VERSION 0.1.0
+    DESCRIPTION " ECS game engine with 2D physics and 3D rendering"
+    HOMEPAGE_URL "https://github.com/dylanafterall/OnsetEngine"
+)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
@@ -59,6 +65,28 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE spdlog::spdlog_header_only
     PRIVATE imgui::imgui
 )
+
+# DOCUMENTATION ----------------------------------------------------------------
+# ------------------------------------------------------------------------------
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+    # set input and output files
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+    # request to configure the file
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    message("Doxygen build started")
+
+    # note the option ALL which allows to build the docs together with the application
+    add_custom_target( doc_doxygen ALL
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM )
+else (DOXYGEN_FOUND)
+  message("Doxygen need to be installed to generate the doxygen documentation")
+endif (DOXYGEN_FOUND)
 
 # TOOLS ------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
