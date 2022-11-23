@@ -105,7 +105,7 @@ void Window::initialize() {
     m_invoker->setCursorDown_leftCommand(new SouthwestCommand());
     m_invoker->setCursorDown_rightCommand(new SoutheastCommand());
 
-    m_invoker->setAKeyCommand(new LeftCommand());
+    m_invoker->setAKeyCommand(new LeftCommand);
     m_invoker->setSKeyCommand(new DownCommand());
     m_invoker->setDKeyCommand(new RightCommand());
     m_invoker->setWKeyCommand(new UpCommand());

@@ -10,60 +10,47 @@
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
-// Constructor and Destructor
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
-
-// Game(): ---------------------------------------------------------------------
-Game::Game() {
-    m_logManager.initialize();
-    m_isRunning = true;
-}
-
-// ~Game(): --------------------------------------------------------------------
-Game::~Game() {
-}
-
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
 // Pre - Game Loop
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
 // getInfo(): ------------------------------------------------------------------
 void Game::getInfo() {
-    ONSET_INFO("Onset Engine v{}.{}.{}", 0, 1, 0);
+    ONSET_INFO("ONSET ENGINE v{}.{}.{}", 0, 1, 0);
 
 #ifdef ONSET_CONFIG_DEBUG
-    ONSET_INFO("Configuration: DEBUG");
+    ONSET_INFO("CONFIGURATION: DEBUG");
 #endif
 #ifdef ONSET_CONFIG_RELEASE
-    ONSET_INFO("Configuration: RELEASE");
+    ONSET_INFO("CONFIGURATION: RELEASE");
 #endif
 #ifdef ONSET_PLATFORM_WINDOWS
-    ONSET_INFO("Platform: WINDOWS");
+    ONSET_INFO("PLATFORM: WINDOWS");
 #endif
 #ifdef ONSET_PLATFORM_LINUX
-    ONSET_INFO("Platform: LINUX");
+    ONSET_INFO("PLATFORM: LINUX");
 #endif
 #ifdef ONSET_PLATFORM_MAC
-    ONSET_INFO("Platform: MAC");
+    ONSET_INFO("PLATFORM: MAC");
 #endif
 }
 
 // initialize(): ---------------------------------------------------------------
 void Game::initialize() {
+    m_isRunning = true;
+
+    m_logManager.initialize();
     getInfo();
 
-    m_windowPtr = new Window(m_screenWidth, m_screenHeight);
-    m_invokerPtr = new InputInvoker();
+    m_windowPtr = std::make_unique<Window>(m_screenWidth, m_screenHeight);
+    m_invokerPtr = std::make_unique<InputInvoker>();
 
     // pass our registry to the invoker, for InputCommander execute()'s
     m_invokerPtr->setInvokerRegistry(&m_registry);
     m_invokerPtr->setInvokerAspect(m_screenWidth, m_screenHeight);
 
     // must set window's invoker before initializing window
-    m_windowPtr->setInvoker(m_invokerPtr);
+    m_windowPtr->setInvoker(m_invokerPtr.get());
     // initialize GLFW window and GLAD
     m_windowPtr->initialize();
 }
@@ -252,13 +239,13 @@ void Game::processInput() {
 
 // update(): -------------------------------------------------------------------
 void Game::update(const float timeStep, const int32 velocityIterations, const int32 positionIterations) {
-    // Box2D simulation
+    // box2D update
     m_world->Step(timeStep, velocityIterations, positionIterations);
     m_cameraSystem.update(timeStep, m_registry);
 }
 
 // render(): -------------------------------------------------------------------
-void Game::render(float renderFactor) {
+void Game::render(const float renderFactor) {
     // specify color values to then use in filling color buffer
     glClearColor(0.3f, 0.3f, 0.5f, 1.0f);   // R, G, B, Alpha
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -283,7 +270,5 @@ void Game::destroy() {
     // TODO: will need to use this method to delete buffers between game levels
     m_renderSystem.deleteBuffers(m_registry);
     
-    delete m_windowPtr;
-    delete m_invokerPtr;
     m_logManager.shutdown();
 }

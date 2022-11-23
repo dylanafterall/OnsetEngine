@@ -25,49 +25,179 @@
 
 #include <memory>
 
+/** 
+ * \brief   The Game class.
+ * \details Used by main() to manage all game properties. Initializes all 
+ *          required subsystems. Generates graphic output. Handles input. 
+ *          Updates game state. Begins and ends game loop.
+ */
 class Game {
 public:
-    // constructor and destructor
-    Game();
-    ~Game();
+    /**
+     * \brief   The default constructor. 
+     */
+    Game() = default;
 
-    // pre loop
+    /**
+     * \brief   The default destructor. 
+     */
+    ~Game() = default;
+
+    /**
+     * \brief   The function getInfo. 
+     * \details This function calls the LogManager class to print the engine's 
+     *          current version, configuration, and platform to logs. Useful 
+     *          context info when reading logs.
+     * \return  void, none.
+     */
     void getInfo();
+
+    /**
+     * \brief   The function initialize. 
+     * \details This function creates the game's Window and InputInvoker class 
+     *          objects. It first sets up the invoker object, before then
+     *          passing a pointer of the invoker to the window. Finally, 
+     *          it initializes the window object - creating graphical output.
+     * \return  void, none.
+     */
     void initialize();
+
+    /**
+     * \brief   The function setup.
+     * \details This function loads assets via the AssetManager class and 
+     *          creates/registers entities.
+     *          for a given game level. 
+     * \return  void, none.
+     */
     void setup();
 
-    // game loop
+    /**
+     * \brief   The function run. 
+     * \details This function contains the engine's game loop, which is 
+     *          divided into 3 parts: processInput, update, and render. It
+     *          also calculates the deltaTime for use in determining the 
+     *          number of calls to update per game loop iteration, and for 
+     *          rendering interpolation.
+     * \return  void, none.
+     */
     void run();
-    void processInput();
-    void update(const float, const int32, const int32);
-    void render(float);
 
-    // post loop
+    /**
+     * \brief   The function processInput. 
+     * \details This function handles input handling which affects the game
+     *          loop. Examples include player, hardware, or network input.
+     * \return  void, none.
+     */
+    void processInput();
+
+    /**
+     * \brief   The function update. 
+     * \details This function calls on various 'system' classes to update their
+     *          status, based on a constant timeStep (as opposed to a variable 
+     *          deltaTime). This is to ensure physics and similar simulations 
+     *          update in fixed, discrete sized steps. Results in deterministic
+     *          behavior (decoupled from rendering).
+     * \param[in]  timeStep            The amount of time to simulate. Fixed
+     *                                 value (representing seconds).
+     * \param[in]  velocityIterations  For Box2D's velocity constraint solver.
+     * \param[in]  positionIterations  For Box2D's position constraint solver. 
+     * \return     void, none.
+     */
+    void update(const float, const int32, const int32);
+
+    /**
+     * \brief   The function render. 
+     * \details This function calls on OpenGL to fill its back buffer, then
+     *          calls the RenderSystem class to draw EnTT entities on the back
+     *          buffer, then swaps front and back buffers. 
+     * \param[in]  renderFactor  For render interpolation (lag / timeStep).
+     * \return  void, none.
+     */
+    void render(const float);
+
+    /**
+     * \brief   The function destroy. 
+     * \details This function ensures that all heap memory allocated for the
+     *          Game class is de-allocated.
+     * \return  void, none.
+     */
     void destroy();
 
 private:
-    bool m_isRunning;
+    /**
+     * \brief Variable used to break the game loop.
+     */
+    bool m_isRunning = false;
+    /**
+     * \brief Variable used to change game's aspect ratio.
+     */
     unsigned int m_screenWidth = 800;
+    /**
+     * \brief Variable used to change game's aspect ratio.
+     */
     unsigned int m_screenHeight = 600;
-     // rendering deltatime
+
+    /**
+     * \brief Variable used in calculating game's deltaTime and lag.
+     */
     double previousTime = 0.0;
+    /**
+     * \brief Variable used to calculate number of update steps and render
+     *        interpolation.
+     */
     double lag = 0.0;
-    // core classes
-    Window* m_windowPtr;
-    InputInvoker* m_invokerPtr;
+
+    /**
+     * \brief Object to manage the game's window using OpenGL API.
+     */
+    std::unique_ptr<Window> m_windowPtr;
+    /**
+     * \brief Object that acts as a layer of abstraction between callback 
+     *        functions and associated game commands.
+     */
+    std::unique_ptr<InputInvoker> m_invokerPtr;
+    /**
+     * \brief Object used to import mesh, shader, texture, and audio assets.
+     */
     AssetManager m_assetManager;
+    /**
+     * \brief Ojbect to act as a wrapper class around spdlog functionality.
+     */
     LogManager m_logManager;
-    // system classes
+
+    /**
+     * \brief Object to render entities of game's registry.
+     */
     RenderSystem m_renderSystem;
+    /**
+     * \brief Object to translate/rotate the camera.
+     */
     CameraSystem m_cameraSystem;
 
-    // EnTT 
+    /**
+     * \brief EnTT registry to manage all game entities.
+     */
     entt::registry m_registry;
-    // Box2D physics
+
+    /**
+     * \brief Fixed time step for simulation (0.1 secs default).
+     */
     const float TIME_STEP = 0.01f;
-    const int32 VELOCITY_ITERATIONS = 8;    // 8 is recommended by Box2D
-    const int32 POSITION_ITERATIONS = 3;    // 3 is recommended by Box2D
+    /**
+     * \brief Box2D constraint solver, 8 recommended by Box2D documentation.
+     */
+    const int32 VELOCITY_ITERATIONS = 8;
+    /**
+     * \brief Box2D constraint solver, 3 recommended by Box2D documentation.
+     */
+    const int32 POSITION_ITERATIONS = 3;
+    /**
+     * \brief Object used by Box2D to simulate game-world gravity.
+     */
     std::unique_ptr<b2Vec2> m_gravity = std::make_unique<b2Vec2>(0.0f, -10.0f);
+    /**
+     * \brief Object used by Box2D to manage physics bodies in game-world.
+     */
     std::unique_ptr<b2World> m_world = std::make_unique<b2World>(*m_gravity);
 };
 

@@ -21,7 +21,7 @@ public:
     ~Window();
 
     void initialize();
-    void setInvoker(InputInvoker*);
+    void setInvoker(InputInvoker* invoker);
 
     unsigned int m_screenWidth;
     unsigned int m_screenHeight;
