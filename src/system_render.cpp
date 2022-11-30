@@ -11,7 +11,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-// update(): -------------------------------------------------------------------
 void RenderSystem::update(
     const float timeStep, 
     entt::registry& registry,
@@ -166,7 +165,6 @@ void RenderSystem::update(
     });
 }
 
-// deleteBuffers(): ------------------------------------------------------------
 void RenderSystem::deleteBuffers(entt::registry& registry) {
     // retrieve a view of entities with applicable components
     auto buffers = registry.view<RenderBuffersComponent>();

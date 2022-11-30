@@ -29,7 +29,7 @@ project(OnsetEngine
 add_executable(${PROJECT_NAME}
     src/main.cpp
     src/core_game.cpp
-    src/core_window.cpp
+    src/core_window_manager.cpp
     src/core_asset_manager.cpp
     src/core_input_invoker.cpp
     src/core_input_commander.cpp

@@ -9,15 +9,81 @@
 
 #include "core_input_invoker.h"
 
-// InputInvoker(): -------------------------------------------------------------
-InputInvoker::InputInvoker() {
+
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
+// initialize and destroy
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
+
+void InputInvoker::initialize(
+    GLFWwindow* glfwWindow,
+    entt::registry* registryPtr, 
+    unsigned int screenWidth, 
+    unsigned int screenHeight
+) {
+    m_glfwWindow = glfwWindow;
+    m_registryPtr = registryPtr;
+    m_screenWidth = screenWidth;
+    m_screenHeight = screenHeight;
+    m_lastX = screenWidth / 2;
+    m_lastY = screenHeight / 2;
+
+    // glfw callback functions for user input 
+    glfwSetWindowUserPointer(m_glfwWindow, this);
+
+    // keyboard input
+    auto key_callback = [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleKeyInput(window, key, action);
+    };
+    glfwSetKeyCallback(m_glfwWindow, key_callback);
+    // glfwSetInputMode(m_glfwWindow, GLFW_STICKY_KEYS, 1);
+    // glfwSetInputMode(window, GLFW_LOCK_KEY_MODS, GLFW_TRUE);
+
+    // mouse input
+    auto mouse_callback = [](GLFWwindow* window, double xposIn, double yposIn) {
+        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleMouseInput(xposIn, yposIn);
+    };
+    glfwSetCursorPosCallback(m_glfwWindow, mouse_callback);
+    // tell GLFW to capture our mouse
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    
+    // scroll input
+    auto scroll_callback = [](GLFWwindow* window, double xoffset, double yoffset) {
+        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleScrollInput(static_cast<float>(yoffset));
+    };
+    glfwSetScrollCallback(m_glfwWindow, scroll_callback);
+
+    // set input commands 
+    setScrollUpCommand(new CameraZoomInCommand());
+    setScrollDownCommand(new CameraZoomOutCommand());
+    setCursorLeftCommand(new WestCommand());
+    setCursorDownCommand(new SouthCommand());
+    setCursorRightCommand(new EastCommand());
+    setCursorUpCommand(new NorthCommand());
+    setCursorUp_rightCommand(new NortheastCommand());
+    setCursorUp_leftCommand(new NorthwestCommand());
+    setCursorDown_leftCommand(new SouthwestCommand());
+    setCursorDown_rightCommand(new SoutheastCommand());
+    setAKeyCommand(new LeftCommand);
+    setSKeyCommand(new DownCommand());
+    setDKeyCommand(new RightCommand());
+    setWKeyCommand(new UpCommand());
+    setHKeyCommand(new CameraLeftCommand());
+    setJKeyCommand(new CameraDownCommand());
+    setKKeyCommand(new CameraUpCommand());
+    setLKeyCommand(new CameraRightCommand());
+    setUKeyCommand(new CameraForwardCommand());
+    setIKeyCommand(new CameraBackwardCommand());
+    set7KeyCommand(new CameraPitchUpCommand());
+    set8KeyCommand(new CameraPitchDownCommand());
+    set9KeyCommand(new CameraYawLeftCommand());
+    set0KeyCommand(new CameraYawRightCommand());
 }
 
-// ~InputInvoker(): ------------------------------------------------------------
-InputInvoker::~InputInvoker() {
+void InputInvoker::destroy() {
     delete m_scrollUpMove;
     delete m_scrollDownMove;
-
     delete m_cursorLeftMove;
     delete m_cursorDownMove;
     delete m_cursorRightMove;
@@ -26,7 +92,6 @@ InputInvoker::~InputInvoker() {
     delete m_cursorUp_leftMove;
     delete m_cursorDown_leftMove;
     delete m_cursorDown_rightMove;
-
     delete m_keyA;
     delete m_keyS;
     delete m_keyD;
@@ -45,217 +110,62 @@ InputInvoker::~InputInvoker() {
 
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
-// setting up invoker
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
-
-// setInvokerRegistry(): -------------------------------------------------------
-void InputInvoker::setInvokerRegistry(entt::registry* registryPtr) {
-    m_registryPtr = registryPtr;
-}
-
-// setInvokerAspect(): ---------------------------------------------------------
-void InputInvoker::setInvokerAspect(unsigned int screenWidth, unsigned int screenHeight) {
-    m_screenWidth = screenWidth;
-    m_screenHeight = screenHeight;
-    m_lastX = screenWidth / 2;
-    m_lastY = screenHeight / 2;
-}
-
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
-// setting scroll wheel 
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
-
-// setScrollUpCommand(): -------------------------------------------------------
-void InputInvoker::setScrollUpCommand(IInputCommand* command) {
-    m_scrollUpMove = command;
-}
-
-// setScrollDownCommand(): -----------------------------------------------------
-void InputInvoker::setScrollDownCommand(IInputCommand* command) {
-    m_scrollDownMove = command;
-}
-
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
-// setting cursor 
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
-
-// setCursorLeftCommand(): -----------------------------------------------------
-void InputInvoker::setCursorLeftCommand(IInputCommand* command) {
-    m_cursorLeftMove = command;
-}
-
-// setCursorDownCommand(): -----------------------------------------------------
-void InputInvoker::setCursorDownCommand(IInputCommand* command) {
-    m_cursorDownMove = command;
-}
-
-// setCursorRightCommand(): ----------------------------------------------------
-void InputInvoker::setCursorRightCommand(IInputCommand* command) {
-    m_cursorRightMove = command;
-}
-
-// setCursorUpCommand(): -------------------------------------------------------
-void InputInvoker::setCursorUpCommand(IInputCommand* command) {
-    m_cursorUpMove = command;
-}
-
-// setCursorUp_rightCommand(): -------------------------------------------------
-void InputInvoker::setCursorUp_rightCommand(IInputCommand* command) {
-    m_cursorUp_rightMove = command;
-}
-
-// setCursorUp_leftCommand(): --------------------------------------------------
-void InputInvoker::setCursorUp_leftCommand(IInputCommand* command) {
-    m_cursorUp_leftMove = command;
-}
-
-// setCursorDown_leftCommand(): ------------------------------------------------
-void InputInvoker::setCursorDown_leftCommand(IInputCommand* command) {
-    m_cursorDown_leftMove = command;
-}
-
-// setCursorDown_rightCommand(): ----------------------------------------------
-void InputInvoker::setCursorDown_rightCommand(IInputCommand* command) {
-    m_cursorDown_rightMove = command;
-}
-
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
-// setting keys
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
-
-// setAKeyCommand(): -----------------------------------------------------------
-void InputInvoker::setAKeyCommand(IInputCommand* command) {
-    m_keyA = command;
-}
-
-// setSKeyCommand(): -----------------------------------------------------------
-void InputInvoker::setSKeyCommand(IInputCommand* command) {
-    m_keyS = command;
-}
-
-// setDKeyCommand(): -----------------------------------------------------------
-void InputInvoker::setDKeyCommand(IInputCommand* command) {
-    m_keyD = command;
-}
-
-// setWKeyCommand(): -----------------------------------------------------------
-void InputInvoker::setWKeyCommand(IInputCommand* command) {
-    m_keyW = command;
-}
-
-// setHKeyCommand(): -----------------------------------------------------------
-void InputInvoker::setHKeyCommand(IInputCommand* command) {
-    m_keyH = command;
-}
-
-// setJKeyCommand(): -----------------------------------------------------------
-void InputInvoker::setJKeyCommand(IInputCommand* command) {
-    m_keyJ = command;
-}
-
-// setKKeyCommand(): -----------------------------------------------------------
-void InputInvoker::setKKeyCommand(IInputCommand* command) {
-    m_keyK = command;
-}
-
-// setLKeyCommand(): -----------------------------------------------------------
-void InputInvoker::setLKeyCommand(IInputCommand* command) {
-    m_keyL = command;
-}
-
-// setUKeyCommand(): -----------------------------------------------------------
-void InputInvoker::setUKeyCommand(IInputCommand* command) {
-    m_keyU = command;
-}
-
-// setIKeyCommand(): -----------------------------------------------------------
-void InputInvoker::setIKeyCommand(IInputCommand* command) {
-    m_keyI = command;
-}
-
-// set7KeyCommand(): -----------------------------------------------------------
-void InputInvoker::set7KeyCommand(IInputCommand* command) {
-    m_key7 = command;
-}
-
-// set8KeyCommand(): -----------------------------------------------------------
-void InputInvoker::set8KeyCommand(IInputCommand* command) {
-    m_key8 = command;
-}
-
-// set9KeyCommand(): -----------------------------------------------------------
-void InputInvoker::set9KeyCommand(IInputCommand* command) {
-    m_key9 = command;
-}
-
-// set0KeyCommand(): -----------------------------------------------------------
-void InputInvoker::set0KeyCommand(IInputCommand* command) {
-    m_key0 = command;
-}
-
-// _____________________________________________________________________________
-// -----------------------------------------------------------------------------
 // handling inputs
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
-// handleKeyInput(): -----------------------------------------------------------
 void InputInvoker::handleKeyInput(GLFWwindow* window, int key, int action) {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    }
-    else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-        m_keyA->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-        m_keyS->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-        m_keyD->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-        m_keyW->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_H && action == GLFW_PRESS) {
-        m_keyH->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_J && action == GLFW_PRESS) {
-        m_keyJ->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_K && action == GLFW_PRESS) {
-        m_keyK->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_L && action == GLFW_PRESS) {
-        m_keyL->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_U && action == GLFW_PRESS) {
-        m_keyU->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_I && action == GLFW_PRESS) {
-        m_keyI->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_7 && action == GLFW_PRESS) {
-        m_key7->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_8 && action == GLFW_PRESS) {
-        m_key8->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_9 && action == GLFW_PRESS) {
-        m_key9->execute(*m_registryPtr);
-    }
-    else if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
-        m_key0->execute(*m_registryPtr);
+    if (action == GLFW_PRESS) {
+        switch (key) {
+            case GLFW_KEY_ESCAPE:
+                glfwSetWindowShouldClose(window, true);
+                break;
+            case GLFW_KEY_A:
+                m_keyA->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_S:
+                m_keyS->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_D:
+                m_keyD->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_W:
+                m_keyW->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_H:
+                m_keyH->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_J:
+                m_keyJ->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_K:
+                m_keyK->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_L:
+                m_keyL->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_U:
+                m_keyU->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_I:
+                m_keyI->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_7:
+                m_key7->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_8:
+                m_key8->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_9:
+                m_key9->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_0:
+                m_key0->execute(*m_registryPtr);
+                break;
+        }
     }
 }
 
-// handleMouseInput(): ---------------------------------------------------------
 void InputInvoker::handleMouseInput(double xposIn, double yposIn) {
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
@@ -293,10 +203,123 @@ void InputInvoker::handleMouseInput(double xposIn, double yposIn) {
     }
 }
 
-// handleScrollInput(): --------------------------------------------------------
 void InputInvoker::handleScrollInput(float yoffset) {
     // positive yoffset means scroll down
     if (yoffset > 0) {m_scrollDownMove->execute(*m_registryPtr);}
     // negative yoffset is scroll up
     else {m_scrollUpMove->execute(*m_registryPtr);}
+}
+
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
+// setting scroll wheel 
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
+
+void InputInvoker::setScrollUpCommand(IInputCommand* command) {
+    m_scrollUpMove = command;
+}
+
+void InputInvoker::setScrollDownCommand(IInputCommand* command) {
+    m_scrollDownMove = command;
+}
+
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
+// setting cursor 
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
+
+void InputInvoker::setCursorLeftCommand(IInputCommand* command) {
+    m_cursorLeftMove = command;
+}
+
+void InputInvoker::setCursorDownCommand(IInputCommand* command) {
+    m_cursorDownMove = command;
+}
+
+void InputInvoker::setCursorRightCommand(IInputCommand* command) {
+    m_cursorRightMove = command;
+}
+
+void InputInvoker::setCursorUpCommand(IInputCommand* command) {
+    m_cursorUpMove = command;
+}
+
+void InputInvoker::setCursorUp_rightCommand(IInputCommand* command) {
+    m_cursorUp_rightMove = command;
+}
+
+void InputInvoker::setCursorUp_leftCommand(IInputCommand* command) {
+    m_cursorUp_leftMove = command;
+}
+
+void InputInvoker::setCursorDown_leftCommand(IInputCommand* command) {
+    m_cursorDown_leftMove = command;
+}
+
+void InputInvoker::setCursorDown_rightCommand(IInputCommand* command) {
+    m_cursorDown_rightMove = command;
+}
+
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
+// setting keys
+// _____________________________________________________________________________
+// -----------------------------------------------------------------------------
+
+void InputInvoker::setAKeyCommand(IInputCommand* command) {
+    m_keyA = command;
+}
+
+void InputInvoker::setSKeyCommand(IInputCommand* command) {
+    m_keyS = command;
+}
+
+void InputInvoker::setDKeyCommand(IInputCommand* command) {
+    m_keyD = command;
+}
+
+void InputInvoker::setWKeyCommand(IInputCommand* command) {
+    m_keyW = command;
+}
+
+void InputInvoker::setHKeyCommand(IInputCommand* command) {
+    m_keyH = command;
+}
+
+void InputInvoker::setJKeyCommand(IInputCommand* command) {
+    m_keyJ = command;
+}
+
+void InputInvoker::setKKeyCommand(IInputCommand* command) {
+    m_keyK = command;
+}
+
+void InputInvoker::setLKeyCommand(IInputCommand* command) {
+    m_keyL = command;
+}
+
+void InputInvoker::setUKeyCommand(IInputCommand* command) {
+    m_keyU = command;
+}
+
+void InputInvoker::setIKeyCommand(IInputCommand* command) {
+    m_keyI = command;
+}
+
+void InputInvoker::set7KeyCommand(IInputCommand* command) {
+    m_key7 = command;
+}
+
+void InputInvoker::set8KeyCommand(IInputCommand* command) {
+    m_key8 = command;
+}
+
+void InputInvoker::set9KeyCommand(IInputCommand* command) {
+    m_key9 = command;
+}
+
+void InputInvoker::set0KeyCommand(IInputCommand* command) {
+    m_key0 = command;
 }

@@ -41,7 +41,7 @@ new techniques and practices over time.
     <li>API: <a href="https://www.opengl.org/">OpenGL</a> </li>
     <li>LSP: <a href="https://clangd.llvm.org/">clangd</a> </li>
     <li>Static Analysis: <a href="http://cppcheck.net/">Cppcheck</a>, <a href="https://clang.llvm.org/extra/clang-tidy/">Clang-Tidy</a> </li>
-    <li>Dynamic Analysis: <a href="https://lldb.llvm.org/">LLDB</a>, <a href="https://valgrind.org/">Valgrind</a>, <a href="https://github.com/wolfpld/tracy">Tracy Profiler</a> </li>
+    <li>Dynamic Analysis: <a href="https://lldb.llvm.org/">LLDB</a>, <a href="https://valgrind.org/">Valgrind</a>, <a href="https://github.com/aristocratos/btop">btop++</a>, <a href="https://github.com/wolfpld/tracy">Tracy Profiler</a> </li>
 </ul>
 </p>
 

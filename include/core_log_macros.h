@@ -12,6 +12,7 @@
 
 #define ONSET_DEFAULT_LOGGER_NAME "OnsetLogger"
 
+// enable logging for debug builds
 #ifndef ONSET_CONFIG_RELEASE
 #define ONSET_TRACE(...) if(spdlog::get(ONSET_DEFAULT_LOGGER_NAME) != nullptr) {spdlog::get(ONSET_DEFAULT_LOGGER_NAME)->trace(__VA_ARGS__);}
 #define ONSET_DEBUG(...) if(spdlog::get(ONSET_DEFAULT_LOGGER_NAME) != nullptr) {spdlog::get(ONSET_DEFAULT_LOGGER_NAME)->debug(__VA_ARGS__);}

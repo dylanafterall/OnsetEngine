@@ -14,48 +14,31 @@
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
-// getInfo(): ------------------------------------------------------------------
-void Game::getInfo() {
-    ONSET_INFO("ONSET ENGINE v{}.{}.{}", 0, 1, 0);
+void Game::initialize() {
+    m_isRunning = true;
 
+    m_logManager.initialize();
+    ONSET_INFO("ONSET ENGINE v{}.{}.{}", 0, 1, 0);
+    // defining engine config in core_game.h
 #ifdef ONSET_CONFIG_DEBUG
     ONSET_INFO("CONFIGURATION: DEBUG");
 #endif
 #ifdef ONSET_CONFIG_RELEASE
     ONSET_INFO("CONFIGURATION: RELEASE");
 #endif
-#ifdef ONSET_PLATFORM_WINDOWS
-    ONSET_INFO("PLATFORM: WINDOWS");
-#endif
-#ifdef ONSET_PLATFORM_LINUX
-    ONSET_INFO("PLATFORM: LINUX");
-#endif
-#ifdef ONSET_PLATFORM_MAC
-    ONSET_INFO("PLATFORM: MAC");
-#endif
+
+    m_windowManager = std::make_unique<WindowManager>();
+    m_windowManager->initialize(m_screenWidth, m_screenHeight);
+
+    m_inputInvoker = std::make_unique<InputInvoker>();
+    m_inputInvoker->initialize(
+        m_windowManager->m_glfwWindow, 
+        &m_registry, 
+        m_screenWidth, 
+        m_screenHeight
+    );
 }
 
-// initialize(): ---------------------------------------------------------------
-void Game::initialize() {
-    m_isRunning = true;
-
-    m_logManager.initialize();
-    getInfo();
-
-    m_windowPtr = std::make_unique<Window>(m_screenWidth, m_screenHeight);
-    m_invokerPtr = std::make_unique<InputInvoker>();
-
-    // pass our registry to the invoker, for InputCommander execute()'s
-    m_invokerPtr->setInvokerRegistry(&m_registry);
-    m_invokerPtr->setInvokerAspect(m_screenWidth, m_screenHeight);
-
-    // must set window's invoker before initializing window
-    m_windowPtr->setInvoker(m_invokerPtr.get());
-    // initialize GLFW window and GLAD
-    m_windowPtr->initialize();
-}
-
-// setup(): --------------------------------------------------------------------
 void Game::setup() {
     // AssetManager ............................................................
     m_assetManager.setVShader("vert", "../assets/shaders/v.vert");
@@ -206,11 +189,10 @@ void Game::setup() {
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
-// run(): ----------------------------------------------------------------------
 void Game::run() {
     // glfwWindowShouldClose() returns GL_FALSE until window instructed to close
-    while (!glfwWindowShouldClose(m_windowPtr->m_glfwWindow) && m_isRunning) {
-        // find time-step ...................................................... 
+    while (!glfwWindowShouldClose(m_windowManager->m_glfwWindow) && m_isRunning) {
+        // find time-step 
         double currentTime = glfwGetTime();    // returns time in secs
         double deltaTime = currentTime - previousTime;
         // cap the max number of Update() looping - to prevent locking up
@@ -221,7 +203,7 @@ void Game::run() {
         previousTime = currentTime;
         lag += deltaTime;
 
-        // game loop ...........................................................
+        // game loop
         processInput();
         // use a fixed-step for Update(), for physics and AI
         while (lag >= TIME_STEP) {
@@ -233,18 +215,15 @@ void Game::run() {
     }
 }
 
-// processInput(): -------------------------------------------------------------
 void Game::processInput() {
 }
 
-// update(): -------------------------------------------------------------------
 void Game::update(const float timeStep, const int32 velocityIterations, const int32 positionIterations) {
     // box2D update
     m_world->Step(timeStep, velocityIterations, positionIterations);
     m_cameraSystem.update(timeStep, m_registry);
 }
 
-// render(): -------------------------------------------------------------------
 void Game::render(const float renderFactor) {
     // specify color values to then use in filling color buffer
     glClearColor(0.3f, 0.3f, 0.5f, 1.0f);   // R, G, B, Alpha
@@ -253,7 +232,7 @@ void Game::render(const float renderFactor) {
     m_renderSystem.update(renderFactor, m_registry, m_screenWidth, m_screenHeight);
 
     // swap front and back buffers (drawing to back buffer, displaying front)
-    glfwSwapBuffers(m_windowPtr->m_glfwWindow);
+    glfwSwapBuffers(m_windowManager->m_glfwWindow);
     // call window and input callbacks associated with these events
     glfwPollEvents();
 }
@@ -264,11 +243,13 @@ void Game::render(const float renderFactor) {
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
-// destroy(): ------------------------------------------------------------------
 void Game::destroy() {
-    // temporarily deleting buffers here for now
-    // TODO: will need to use this method to delete buffers between game levels
+    // temporarily deleting buffers, assets, entities here for now
+    // TODO: will need to use these methods between game levels
     m_renderSystem.deleteBuffers(m_registry);
+    m_assetManager.deleteAssets();
     
-    m_logManager.shutdown();
+    m_inputInvoker->destroy();
+    m_windowManager->destroy();
+    m_logManager.destroy();
 }

@@ -9,11 +9,11 @@
 #define CORE_GAME_H
 
 #define ONSET_CONFIG_DEBUG
-#define ONSET_PLATFORM_MAC
 
 #include "component_all.h"
 #include "core_asset_manager.h"
-#include "core_window.h"
+#include "core_window_manager.h"
+#include "core_input_invoker.h"
 #include "core_log_manager.h"
 #include "core_log_macros.h"
 #include "system_all.h"
@@ -42,15 +42,6 @@ public:
      * \brief   The default destructor. 
      */
     ~Game() = default;
-
-    /**
-     * \brief   The function getInfo. 
-     * \details This function calls the LogManager class to print the engine's 
-     *          current version, configuration, and platform to logs. Useful 
-     *          context info when reading logs.
-     * \return  void, none.
-     */
-    void getInfo();
 
     /**
      * \brief   The function initialize. 
@@ -97,11 +88,11 @@ public:
      *          deltaTime). This is to ensure physics and similar simulations 
      *          update in fixed, discrete sized steps. Results in deterministic
      *          behavior (decoupled from rendering).
-     * \param[in]  timeStep            The amount of time to simulate. Fixed
+     * \param   timeStep            The amount of time to simulate. Fixed
      *                                 value (representing seconds).
-     * \param[in]  velocityIterations  For Box2D's velocity constraint solver.
-     * \param[in]  positionIterations  For Box2D's position constraint solver. 
-     * \return     void, none.
+     * \param   velocityIterations  For Box2D's velocity constraint solver.
+     * \param   positionIterations  For Box2D's position constraint solver. 
+     * \return  void, none.
      */
     void update(const float, const int32, const int32);
 
@@ -110,7 +101,7 @@ public:
      * \details This function calls on OpenGL to fill its back buffer, then
      *          calls the RenderSystem class to draw EnTT entities on the back
      *          buffer, then swaps front and back buffers. 
-     * \param[in]  renderFactor  For render interpolation (lag / timeStep).
+     * \param   renderFactor  For render interpolation (lag / timeStep).
      * \return  void, none.
      */
     void render(const float);
@@ -150,12 +141,12 @@ private:
     /**
      * \brief Object to manage the game's window using OpenGL API.
      */
-    std::unique_ptr<Window> m_windowPtr;
+    std::unique_ptr<WindowManager> m_windowManager;
     /**
      * \brief Object that acts as a layer of abstraction between callback 
      *        functions and associated game commands.
      */
-    std::unique_ptr<InputInvoker> m_invokerPtr;
+    std::unique_ptr<InputInvoker> m_inputInvoker;
     /**
      * \brief Object used to import mesh, shader, texture, and audio assets.
      */

@@ -17,7 +17,6 @@
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
-// setTexutre(): ---------------------------------------------------------------
 void AssetManager::setTexture(const std::string& assetId, const char* texturePath) {
     // generate and bind texture for OpenGL configuration
     unsigned int texture;
@@ -101,7 +100,6 @@ void AssetManager::setTexture(const std::string& assetId, const char* texturePat
     stbi_image_free(data);
 }
 
-// setVShader(): ---------------------------------------------------------------
 void AssetManager::setVShader(const std::string& assetId, const char* vertexPath) {
     // retrieve the vertex source code from filePath 
     std::string vertexCode;
@@ -143,7 +141,6 @@ void AssetManager::setVShader(const std::string& assetId, const char* vertexPath
     ONSET_INFO("New VShader added to Asset Manager with id = {}", assetId);
 }
  
-// setFShader(): ---------------------------------------------------------------
 void AssetManager::setFShader(const std::string& assetId, const char* fragmentPath) {
     // retrieve the shader source code from filePath 
     std::string fragmentCode;
@@ -179,7 +176,6 @@ void AssetManager::setFShader(const std::string& assetId, const char* fragmentPa
     ONSET_INFO("New FShader added to Asset Manager with id = {}", assetId);
 }
 
-// setShaderProgram(): ---------------------------------------------------------
 void AssetManager::setShaderProgram(const std::string& assetId, unsigned int vertexShader, unsigned int fragmentShader) {
     unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
@@ -200,22 +196,18 @@ void AssetManager::setShaderProgram(const std::string& assetId, unsigned int ver
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
-// getTexture(): ---------------------------------------------------------------
 unsigned int AssetManager::getTexture(const std::string& assetId) {
     return textures[assetId];
 }
 
-// getVShader(): ---------------------------------------------------------------
 unsigned int AssetManager::getVShader(const std::string& assetId) {
     return vshaders[assetId];
 }
 
-// getFShader(): ---------------------------------------------------------------
 unsigned int AssetManager::getFShader(const std::string& assetId) {
     return fshaders[assetId];
 }
 
-// getShaderProgram(): ---------------------------------------------------------
 unsigned int AssetManager::getShaderProgram(const std::string& assetId) {
     return shaderPrograms[assetId];
 }
@@ -226,8 +218,7 @@ unsigned int AssetManager::getShaderProgram(const std::string& assetId) {
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
-// clearAssets(): --------------------------------------------------------------
-void AssetManager::clearAssets() {
+void AssetManager::deleteAssets() {
     for (auto texture : textures) {
         glDeleteTextures(1, &texture.second);
     }
@@ -249,7 +240,6 @@ void AssetManager::clearAssets() {
     shaderPrograms.clear();
 }
 
-// checkShaderErrors(): --------------------------------------------------------
 void AssetManager::checkShaderErrors(unsigned int shader, std::string type) {
     int success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -267,7 +257,6 @@ void AssetManager::checkShaderErrors(unsigned int shader, std::string type) {
     }
 }
 
-// checkShaderProgramErrors(): -------------------------------------------------
 void AssetManager::checkShaderProgramErrors(unsigned int program) {
     int success;
     glGetProgramiv(program, GL_LINK_STATUS, &success);

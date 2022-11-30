@@ -31,7 +31,6 @@ void CameraSystem::update(const float timeStep, entt::registry& registry) {
     });
 }
 
-// updateCameraVectors(): calculates the front vector from updated Euler Angles
 void CameraSystem::updateCameraVectors(entt::registry& registry) {
     // retrieve a view of entities with applicable components
     auto cameras = registry.view<CameraComponent>();

@@ -27,6 +27,6 @@ void LogManager::initialize() {
     spdlog::register_logger(logger);
 }
 
-void LogManager::shutdown() {
+void LogManager::destroy() {
     spdlog::shutdown();
 }
