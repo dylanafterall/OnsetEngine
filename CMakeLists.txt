@@ -34,7 +34,6 @@ add_executable(${PROJECT_NAME}
     src/core_input_invoker.cpp
     src/core_input_commander.cpp
     src/core_log_manager.cpp
-    src/system_movement.cpp
     src/system_render.cpp
     src/system_camera.cpp
 )

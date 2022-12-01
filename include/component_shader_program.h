@@ -8,10 +8,22 @@
 #ifndef COMPONENT_SHADER_PROGRAM_H
 #define COMPONENT_SHADER_PROGRAM_H
 
+/** 
+ * \brief   The ShaderProgramComponent struct.
+ * \details A struct to hold data pertaining to OpenGL shader programs.
+ */
 struct ShaderProgramComponent {
+    /**
+     * \brief Unique OpenGL ID for a shader program (combination of a vertex and 
+     *        fragment shader).
+     */
     unsigned int m_shaderProgram;
 
-    // receive texture from AssetManager texture map using getTexture
+    /**
+     * \brief   The constructor.
+     * \details Receives a shader program from AssetManager shaderPrograms map
+     *          using getShaderProgram.
+     */
     explicit ShaderProgramComponent(unsigned int shaderProgram) : 
         m_shaderProgram(shaderProgram) {
     }

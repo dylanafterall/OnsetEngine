@@ -11,29 +11,85 @@
 
 #include "glm/glm.hpp"
 
-// default camera values
+/**
+ * \brief Default camera yaw value.
+ */
 const float YAW         = -90.0f;
+/**
+ * \brief Default camera pitch value.
+ */
 const float PITCH       =  0.0f;
+/**
+ * \brief Default camera speed value.
+ */
 const float SPEED       =  1.0f;
+/**
+ * \brief Default camera sensitivity value.
+ */
 const float SENSITIVITY =  1.0f;
+/**
+ * \brief Default camera zoom value.
+ */
 const float ZOOM        =  45.0f;
 
+/** 
+ * \brief   The CameraComponent struct.
+ * \details A struct to hold data pertaining to the game's camera.
+ */
 struct CameraComponent {
-    // euler angles
+    /**
+     * \brief Camera yaw (euler angle) value member variable. Scalar.
+     */
     float m_yaw;
+    /**
+     * \brief Camera pitch (euler angle) value member variable. Scalar.
+     */
     float m_pitch;
-    // camera options
+    
+    /**
+     * \brief Camera speed value member variable. Scalar.
+     */
     float m_speed;
+    /**
+     * \brief Camera sensitivity value member variable. Scalar.
+     */
     float m_sensitivity;
+    /**
+     * \brief Camera zoom value member variable. Scalar.
+     */
     float m_zoom;
 
+    /**
+     * \brief Camera position value member variable. Vector.
+     */
     glm::vec3 m_position;
+    /**
+     * \brief Camera front direction value member variable. Vector.
+     */
     glm::vec3 m_front;
+    /**
+     * \brief Camera up direction value member variable. Vector.
+     */
     glm::vec3 m_up;
+    /**
+     * \brief Camera right direction value member variable. Vector.
+     */
     glm::vec3 m_right;
+    /**
+     * \brief World up direction value member variable. Vector.
+     */
     glm::vec3 m_worldUp;
 
-    // constructor
+    /**
+     * \brief   The constructor. 
+     * \details This function sets camera member variables and updates the
+     *          camera vectors (m_front, m_right, and m_up) based on 
+     *          values provided / defaulted. 
+     * \param   position    Camera position in world space, vector. 
+     * \param   worldUp     World up direction, vector. 
+     * \param   yaw         Camera yaw (euler) angle, scalar. 
+     * \param   pitch       Camera pitch (euler) angle, scalar. 
+     */
     CameraComponent(
         glm::vec3 position = glm::vec3(0.0f, 0.0f, 20.0f), 
         glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f), 
