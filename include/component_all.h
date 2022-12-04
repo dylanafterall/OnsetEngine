@@ -13,6 +13,8 @@
 #include "component_body_edge.h"
 #include "component_body_chain.h"
 #include "component_camera.h"
+#include "component_color.h"
+#include "component_light.h"
 #include "meshes/component_mesh_cube.h"
 #include "meshes/component_mesh_ground.h"
 #include "meshes/component_mesh_sphere.h"

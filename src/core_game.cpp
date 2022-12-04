@@ -43,6 +43,10 @@ void Game::setup() {
     // AssetManager ............................................................
     m_assetManager.setVShader("vert", "../assets/shaders/v.vert");
     m_assetManager.setFShader("frag", "../assets/shaders/f.frag");
+    m_assetManager.setVShader("lightvert", "../assets/shaders/light.vert");
+    m_assetManager.setFShader("lightfrag", "../assets/shaders/light.frag");
+    m_assetManager.setVShader("colorvert", "../assets/shaders/color.vert");
+    m_assetManager.setFShader("colorfrag", "../assets/shaders/color.frag");
     m_assetManager.setTexture("orion", "../assets/textures/orion.jpg");
     m_assetManager.setTexture("milkyway", "../assets/textures/milkyway.jpg");
     m_assetManager.setTexture("stripes", "../assets/textures/stripes.jpg");
@@ -50,10 +54,66 @@ void Game::setup() {
     unsigned int vertex = m_assetManager.getVShader("vert");
     unsigned int fragment = m_assetManager.getFShader("frag");
     m_assetManager.setShaderProgram("vert&frag", vertex, fragment);
+    vertex = m_assetManager.getVShader("lightvert");
+    fragment = m_assetManager.getFShader("lightfrag");
+    m_assetManager.setShaderProgram("light", vertex, fragment);
+    vertex = m_assetManager.getVShader("colorvert");
+    fragment = m_assetManager.getFShader("colorfrag");
+    m_assetManager.setShaderProgram("color", vertex, fragment);
 
     // Prepare Entities ........................................................
     // make a camera 
     CameraComponent camera(glm::vec3(0.0f, 0.0f, 20.0f));
+
+    // make a light source (sphere/point)
+    LightComponent lightLight;
+    BodyCircleComponent lightBody;
+    MeshSphereComponent lightMesh;
+    ShaderProgramComponent lightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"));
+    RenderBuffersComponent lightBuffers;
+    lightBody.m_bodyDef.type = b2_dynamicBody;
+    lightBody.m_bodyDef.position.Set(-10.0f, 5.0f);
+    lightBody.m_body = m_world->CreateBody(&lightBody.m_bodyDef);
+    // sphereBody.m_body->SetFixedRotation(true);
+    lightBody.m_circleShape.m_p.Set(0.0f, 0.0f);
+    lightBody.m_circleShape.m_radius = 0.5f;
+    lightBody.m_fixtureDef.shape = &lightBody.m_circleShape;
+    lightBody.m_fixtureDef.density = 1.0f;
+    lightBody.m_fixtureDef.friction = 0.3f;
+    lightBody.m_body->CreateFixture(&lightBody.m_fixtureDef);
+    glGenVertexArrays(1, &lightBuffers.m_VAO);
+    glGenBuffers(1, &lightBuffers.m_VBO);
+    glBindVertexArray(lightBuffers.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, lightBuffers.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, lightMesh.m_verticesSize, lightMesh.m_vertices, GL_STATIC_DRAW);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // make a sphere to test color (reflects the light source)
+    ColorComponent colorColor;
+    BodyCircleComponent colorBody;
+    MeshSphereComponent colorMesh;
+    ShaderProgramComponent colorShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("color"));
+    RenderBuffersComponent colorBuffers;
+    colorBody.m_bodyDef.type = b2_dynamicBody;
+    colorBody.m_bodyDef.position.Set(-5.0f, 5.0f);
+    colorBody.m_body = m_world->CreateBody(&colorBody.m_bodyDef);
+    // sphereBody.m_body->SetFixedRotation(true);
+    colorBody.m_circleShape.m_p.Set(0.0f, 0.0f);
+    colorBody.m_circleShape.m_radius = 1.0f;
+    colorBody.m_fixtureDef.shape = &colorBody.m_circleShape;
+    colorBody.m_fixtureDef.density = 1.0f;
+    colorBody.m_fixtureDef.friction = 0.3f;
+    colorBody.m_body->CreateFixture(&colorBody.m_fixtureDef);
+    glGenVertexArrays(1, &colorBuffers.m_VAO);
+    glGenBuffers(1, &colorBuffers.m_VBO);
+    glBindVertexArray(colorBuffers.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, colorBuffers.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, colorMesh.m_verticesSize, colorMesh.m_vertices, GL_STATIC_DRAW);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
     // make bottom static box
     BodyPolygonComponent groundBody;
@@ -158,6 +218,20 @@ void Game::setup() {
     // EnTT ....................................................................
     auto cameraEntity = m_registry.create();
     m_registry.emplace<CameraComponent>(cameraEntity, camera);
+
+    auto lightEntity = m_registry.create();
+    m_registry.emplace<LightComponent>(lightEntity, lightLight);
+    m_registry.emplace<BodyCircleComponent>(lightEntity, lightBody);
+    m_registry.emplace<MeshSphereComponent>(lightEntity, lightMesh);
+    m_registry.emplace<ShaderProgramComponent>(lightEntity, lightShaderProgram);
+    m_registry.emplace<RenderBuffersComponent>(lightEntity, lightBuffers);
+
+    auto colorEntity = m_registry.create();
+    m_registry.emplace<ColorComponent>(colorEntity, colorColor);
+    m_registry.emplace<BodyCircleComponent>(colorEntity, colorBody);
+    m_registry.emplace<MeshSphereComponent>(colorEntity, colorMesh);
+    m_registry.emplace<ShaderProgramComponent>(colorEntity, colorShaderProgram);
+    m_registry.emplace<RenderBuffersComponent>(colorEntity, colorBuffers);
 
     auto groundEntity = m_registry.create();
     m_registry.emplace<BodyPolygonComponent>(groundEntity, groundBody);
