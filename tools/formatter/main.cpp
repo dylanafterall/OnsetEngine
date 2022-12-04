@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 	outputMeshFile << "// https://github.com/dylanafterall/OnsetEngine.git" << "\n";
 	outputMeshFile << "//" << "\n";
 	outputMeshFile << "// " << argv[2] << "\n";
-	outputMeshFile << "//  component to hold vertex (x,y,z / r,g,b / u,v) data for OpenGL rendering " << "\n";
+	outputMeshFile << "//  component to hold vertex (x,y,z / i,j,k / u,v) data for OpenGL rendering " << "\n";
 	outputMeshFile << "// -----------------------------------------------------------------------------" << "\n";
 	outputMeshFile << "\n";
 	outputMeshFile << "#ifndef " << meshIncludeGuards << "\n";

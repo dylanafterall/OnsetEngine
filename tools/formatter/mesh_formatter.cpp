@@ -39,6 +39,9 @@ std::string MeshFormatter::formatMesh(const char* input) {
 	std::vector<glm::vec3> vertices;
 	glm::vec3 v;
 
+	std::vector<glm::vec3> normals;
+	glm::vec3 n;
+
 	std::vector<glm::vec2> texcoords;
 	glm::vec2 tc;
 
@@ -53,6 +56,13 @@ std::string MeshFormatter::formatMesh(const char* input) {
 			// create an array of vertex information (x, y, z) and keep count
 			sscanf(line, "v %f %f %f", &v[0], &v[1], &v[2]);
 			vertices.emplace_back(v);
+		}
+
+		// normal vector information
+		if (strncmp(line, "vn ", 3) == 0) {
+			// create an array of normal vector information (i, j, k) and keep count
+			sscanf(line, "vn %f %f %f", &n[0], &n[1], &n[2]);
+			normals.emplace_back(n);
 		}
 
 		// texture coordinate information 
@@ -75,7 +85,9 @@ std::string MeshFormatter::formatMesh(const char* input) {
 			str += 	std::to_string(vertices[vertexA - 1][0]) + "f, " + 
 					std::to_string(vertices[vertexA - 1][1]) + "f, " + 
 					std::to_string(vertices[vertexA - 1][2]) + "f, ";
-			str += 	"1.0f, 1.0f, 1.0f, ";
+			str += 	std::to_string(normals[normalA - 1][0]) + "f, " + 
+					std::to_string(normals[normalA - 1][1]) + "f, " + 
+					std::to_string(normals[normalA - 1][2]) + "f, ";
 			str += 	std::to_string(texcoords[textureA - 1][0]) + "f, " + 
 					std::to_string(texcoords[textureA - 1][1]) + "f, ";
 			// newline for the next vertex
@@ -86,7 +98,9 @@ std::string MeshFormatter::formatMesh(const char* input) {
 			str += 	std::to_string(vertices[vertexB - 1][0]) + "f, " + 
 					std::to_string(vertices[vertexB - 1][1]) + "f, " + 
 					std::to_string(vertices[vertexB - 1][2]) + "f, ";
-			str += 	"1.0f, 1.0f, 1.0f, ";
+			str += 	std::to_string(normals[normalB - 1][0]) + "f, " + 
+					std::to_string(normals[normalB - 1][1]) + "f, " + 
+					std::to_string(normals[normalB - 1][2]) + "f, ";
 			str += 	std::to_string(texcoords[textureB - 1][0]) + "f, " + 
 					std::to_string(texcoords[textureB - 1][1]) + "f, ";
 			// newline for the next vertex
@@ -97,7 +111,9 @@ std::string MeshFormatter::formatMesh(const char* input) {
 			str += 	std::to_string(vertices[vertexC - 1][0]) + "f, " + 
 					std::to_string(vertices[vertexC - 1][1]) + "f, " + 
 					std::to_string(vertices[vertexC - 1][2]) + "f, ";
-			str += 	"1.0f, 1.0f, 1.0f, ";
+			str += 	std::to_string(normals[normalC - 1][0]) + "f, " + 
+					std::to_string(normals[normalC - 1][1]) + "f, " + 
+					std::to_string(normals[normalC - 1][2]) + "f, ";
 			str += 	std::to_string(texcoords[textureC - 1][0]) + "f, " + 
 					std::to_string(texcoords[textureC - 1][1]) + "f, ";
 			// newline for the next vertex

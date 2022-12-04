@@ -17,11 +17,13 @@ void RenderSystem::update(
     const unsigned int SCR_WIDTH,
     const unsigned int SCR_HEIGHT
 ) {
-    // get camera settings first -----------------------------------------------
+    // need access to camera data to render objects ----------------------------
     float cameraZoom;
     glm::vec3 cameraPosition;
     glm::vec3 cameraFront;
     glm::vec3 cameraUp;
+    // need access to light data to render objects -----------------------------
+    glm::vec3 lightPos;
 
     auto cameras = registry.view<CameraComponent>();
     cameras.each([&](const auto& camera) {
@@ -31,7 +33,48 @@ void RenderSystem::update(
         cameraUp = camera.m_up;
     });
 
-    // render ground floor -----------------------------------------------------
+    // render light source test subject ------------------------------------
+    auto lights = registry.view<
+        LightComponent,
+        BodyCircleComponent,
+        MeshSphereComponent,
+        ShaderProgramComponent,
+        RenderBuffersComponent
+    >();
+    lights.each([&](
+        const auto& light,
+        const auto& body,
+        const auto& mesh,
+        const auto& shader,
+        const auto& vao
+    ) {
+        b2Vec2 position = body.m_body->GetPosition();
+        lightPos = glm::vec3(position.x, position.y, 0.0f);
+        float angle = body.m_body->GetAngle();
+
+        // create transformations
+        glUseProgram(shader.m_shaderProgram);
+        glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // m_projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+
+        // pass transformation matrices to the shader
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
+
+        // rendering the entity
+        glBindVertexArray(vao.m_VAO);
+        // calculate the model matrix for each object and pass it to shader before drawing
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPos);
+        model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.5f)); // a smaller sphere
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+
+        glDrawArrays(GL_TRIANGLES, 0, mesh.m_vertexCount);
+    });
+
+    // now render ground floor -------------------------------------------------
     // retrieve a view of entities with applicable components
     auto ground = registry.view<
         BodyPolygonComponent,
@@ -184,6 +227,8 @@ void RenderSystem::update(
         glUseProgram(shader.m_shaderProgram);
         glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "lightColor"), 1.0f, 1.0f, 1.0f);
         glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "objectColor"), 1.0f, 0.5f, 0.31f);
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 
         // create transformations
         glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -202,45 +247,10 @@ void RenderSystem::update(
         model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
 
-        glDrawArrays(GL_TRIANGLES, 0, mesh.m_vertexCount);
-    });
-
-    // now render light source test subject ------------------------------------
-    auto lights = registry.view<
-        LightComponent,
-        BodyCircleComponent,
-        MeshSphereComponent,
-        ShaderProgramComponent,
-        RenderBuffersComponent
-    >();
-    lights.each([&](
-        const auto& light,
-        const auto& body,
-        const auto& mesh,
-        const auto& shader,
-        const auto& vao
-    ) {
-        b2Vec2 position = body.m_body->GetPosition();
-        float angle = body.m_body->GetAngle();
-
-        // create transformations
-        glUseProgram(shader.m_shaderProgram);
-        glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        // m_projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
-
-        // pass transformation matrices to the shader
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
-
-        // rendering the entity
-        glBindVertexArray(vao.m_VAO);
-        // calculate the model matrix for each object and pass it to shader before drawing
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
-        model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::scale(model, glm::vec3(0.5f)); // a smaller sphere
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+        // calculate normal matrix to pass to shader as uniform (better to use CPU than shader for inverse)
+        glm::mat3 normal = glm::mat3(1.0f);
+        normal = glm::mat3(transpose(inverse(model)));
+        glUniformMatrix3fv(glGetUniformLocation(shader.m_shaderProgram, "normal"), 1, GL_FALSE, &normal[0][0]);
 
         glDrawArrays(GL_TRIANGLES, 0, mesh.m_vertexCount);
     });
