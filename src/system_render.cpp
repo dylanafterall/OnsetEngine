@@ -225,10 +225,25 @@ void RenderSystem::update(
         float angle = body.m_body->GetAngle();
 
         glUseProgram(shader.m_shaderProgram);
-        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "lightColor"), 1.0f, 1.0f, 1.0f);
-        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "objectColor"), 1.0f, 0.5f, 0.31f);
-        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "light.position"), lightPos[0], lightPos[1], lightPos[2]);
         glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+
+        // light properties
+        glm::vec3 lightColor;
+        lightColor.x = static_cast<float>(sin(glfwGetTime() * 2.0)); // R
+        lightColor.y = static_cast<float>(sin(glfwGetTime() * 0.7)); // G
+        lightColor.z = static_cast<float>(sin(glfwGetTime() * 1.3)); // B
+        glm::vec3 diffuseColor = lightColor   * glm::vec3(0.5f); // decrease the influence
+        glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // low influence
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "light.ambient"), ambientColor[0], ambientColor[1], ambientColor[2]);
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "light.diffuse"), diffuseColor[0], diffuseColor[1], diffuseColor[2]);
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "light.specular"), 1.0f, 1.0f, 1.0f);
+
+        // material properties
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "material.ambient"), 1.0f, 0.5f, 0.31f);
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "material.diffuse"), 1.0f, 0.5f, 0.31f);
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "material.specular"), 0.5f, 0.5f, 0.5f);
+        glUniform1f(glGetUniformLocation(shader.m_shaderProgram, "material.shininess"), 32.0f);
 
         // create transformations
         glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
