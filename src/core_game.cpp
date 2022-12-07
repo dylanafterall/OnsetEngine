@@ -50,6 +50,10 @@ void Game::setup() {
     m_assetManager.setTexture("orion", "../assets/textures/orion.jpg");
     m_assetManager.setTexture("milkyway", "../assets/textures/milkyway.jpg");
     m_assetManager.setTexture("stripes", "../assets/textures/stripes.jpg");
+    m_assetManager.setTexture("rusteddiffuse", "../assets/textures/freepbr/rustediron2_basecolor.png");
+    m_assetManager.setTexture("rustedspecular", "../assets/textures/freepbr/rustediron2_metallic.png");
+    m_assetManager.setTexture("blackspecular", "../assets/textures/black.jpg");
+
 
     unsigned int vertex = m_assetManager.getVShader("vert");
     unsigned int fragment = m_assetManager.getFShader("frag");
@@ -94,6 +98,7 @@ void Game::setup() {
     ColorComponent colorColor;
     BodyCircleComponent colorBody;
     MeshSphereComponent colorMesh;
+    TextureComponent colorTexture = TextureComponent(m_assetManager.getTexture("rusteddiffuse"), m_assetManager.getTexture("rustedspecular"));
     ShaderProgramComponent colorShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("color"));
     RenderBuffersComponent colorBuffers;
     colorBody.m_bodyDef.type = b2_dynamicBody;
@@ -117,11 +122,20 @@ void Game::setup() {
     // normal attribute
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    // texture attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+    glUseProgram(colorShaderProgram.m_shaderProgram);
+    // set it manually like so:
+    glUniform1i(glGetUniformLocation(colorShaderProgram.m_shaderProgram, "material.diffuse"), 0);
+    // set it manually like so:
+    glUniform1i(glGetUniformLocation(colorShaderProgram.m_shaderProgram, "material.specular"), 1);
 
     // make bottom static box
     BodyPolygonComponent groundBody;
     MeshGroundComponent groundMesh;
-    TextureComponent groundTexture = TextureComponent(m_assetManager.getTexture("stripes"));
+    TextureComponent groundTexture = TextureComponent(m_assetManager.getTexture("stripes"), m_assetManager.getTexture("blackspecular"));
     ShaderProgramComponent groundShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
     RenderBuffersComponent groundBuffers;
     groundBody.m_bodyDef.position.Set(0.0f, -1.0f);
@@ -151,7 +165,7 @@ void Game::setup() {
     BodyPolygonComponent cubeBody;
     ShapeSquareComponent cubeShape;
     MeshCubeComponent cubeMesh;
-    TextureComponent cubeTexture = TextureComponent(m_assetManager.getTexture("milkyway"));
+    TextureComponent cubeTexture = TextureComponent(m_assetManager.getTexture("milkyway"), m_assetManager.getTexture("blackspecular"));
     ShaderProgramComponent cubeShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
     RenderBuffersComponent cubeBuffers;
     cubeBody.m_bodyDef.type = b2_dynamicBody;
@@ -185,7 +199,7 @@ void Game::setup() {
     PlayerComponent spherePlayer;
     BodyCircleComponent sphereBody;
     MeshSphereComponent sphereMesh;
-    TextureComponent sphereTexture = TextureComponent(m_assetManager.getTexture("orion"));
+    TextureComponent sphereTexture = TextureComponent(m_assetManager.getTexture("orion"), m_assetManager.getTexture("blackspecular"));
     ShaderProgramComponent sphereShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("vert&frag"));
     RenderBuffersComponent sphereBuffers;
     sphereBody.m_bodyDef.type = b2_dynamicBody;
@@ -233,6 +247,7 @@ void Game::setup() {
     m_registry.emplace<ColorComponent>(colorEntity, colorColor);
     m_registry.emplace<BodyCircleComponent>(colorEntity, colorBody);
     m_registry.emplace<MeshSphereComponent>(colorEntity, colorMesh);
+    m_registry.emplace<TextureComponent>(colorEntity, colorTexture);
     m_registry.emplace<ShaderProgramComponent>(colorEntity, colorShaderProgram);
     m_registry.emplace<RenderBuffersComponent>(colorEntity, colorBuffers);
 

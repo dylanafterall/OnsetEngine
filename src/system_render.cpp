@@ -95,7 +95,7 @@ void RenderSystem::update(
 
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.m_texture);
+        glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
 
         // create transformations
         glUseProgram(shader.m_shaderProgram);
@@ -140,7 +140,7 @@ void RenderSystem::update(
 
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.m_texture);
+        glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
 
         // create transformations
         glUseProgram(shader.m_shaderProgram);
@@ -183,7 +183,7 @@ void RenderSystem::update(
 
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.m_texture);
+        glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
 
         // create transformations
         glUseProgram(shader.m_shaderProgram);
@@ -211,6 +211,7 @@ void RenderSystem::update(
         ColorComponent,
         BodyCircleComponent,
         MeshSphereComponent,
+        TextureComponent,
         ShaderProgramComponent,
         RenderBuffersComponent
     >();
@@ -218,6 +219,7 @@ void RenderSystem::update(
         const auto& color,
         const auto& body,
         const auto& mesh,
+        const auto& texture,
         const auto& shader,
         const auto& vao
     ) {
@@ -229,33 +231,21 @@ void RenderSystem::update(
         glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 
         // light properties
-        glm::vec3 lightColor;
-        lightColor.x = static_cast<float>(sin(glfwGetTime() * 2.0)); // R
-        lightColor.y = static_cast<float>(sin(glfwGetTime() * 0.7)); // G
-        lightColor.z = static_cast<float>(sin(glfwGetTime() * 1.3)); // B
-        glm::vec3 diffuseColor = lightColor   * glm::vec3(0.5f); // decrease the influence
-        glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // low influence
-        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "light.ambient"), ambientColor[0], ambientColor[1], ambientColor[2]);
-        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "light.diffuse"), diffuseColor[0], diffuseColor[1], diffuseColor[2]);
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "light.ambient"), 0.2f, 0.2f, 0.2f);
+        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "light.diffuse"), 0.5f, 0.5f, 0.5f);
         glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "light.specular"), 1.0f, 1.0f, 1.0f);
 
         // material properties
-        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "material.ambient"), 1.0f, 0.5f, 0.31f);
-        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "material.diffuse"), 1.0f, 0.5f, 0.31f);
-        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "material.specular"), 0.5f, 0.5f, 0.5f);
-        glUniform1f(glGetUniformLocation(shader.m_shaderProgram, "material.shininess"), 32.0f);
+        glUniform1f(glGetUniformLocation(shader.m_shaderProgram, "material.shininess"), 64.0f);
 
         // create transformations
         glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         // m_projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
-
         // pass transformation matrices to the shader
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
 
-        // rendering the entity
-        glBindVertexArray(vao.m_VAO);
         // calculate the model matrix for each object and pass it to shader before drawing
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
@@ -263,10 +253,19 @@ void RenderSystem::update(
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
 
         // calculate normal matrix to pass to shader as uniform (better to use CPU than shader for inverse)
-        glm::mat3 normal = glm::mat3(1.0f);
-        normal = glm::mat3(transpose(inverse(model)));
-        glUniformMatrix3fv(glGetUniformLocation(shader.m_shaderProgram, "normal"), 1, GL_FALSE, &normal[0][0]);
+        glm::mat3 transposedInverse = glm::mat3(1.0f);
+        transposedInverse = glm::mat3(transpose(inverse(model)));
+        glUniformMatrix3fv(glGetUniformLocation(shader.m_shaderProgram, "transposedInverse"), 1, GL_FALSE, &transposedInverse[0][0]);
 
+        // bind diffuse map
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
+        // bind specular map
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture.m_specular);
+
+        // rendering the entity
+        glBindVertexArray(vao.m_VAO);
         glDrawArrays(GL_TRIANGLES, 0, mesh.m_vertexCount);
     });
 }
