@@ -13,7 +13,7 @@
 void LeftCommand::execute(entt::registry& registry) const {
     auto player = registry.view<
         PlayerComponent,
-        BodyCircleComponent
+        BodyTransformComponent
     >();
     player.each([&](
         auto& player,
@@ -27,7 +27,7 @@ void LeftCommand::execute(entt::registry& registry) const {
 void DownCommand::execute(entt::registry& registry) const {
     auto player = registry.view<
         PlayerComponent,
-        BodyCircleComponent
+        BodyTransformComponent
     >();
     player.each([&](
         auto& player,
@@ -41,7 +41,7 @@ void DownCommand::execute(entt::registry& registry) const {
 void RightCommand::execute(entt::registry& registry) const {
     auto player = registry.view<
         PlayerComponent,
-        BodyCircleComponent
+        BodyTransformComponent
     >();
     player.each([&](
         auto& player,
@@ -55,7 +55,7 @@ void RightCommand::execute(entt::registry& registry) const {
 void UpCommand::execute(entt::registry& registry) const {
     auto player = registry.view<
         PlayerComponent,
-        BodyCircleComponent
+        BodyTransformComponent
     >();
     player.each([&](
         auto& player,

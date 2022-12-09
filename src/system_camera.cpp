@@ -13,7 +13,7 @@ void CameraSystem::update(const float timeStep, entt::registry& registry) {
     glm::vec3 translate = glm::vec3(0.0f, 0.0f, 0.0f);
     auto player = registry.view<
         PlayerComponent,
-        BodyCircleComponent
+        BodyTransformComponent
     >();
     player.each([&](
         auto& player,

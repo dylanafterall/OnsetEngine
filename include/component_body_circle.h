@@ -22,10 +22,6 @@ struct BodyCircleComponent {
      */
     b2BodyDef m_bodyDef;
     /**
-     * \brief Holds a Box2D rigid body ID.
-     */
-    b2Body* m_body;
-    /**
      * \brief Holds a Box2D solid circle shape.
      */
     b2CircleShape m_circleShape;

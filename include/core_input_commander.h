@@ -12,8 +12,7 @@
 
 #include "component_camera.h"
 #include "component_player.h"
-#include "component_body_circle.h"
-#include "component_body_polygon.h"
+#include "component_body_transform.h"
 #include "core_log_macros.h"
 
 #include "glm/glm.hpp"

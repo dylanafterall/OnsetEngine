@@ -118,6 +118,7 @@ new techniques and practices over time.
 <p>This project was inspired by:<br>
 <ul> 
     <li>The online reference <a href="https://learnopengl.com/">"LearnOpenGL"</a>, by Joey deVries </li>
+    <li>The online resource <a href="https://freepbr.com/">"Free PBR"</a>, by Brian </li>
     <li>The online tutorial series <a href="https://pikuma.com/courses">"C++ 2D Game Engine Development"</a>, by Gustavo
     Pezzi </li>
     <li>The book <a href="https://gameprogrammingpatterns.com/">"Game Programming Patterns"</a>, by Robert Nystrom </li>

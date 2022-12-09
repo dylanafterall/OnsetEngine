@@ -22,10 +22,6 @@ struct BodyChainComponent {
      */
     b2BodyDef m_bodyDef;
     /**
-     * \brief Holds a Box2D rigid body ID.
-     */
-    b2Body* m_body;
-    /**
      * \brief Holds a Box2D free form sequence of line segments. The chain has 
      *        one-sided collision, with the surface normal pointing to the 
      *        right of the edge. This provides a counter-clockwise winding like 

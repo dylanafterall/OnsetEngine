@@ -22,10 +22,6 @@ struct BodyEdgeComponent {
      */
     b2BodyDef m_bodyDef;
     /**
-     * \brief Holds a Box2D rigid body ID.
-     */
-    b2Body* m_body;
-    /**
      * \brief Holds a Box2D line segment (edge) shape. These can be connected 
      *        in chains or loops to other edge shapes.
      */
