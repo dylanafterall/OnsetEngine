@@ -45,6 +45,11 @@ void Game::setup() {
     // Assets
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
+    // meshes
+    // .........................................................................
+    MeshCubeComponent cubeMesh;
+    MeshSphereComponent sphereMesh;
+    MeshGroundComponent groundMesh;
     // shaders
     // .........................................................................
     m_assetManager.setVShader("light_vert", "../assets/shaders/light.vert");
@@ -85,8 +90,7 @@ void Game::setup() {
     // setup components
     LightComponent sunLightLight;
     BodyTransformComponent sunLightTransform;
-    BodyCircleComponent sunLightCircle;
-    MeshSphereComponent sunLightMesh;
+    MeshComponent sunLightMesh;
     ShaderProgramComponent sunLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"));
     ReflectorShaderProgramComponent sunLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderBuffersComponent sunLightBuffers;
@@ -110,7 +114,7 @@ void Game::setup() {
     LightComponent blueLightLight;
     BodyTransformComponent blueLightTransform;
     BodyCircleComponent blueLightCircle;
-    MeshSphereComponent blueLightMesh;
+    MeshComponent blueLightMesh;
     ShaderProgramComponent blueLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"));
     ReflectorShaderProgramComponent blueLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderBuffersComponent blueLightBuffers;
@@ -130,6 +134,7 @@ void Game::setup() {
     blueLightLight.m_specular[0] = 0.0f;    // blue specular light
     blueLightLight.m_specular[1] = 0.0f;
     blueLightLight.m_specular[2] = 1.0f;
+    blueLightMesh.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     blueLightCircle.m_bodyDef.type = b2_dynamicBody;
     blueLightCircle.m_bodyDef.position.Set(-15.0f, 5.0f);
@@ -145,7 +150,7 @@ void Game::setup() {
     glGenBuffers(1, &blueLightBuffers.m_VBO);
     glBindVertexArray(blueLightBuffers.m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, blueLightBuffers.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, blueLightMesh.m_verticesSize, blueLightMesh.m_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -155,7 +160,7 @@ void Game::setup() {
     LightComponent greenLightLight;
     BodyTransformComponent greenLightTransform;
     BodyCircleComponent greenLightCircle;
-    MeshSphereComponent greenLightMesh;
+    MeshComponent greenLightMesh;
     ShaderProgramComponent greenLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"));
     ReflectorShaderProgramComponent greenLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderBuffersComponent greenLightBuffers;
@@ -175,6 +180,7 @@ void Game::setup() {
     greenLightLight.m_specular[0] = 0.0f;   // green specular light
     greenLightLight.m_specular[1] = 1.0f;
     greenLightLight.m_specular[2] = 0.0f;
+    greenLightMesh.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     greenLightCircle.m_bodyDef.type = b2_dynamicBody;
     greenLightCircle.m_bodyDef.position.Set(10.0f, 5.0f);
@@ -190,7 +196,7 @@ void Game::setup() {
     glGenBuffers(1, &greenLightBuffers.m_VBO);
     glBindVertexArray(greenLightBuffers.m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, greenLightBuffers.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, greenLightMesh.m_verticesSize, greenLightMesh.m_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -200,7 +206,7 @@ void Game::setup() {
     LightComponent streetLightLight;
     BodyTransformComponent streetLightTransform;
     BodyCircleComponent streetLightCircle;
-    MeshSphereComponent streetLightMesh;
+    MeshComponent streetLightMesh;
     ShaderProgramComponent streetLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"));
     ReflectorShaderProgramComponent streetLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderBuffersComponent streetLightBuffers;
@@ -225,6 +231,7 @@ void Game::setup() {
     streetLightLight.m_specular[0] = 1.0f;      // yellow specular light
     streetLightLight.m_specular[1] = 1.0f;
     streetLightLight.m_specular[2] = 0.0f;
+    streetLightMesh.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     streetLightCircle.m_bodyDef.position.Set(-10.0f, 10.0f);
     streetLightTransform.m_body = m_world->CreateBody(&streetLightCircle.m_bodyDef);
@@ -239,7 +246,7 @@ void Game::setup() {
     glGenBuffers(1, &streetLightBuffers.m_VBO);
     glBindVertexArray(streetLightBuffers.m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, streetLightBuffers.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, streetLightMesh.m_verticesSize, streetLightMesh.m_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -250,11 +257,12 @@ void Game::setup() {
     MaterialComponent playerMaterial;
     BodyTransformComponent playerTransform;
     BodyCircleComponent playerCircle;
-    MeshSphereComponent playerMesh;
+    MeshComponent playerMesh;
     TextureComponent playerTexture = TextureComponent(m_assetManager.getTexture("tiles_diff"), m_assetManager.getTexture("tiles_spec"));
     ShaderProgramComponent playerShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderBuffersComponent playerBuffers;
     playerMaterial.m_shininess = 128.0f;
+    playerMesh.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     playerCircle.m_bodyDef.type = b2_dynamicBody;
     playerCircle.m_bodyDef.position.Set(0.0f, 5.0f);
@@ -270,7 +278,7 @@ void Game::setup() {
     glGenBuffers(1, &playerBuffers.m_VBO);
     glBindVertexArray(playerBuffers.m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, playerBuffers.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, playerMesh.m_verticesSize, playerMesh.m_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -287,11 +295,12 @@ void Game::setup() {
     MaterialComponent floorMaterial;
     BodyTransformComponent floorTransform;
     BodyPolygonComponent floorPolygon;
-    MeshGroundComponent floorMesh;
+    MeshComponent floorMesh;
     TextureComponent floorTexture = TextureComponent(m_assetManager.getTexture("metal_diff"), m_assetManager.getTexture("metal_spec"));
     ShaderProgramComponent floorShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderBuffersComponent floorBuffers;
     floorMaterial.m_shininess = 32.0f;
+    floorMesh.m_vertexCount = groundMesh.m_vertexCount;
     // setup Box2D data
     floorPolygon.m_bodyDef.position.Set(0.0f, -1.0f);
     floorTransform.m_body = m_world->CreateBody(&floorPolygon.m_bodyDef);
@@ -302,7 +311,7 @@ void Game::setup() {
     glGenBuffers(1, &floorBuffers.m_VBO);
     glBindVertexArray(floorBuffers.m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, floorBuffers.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, floorMesh.m_verticesSize, floorMesh.m_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, groundMesh.m_verticesSize, groundMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -319,11 +328,12 @@ void Game::setup() {
     MaterialComponent sphereMaterial;
     BodyTransformComponent sphereTransform;
     BodyCircleComponent sphereCircle;
-    MeshSphereComponent sphereMesh;
+    MeshComponent rustedSphereMesh;
     TextureComponent sphereTexture = TextureComponent(m_assetManager.getTexture("rusted_diff"), m_assetManager.getTexture("rusted_spec"));
     ShaderProgramComponent sphereShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderBuffersComponent sphereBuffers;
     sphereMaterial.m_shininess = 64.0f;
+    rustedSphereMesh.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     sphereCircle.m_bodyDef.type = b2_dynamicBody;
     sphereCircle.m_bodyDef.position.Set(-5.0f, 5.0f);
@@ -339,7 +349,7 @@ void Game::setup() {
     glGenBuffers(1, &sphereBuffers.m_VBO);
     glBindVertexArray(sphereBuffers.m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, sphereBuffers.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize,sphereMesh.m_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -357,11 +367,13 @@ void Game::setup() {
     BodyTransformComponent cubeTransform;
     BodyPolygonComponent cubePolygon;
     ShapeSquareComponent cubeShape;
-    MeshCubeComponent cubeMesh;
+    MeshComponent blockCubeMesh;
     TextureComponent cubeTexture = TextureComponent(m_assetManager.getTexture("blocks_diff"), m_assetManager.getTexture("blocks_spec"));
     ShaderProgramComponent cubeShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderBuffersComponent cubeBuffers;
     cubeMaterial.m_shininess = 32.0f;
+    blockCubeMesh.m_vertexCount = cubeMesh.m_vertexCount;
+    
     // setup Box2D data
     cubePolygon.m_bodyDef.type = b2_dynamicBody;
     cubePolygon.m_bodyDef.position.Set(5.0f, 5.0f);
@@ -398,8 +410,7 @@ void Game::setup() {
     auto sunLightEntity = m_registry.create();
     m_registry.emplace<LightComponent>(sunLightEntity, sunLightLight);
     m_registry.emplace<BodyTransformComponent>(sunLightEntity, sunLightTransform);
-    m_registry.emplace<BodyCircleComponent>(sunLightEntity, sunLightCircle);
-    m_registry.emplace<MeshSphereComponent>(sunLightEntity, sunLightMesh);
+    m_registry.emplace<MeshComponent>(sunLightEntity, sunLightMesh);
     m_registry.emplace<ShaderProgramComponent>(sunLightEntity, sunLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(sunLightEntity, sunLightReflectorProgram);
     m_registry.emplace<RenderBuffersComponent>(sunLightEntity, sunLightBuffers);
@@ -407,8 +418,7 @@ void Game::setup() {
     auto blueLightEntity = m_registry.create();
     m_registry.emplace<LightComponent>(blueLightEntity, blueLightLight);
     m_registry.emplace<BodyTransformComponent>(blueLightEntity, blueLightTransform);
-    m_registry.emplace<BodyCircleComponent>(blueLightEntity, blueLightCircle);
-    m_registry.emplace<MeshSphereComponent>(blueLightEntity, blueLightMesh);
+    m_registry.emplace<MeshComponent>(blueLightEntity, blueLightMesh);
     m_registry.emplace<ShaderProgramComponent>(blueLightEntity, blueLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(blueLightEntity, blueLightReflectorProgram);
     m_registry.emplace<RenderBuffersComponent>(blueLightEntity, blueLightBuffers);
@@ -416,8 +426,7 @@ void Game::setup() {
     auto greenLightEntity = m_registry.create();
     m_registry.emplace<LightComponent>(greenLightEntity, greenLightLight);
     m_registry.emplace<BodyTransformComponent>(greenLightEntity, greenLightTransform);
-    m_registry.emplace<BodyCircleComponent>(greenLightEntity, greenLightCircle);
-    m_registry.emplace<MeshSphereComponent>(greenLightEntity, greenLightMesh);
+    m_registry.emplace<MeshComponent>(greenLightEntity, greenLightMesh);
     m_registry.emplace<ShaderProgramComponent>(greenLightEntity, greenLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(greenLightEntity, greenLightReflectorProgram);
     m_registry.emplace<RenderBuffersComponent>(greenLightEntity, greenLightBuffers);
@@ -426,7 +435,7 @@ void Game::setup() {
     m_registry.emplace<LightComponent>(streetLightEntity, streetLightLight);
     m_registry.emplace<BodyTransformComponent>(streetLightEntity, streetLightTransform);
     m_registry.emplace<BodyCircleComponent>(streetLightEntity, streetLightCircle);
-    m_registry.emplace<MeshSphereComponent>(streetLightEntity, streetLightMesh);
+    m_registry.emplace<MeshComponent>(streetLightEntity, streetLightMesh);
     m_registry.emplace<ShaderProgramComponent>(streetLightEntity, streetLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(streetLightEntity, streetLightReflectorProgram);
     m_registry.emplace<RenderBuffersComponent>(streetLightEntity, streetLightBuffers);
@@ -435,8 +444,7 @@ void Game::setup() {
     m_registry.emplace<PlayerComponent>(playerEntity, playerPlayer);
     m_registry.emplace<MaterialComponent>(playerEntity, playerMaterial);
     m_registry.emplace<BodyTransformComponent>(playerEntity, playerTransform);
-    m_registry.emplace<BodyCircleComponent>(playerEntity, playerCircle);
-    m_registry.emplace<MeshSphereComponent>(playerEntity, playerMesh);
+    m_registry.emplace<MeshComponent>(playerEntity, playerMesh);
     m_registry.emplace<TextureComponent>(playerEntity, playerTexture);
     m_registry.emplace<ShaderProgramComponent>(playerEntity, playerShaderProgram);
     m_registry.emplace<RenderBuffersComponent>(playerEntity, playerBuffers);
@@ -444,8 +452,7 @@ void Game::setup() {
     auto floorEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(floorEntity, floorMaterial);
     m_registry.emplace<BodyTransformComponent>(floorEntity, floorTransform);
-    m_registry.emplace<BodyPolygonComponent>(floorEntity, floorPolygon);
-    m_registry.emplace<MeshGroundComponent>(floorEntity, floorMesh);
+    m_registry.emplace<MeshComponent>(floorEntity, floorMesh);
     m_registry.emplace<TextureComponent>(floorEntity, floorTexture);
     m_registry.emplace<ShaderProgramComponent>(floorEntity, floorShaderProgram);
     m_registry.emplace<RenderBuffersComponent>(floorEntity, floorBuffers);
@@ -453,8 +460,7 @@ void Game::setup() {
     auto sphereEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(sphereEntity, sphereMaterial);
     m_registry.emplace<BodyTransformComponent>(sphereEntity, sphereTransform);
-    m_registry.emplace<BodyCircleComponent>(sphereEntity, sphereCircle);
-    m_registry.emplace<MeshSphereComponent>(sphereEntity, sphereMesh);
+    m_registry.emplace<MeshComponent>(sphereEntity, rustedSphereMesh);
     m_registry.emplace<TextureComponent>(sphereEntity, sphereTexture);
     m_registry.emplace<ShaderProgramComponent>(sphereEntity, sphereShaderProgram);
     m_registry.emplace<RenderBuffersComponent>(sphereEntity, sphereBuffers);
@@ -462,9 +468,7 @@ void Game::setup() {
     auto cubeEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(cubeEntity, cubeMaterial);
     m_registry.emplace<BodyTransformComponent>(cubeEntity, cubeTransform);
-    m_registry.emplace<BodyPolygonComponent>(cubeEntity, cubePolygon);
-    m_registry.emplace<ShapeSquareComponent>(cubeEntity, cubeShape);
-    m_registry.emplace<MeshCubeComponent>(cubeEntity, cubeMesh);
+    m_registry.emplace<MeshComponent>(cubeEntity, blockCubeMesh);
     m_registry.emplace<TextureComponent>(cubeEntity, cubeTexture);
     m_registry.emplace<ShaderProgramComponent>(cubeEntity, cubeShaderProgram);
     m_registry.emplace<RenderBuffersComponent>(cubeEntity, cubeBuffers);

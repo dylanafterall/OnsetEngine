@@ -16,6 +16,7 @@
 #include "component_camera.h"
 #include "component_light.h"
 #include "component_material.h"
+#include "component_mesh.h"
 #include "meshes/component_mesh_cube.h"
 #include "meshes/component_mesh_ground.h"
 #include "meshes/component_mesh_sphere.h"

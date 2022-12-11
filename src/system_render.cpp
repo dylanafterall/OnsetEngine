@@ -51,7 +51,7 @@ void RenderSystem::update(
     auto lights = registry.view<
         LightComponent,
         BodyTransformComponent,
-        MeshSphereComponent,
+        MeshComponent,
         ShaderProgramComponent,
         ReflectorShaderProgramComponent,
         RenderBuffersComponent
@@ -158,101 +158,15 @@ void RenderSystem::update(
     // 3) iterate over game object (with material comp) entities to render
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    auto spheres = registry.view<
-        MaterialComponent,
-        BodyTransformComponent,
-        MeshSphereComponent, 
-        TextureComponent, 
-        ShaderProgramComponent,
-        RenderBuffersComponent
-    >();
-    spheres.each([&](
-        const auto& material,
-        const auto& body,
-        const auto& mesh,
-        const auto& texture,
-        const auto& shader,
-        const auto& vao
-    ) {
-        b2Vec2 bodyPos = body.m_body->GetPosition();
-        float angle = body.m_body->GetAngle();
-        glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat3 normal = glm::mat3(1.0f);
-
-        glUseProgram(shader.m_shaderProgram);
-        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-        glUniform1f(glGetUniformLocation(shader.m_shaderProgram, "material.shininess"), material.m_shininess);
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
-        model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
-        model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
-        normal = glm::mat3(transpose(inverse(model)));
-        glUniformMatrix3fv(glGetUniformLocation(shader.m_shaderProgram, "normal"), 1, GL_FALSE, &normal[0][0]);
-        glBindVertexArray(vao.m_VAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture.m_specular);
-        glDrawArrays(GL_TRIANGLES, 0, mesh.m_vertexCount);
-    });
-
     auto objects = registry.view<
         MaterialComponent,
         BodyTransformComponent,
-        MeshGroundComponent, 
+        MeshComponent,
         TextureComponent, 
         ShaderProgramComponent,
         RenderBuffersComponent
     >();
     objects.each([&](
-        const auto& material,
-        const auto& body,
-        const auto& mesh,
-        const auto& texture,
-        const auto& shader,
-        const auto& vao
-    ) {
-        b2Vec2 bodyPos = body.m_body->GetPosition();
-        float angle = body.m_body->GetAngle();
-        glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat3 normal = glm::mat3(1.0f);
-
-        glUseProgram(shader.m_shaderProgram);
-        glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-        glUniform1f(glGetUniformLocation(shader.m_shaderProgram, "material.shininess"), material.m_shininess);
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
-        model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
-        model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
-        normal = glm::mat3(transpose(inverse(model)));
-        glUniformMatrix3fv(glGetUniformLocation(shader.m_shaderProgram, "normal"), 1, GL_FALSE, &normal[0][0]);
-        glBindVertexArray(vao.m_VAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture.m_specular);
-        glDrawArrays(GL_TRIANGLES, 0, mesh.m_vertexCount);
-    });
-
-    // -------------------------------------------------------------------------
-    // -------------------------------------------------------------------------
-    // -------------------------------------------------------------------------
-    // -------------------------------------------------------------------------
-    auto cubes = registry.view<
-        MaterialComponent,
-        BodyTransformComponent,
-        MeshCubeComponent, 
-        TextureComponent, 
-        ShaderProgramComponent,
-        RenderBuffersComponent
-    >();
-    cubes.each([&](
         const auto& material,
         const auto& body,
         const auto& mesh,
