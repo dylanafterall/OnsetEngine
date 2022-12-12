@@ -56,6 +56,8 @@ void Game::setup() {
     m_assetManager.setFShader("light_frag", "../assets/shaders/light.frag");
     m_assetManager.setVShader("surface_vert", "../assets/shaders/surface.vert");
     m_assetManager.setFShader("surface_frag", "../assets/shaders/surface.frag");
+    m_assetManager.setVShader("stencil_vert", "../assets/shaders/stencil.vert");
+    m_assetManager.setFShader("stencil_frag", "../assets/shaders/stencil.frag");
     // shader programs
     // .........................................................................
     unsigned int vertex = m_assetManager.getVShader("light_vert");
@@ -64,6 +66,9 @@ void Game::setup() {
     vertex = m_assetManager.getVShader("surface_vert");
     fragment = m_assetManager.getFShader("surface_frag");
     m_assetManager.setShaderProgram("surface", vertex, fragment);
+    vertex = m_assetManager.getVShader("stencil_vert");
+    fragment = m_assetManager.getFShader("stencil_frag");
+    m_assetManager.setShaderProgram("stencil", vertex, fragment);
     // texture maps
     // .........................................................................
     m_assetManager.setTexture("tiles_diff", "../assets/textures/black-white-tile_albedo.png");
@@ -84,16 +89,16 @@ void Game::setup() {
     // .........................................................................
     // setup components
     CameraComponent camera(glm::vec3(0.0f, 0.0f, 20.0f));
+    camera.m_type = first;
 
     // sunLight entity (pointed down, white light)
     // .........................................................................
     // setup components
     LightComponent sunLightLight;
     BodyTransformComponent sunLightTransform;
-    MeshComponent sunLightMesh;
-    ShaderProgramComponent sunLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"));
+    ShaderProgramComponent sunLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent sunLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
-    RenderBuffersComponent sunLightBuffers;
+    RenderDataComponent sunLightGraphics;
     sunLightLight.m_type = 0;               // directional type
     sunLightLight.m_direction[0] = 0.0f;    // pointed down
     sunLightLight.m_direction[1] = -1.0f;
@@ -114,10 +119,9 @@ void Game::setup() {
     LightComponent blueLightLight;
     BodyTransformComponent blueLightTransform;
     BodyCircleComponent blueLightCircle;
-    MeshComponent blueLightMesh;
-    ShaderProgramComponent blueLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"));
+    ShaderProgramComponent blueLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent blueLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
-    RenderBuffersComponent blueLightBuffers;
+    RenderDataComponent blueLightGraphics;
     blueLightLight.m_type = 1;              // point type 
     blueLightLight.m_scale[0] = 0.5f;       // ensure Box2D radius matches this
     blueLightLight.m_scale[1] = 0.5f;
@@ -134,7 +138,7 @@ void Game::setup() {
     blueLightLight.m_specular[0] = 0.0f;    // blue specular light
     blueLightLight.m_specular[1] = 0.0f;
     blueLightLight.m_specular[2] = 1.0f;
-    blueLightMesh.m_vertexCount = sphereMesh.m_vertexCount;
+    blueLightGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     blueLightCircle.m_bodyDef.type = b2_dynamicBody;
     blueLightCircle.m_bodyDef.position.Set(-15.0f, 5.0f);
@@ -146,10 +150,10 @@ void Game::setup() {
     blueLightCircle.m_fixtureDef.friction = 0.3f;
     blueLightTransform.m_body->CreateFixture(&blueLightCircle.m_fixtureDef);
     // setup OpenGL data
-    glGenVertexArrays(1, &blueLightBuffers.m_VAO);
-    glGenBuffers(1, &blueLightBuffers.m_VBO);
-    glBindVertexArray(blueLightBuffers.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, blueLightBuffers.m_VBO);
+    glGenVertexArrays(1, &blueLightGraphics.m_VAO);
+    glGenBuffers(1, &blueLightGraphics.m_VBO);
+    glBindVertexArray(blueLightGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, blueLightGraphics.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -160,10 +164,9 @@ void Game::setup() {
     LightComponent greenLightLight;
     BodyTransformComponent greenLightTransform;
     BodyCircleComponent greenLightCircle;
-    MeshComponent greenLightMesh;
-    ShaderProgramComponent greenLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"));
+    ShaderProgramComponent greenLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent greenLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
-    RenderBuffersComponent greenLightBuffers;
+    RenderDataComponent greenLightGraphics;
     greenLightLight.m_type = 1;             // point type
     greenLightLight.m_scale[0] = 1.5f;      // ensure Box2D radius matches this
     greenLightLight.m_scale[1] = 1.5f;
@@ -180,7 +183,7 @@ void Game::setup() {
     greenLightLight.m_specular[0] = 0.0f;   // green specular light
     greenLightLight.m_specular[1] = 1.0f;
     greenLightLight.m_specular[2] = 0.0f;
-    greenLightMesh.m_vertexCount = sphereMesh.m_vertexCount;
+    greenLightGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     greenLightCircle.m_bodyDef.type = b2_dynamicBody;
     greenLightCircle.m_bodyDef.position.Set(10.0f, 5.0f);
@@ -192,10 +195,10 @@ void Game::setup() {
     greenLightCircle.m_fixtureDef.friction = 0.3f;
     greenLightTransform.m_body->CreateFixture(&greenLightCircle.m_fixtureDef);
     // setup OpenGL data
-    glGenVertexArrays(1, &greenLightBuffers.m_VAO);
-    glGenBuffers(1, &greenLightBuffers.m_VBO);
-    glBindVertexArray(greenLightBuffers.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, greenLightBuffers.m_VBO);
+    glGenVertexArrays(1, &greenLightGraphics.m_VAO);
+    glGenBuffers(1, &greenLightGraphics.m_VBO);
+    glBindVertexArray(greenLightGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, greenLightGraphics.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -206,10 +209,9 @@ void Game::setup() {
     LightComponent streetLightLight;
     BodyTransformComponent streetLightTransform;
     BodyCircleComponent streetLightCircle;
-    MeshComponent streetLightMesh;
-    ShaderProgramComponent streetLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"));
+    ShaderProgramComponent streetLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent streetLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
-    RenderBuffersComponent streetLightBuffers;
+    RenderDataComponent streetLightGraphics;
     streetLightLight.m_type = 2;                // spot type
     streetLightLight.m_scale[0] = 1.0f;         // ensure Box2D radius matches this
     streetLightLight.m_scale[1] = 1.0f;
@@ -231,7 +233,7 @@ void Game::setup() {
     streetLightLight.m_specular[0] = 1.0f;      // yellow specular light
     streetLightLight.m_specular[1] = 1.0f;
     streetLightLight.m_specular[2] = 0.0f;
-    streetLightMesh.m_vertexCount = sphereMesh.m_vertexCount;
+    streetLightGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     streetLightCircle.m_bodyDef.position.Set(-10.0f, 10.0f);
     streetLightTransform.m_body = m_world->CreateBody(&streetLightCircle.m_bodyDef);
@@ -242,10 +244,10 @@ void Game::setup() {
     streetLightCircle.m_fixtureDef.friction = 0.3f;
     streetLightTransform.m_body->CreateFixture(&streetLightCircle.m_fixtureDef);
     // setup OpenGL data
-    glGenVertexArrays(1, &streetLightBuffers.m_VAO);
-    glGenBuffers(1, &streetLightBuffers.m_VBO);
-    glBindVertexArray(streetLightBuffers.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, streetLightBuffers.m_VBO);
+    glGenVertexArrays(1, &streetLightGraphics.m_VAO);
+    glGenBuffers(1, &streetLightGraphics.m_VBO);
+    glBindVertexArray(streetLightGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, streetLightGraphics.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -257,12 +259,12 @@ void Game::setup() {
     MaterialComponent playerMaterial;
     BodyTransformComponent playerTransform;
     BodyCircleComponent playerCircle;
-    MeshComponent playerMesh;
     TextureComponent playerTexture = TextureComponent(m_assetManager.getTexture("tiles_diff"), m_assetManager.getTexture("tiles_spec"));
-    ShaderProgramComponent playerShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
-    RenderBuffersComponent playerBuffers;
+    ShaderProgramComponent playerShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"), m_assetManager.getShaderProgram("stencil"));
+    RenderDataComponent playerGraphics;
     playerMaterial.m_shininess = 128.0f;
-    playerMesh.m_vertexCount = sphereMesh.m_vertexCount;
+    playerGraphics.m_vertexCount = sphereMesh.m_vertexCount;
+    playerGraphics.m_stencilFlag = true;
     // setup Box2D data
     playerCircle.m_bodyDef.type = b2_dynamicBody;
     playerCircle.m_bodyDef.position.Set(0.0f, 5.0f);
@@ -274,10 +276,10 @@ void Game::setup() {
     playerCircle.m_fixtureDef.friction = 0.3f;
     playerTransform.m_body->CreateFixture(&playerCircle.m_fixtureDef);
     // setup OpenGL data
-    glGenVertexArrays(1, &playerBuffers.m_VAO);
-    glGenBuffers(1, &playerBuffers.m_VBO);
-    glBindVertexArray(playerBuffers.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, playerBuffers.m_VBO);
+    glGenVertexArrays(1, &playerGraphics.m_VAO);
+    glGenBuffers(1, &playerGraphics.m_VBO);
+    glBindVertexArray(playerGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, playerGraphics.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -295,22 +297,21 @@ void Game::setup() {
     MaterialComponent floorMaterial;
     BodyTransformComponent floorTransform;
     BodyPolygonComponent floorPolygon;
-    MeshComponent floorMesh;
     TextureComponent floorTexture = TextureComponent(m_assetManager.getTexture("metal_diff"), m_assetManager.getTexture("metal_spec"));
-    ShaderProgramComponent floorShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
-    RenderBuffersComponent floorBuffers;
+    ShaderProgramComponent floorShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"), m_assetManager.getShaderProgram("stencil"));
+    RenderDataComponent floorGraphics;
     floorMaterial.m_shininess = 32.0f;
-    floorMesh.m_vertexCount = groundMesh.m_vertexCount;
+    floorGraphics.m_vertexCount = groundMesh.m_vertexCount;
     // setup Box2D data
     floorPolygon.m_bodyDef.position.Set(0.0f, -1.0f);
     floorTransform.m_body = m_world->CreateBody(&floorPolygon.m_bodyDef);
     floorPolygon.m_polygonShape.SetAsBox(50.0f, 1.0f); // (SetAsBox(half-width, half-height))
     floorTransform.m_body->CreateFixture(&floorPolygon.m_polygonShape, 0.0f);
     // setup OpenGL data
-    glGenVertexArrays(1, &floorBuffers.m_VAO);
-    glGenBuffers(1, &floorBuffers.m_VBO);
-    glBindVertexArray(floorBuffers.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, floorBuffers.m_VBO);
+    glGenVertexArrays(1, &floorGraphics.m_VAO);
+    glGenBuffers(1, &floorGraphics.m_VBO);
+    glBindVertexArray(floorGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, floorGraphics.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, groundMesh.m_verticesSize, groundMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -328,12 +329,12 @@ void Game::setup() {
     MaterialComponent sphereMaterial;
     BodyTransformComponent sphereTransform;
     BodyCircleComponent sphereCircle;
-    MeshComponent rustedSphereMesh;
     TextureComponent sphereTexture = TextureComponent(m_assetManager.getTexture("rusted_diff"), m_assetManager.getTexture("rusted_spec"));
-    ShaderProgramComponent sphereShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
-    RenderBuffersComponent sphereBuffers;
+    ShaderProgramComponent sphereShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"), m_assetManager.getShaderProgram("stencil"));
+    RenderDataComponent sphereGraphics;
     sphereMaterial.m_shininess = 64.0f;
-    rustedSphereMesh.m_vertexCount = sphereMesh.m_vertexCount;
+    sphereGraphics.m_vertexCount = sphereMesh.m_vertexCount;
+    sphereGraphics.m_stencilFlag = true;
     // setup Box2D data
     sphereCircle.m_bodyDef.type = b2_dynamicBody;
     sphereCircle.m_bodyDef.position.Set(-5.0f, 5.0f);
@@ -345,10 +346,10 @@ void Game::setup() {
     sphereCircle.m_fixtureDef.friction = 0.3f;
     sphereTransform.m_body->CreateFixture(&sphereCircle.m_fixtureDef);
     // setup OpenGL data
-    glGenVertexArrays(1, &sphereBuffers.m_VAO);
-    glGenBuffers(1, &sphereBuffers.m_VBO);
-    glBindVertexArray(sphereBuffers.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, sphereBuffers.m_VBO);
+    glGenVertexArrays(1, &sphereGraphics.m_VAO);
+    glGenBuffers(1, &sphereGraphics.m_VBO);
+    glBindVertexArray(sphereGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, sphereGraphics.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -367,13 +368,12 @@ void Game::setup() {
     BodyTransformComponent cubeTransform;
     BodyPolygonComponent cubePolygon;
     ShapeSquareComponent cubeShape;
-    MeshComponent blockCubeMesh;
     TextureComponent cubeTexture = TextureComponent(m_assetManager.getTexture("blocks_diff"), m_assetManager.getTexture("blocks_spec"));
-    ShaderProgramComponent cubeShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
-    RenderBuffersComponent cubeBuffers;
+    ShaderProgramComponent cubeShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"), m_assetManager.getShaderProgram("stencil"));
+    RenderDataComponent cubeGraphics;
     cubeMaterial.m_shininess = 32.0f;
-    blockCubeMesh.m_vertexCount = cubeMesh.m_vertexCount;
-    
+    cubeGraphics.m_vertexCount = cubeMesh.m_vertexCount;
+    cubeGraphics.m_stencilFlag = true;
     // setup Box2D data
     cubePolygon.m_bodyDef.type = b2_dynamicBody;
     cubePolygon.m_bodyDef.position.Set(5.0f, 5.0f);
@@ -384,10 +384,10 @@ void Game::setup() {
     cubePolygon.m_fixtureDef.friction = 0.3f;
     cubeTransform.m_body->CreateFixture(&cubePolygon.m_fixtureDef);
     // setup OpenGL data
-    glGenVertexArrays(1, &cubeBuffers.m_VAO);
-    glGenBuffers(1, &cubeBuffers.m_VBO);
-    glBindVertexArray(cubeBuffers.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubeBuffers.m_VBO);
+    glGenVertexArrays(1, &cubeGraphics.m_VAO);
+    glGenBuffers(1, &cubeGraphics.m_VBO);
+    glBindVertexArray(cubeGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeGraphics.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, cubeMesh.m_verticesSize, cubeMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -410,68 +410,60 @@ void Game::setup() {
     auto sunLightEntity = m_registry.create();
     m_registry.emplace<LightComponent>(sunLightEntity, sunLightLight);
     m_registry.emplace<BodyTransformComponent>(sunLightEntity, sunLightTransform);
-    m_registry.emplace<MeshComponent>(sunLightEntity, sunLightMesh);
     m_registry.emplace<ShaderProgramComponent>(sunLightEntity, sunLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(sunLightEntity, sunLightReflectorProgram);
-    m_registry.emplace<RenderBuffersComponent>(sunLightEntity, sunLightBuffers);
+    m_registry.emplace<RenderDataComponent>(sunLightEntity, sunLightGraphics);
 
     auto blueLightEntity = m_registry.create();
     m_registry.emplace<LightComponent>(blueLightEntity, blueLightLight);
     m_registry.emplace<BodyTransformComponent>(blueLightEntity, blueLightTransform);
-    m_registry.emplace<MeshComponent>(blueLightEntity, blueLightMesh);
     m_registry.emplace<ShaderProgramComponent>(blueLightEntity, blueLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(blueLightEntity, blueLightReflectorProgram);
-    m_registry.emplace<RenderBuffersComponent>(blueLightEntity, blueLightBuffers);
+    m_registry.emplace<RenderDataComponent>(blueLightEntity, blueLightGraphics);
 
     auto greenLightEntity = m_registry.create();
     m_registry.emplace<LightComponent>(greenLightEntity, greenLightLight);
     m_registry.emplace<BodyTransformComponent>(greenLightEntity, greenLightTransform);
-    m_registry.emplace<MeshComponent>(greenLightEntity, greenLightMesh);
     m_registry.emplace<ShaderProgramComponent>(greenLightEntity, greenLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(greenLightEntity, greenLightReflectorProgram);
-    m_registry.emplace<RenderBuffersComponent>(greenLightEntity, greenLightBuffers);
+    m_registry.emplace<RenderDataComponent>(greenLightEntity, greenLightGraphics);
 
     auto streetLightEntity = m_registry.create();
     m_registry.emplace<LightComponent>(streetLightEntity, streetLightLight);
     m_registry.emplace<BodyTransformComponent>(streetLightEntity, streetLightTransform);
     m_registry.emplace<BodyCircleComponent>(streetLightEntity, streetLightCircle);
-    m_registry.emplace<MeshComponent>(streetLightEntity, streetLightMesh);
     m_registry.emplace<ShaderProgramComponent>(streetLightEntity, streetLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(streetLightEntity, streetLightReflectorProgram);
-    m_registry.emplace<RenderBuffersComponent>(streetLightEntity, streetLightBuffers);
+    m_registry.emplace<RenderDataComponent>(streetLightEntity, streetLightGraphics);
 
     auto playerEntity = m_registry.create();
     m_registry.emplace<PlayerComponent>(playerEntity, playerPlayer);
     m_registry.emplace<MaterialComponent>(playerEntity, playerMaterial);
     m_registry.emplace<BodyTransformComponent>(playerEntity, playerTransform);
-    m_registry.emplace<MeshComponent>(playerEntity, playerMesh);
     m_registry.emplace<TextureComponent>(playerEntity, playerTexture);
     m_registry.emplace<ShaderProgramComponent>(playerEntity, playerShaderProgram);
-    m_registry.emplace<RenderBuffersComponent>(playerEntity, playerBuffers);
+    m_registry.emplace<RenderDataComponent>(playerEntity, playerGraphics);
 
     auto floorEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(floorEntity, floorMaterial);
     m_registry.emplace<BodyTransformComponent>(floorEntity, floorTransform);
-    m_registry.emplace<MeshComponent>(floorEntity, floorMesh);
     m_registry.emplace<TextureComponent>(floorEntity, floorTexture);
     m_registry.emplace<ShaderProgramComponent>(floorEntity, floorShaderProgram);
-    m_registry.emplace<RenderBuffersComponent>(floorEntity, floorBuffers);
+    m_registry.emplace<RenderDataComponent>(floorEntity, floorGraphics);
 
     auto sphereEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(sphereEntity, sphereMaterial);
     m_registry.emplace<BodyTransformComponent>(sphereEntity, sphereTransform);
-    m_registry.emplace<MeshComponent>(sphereEntity, rustedSphereMesh);
     m_registry.emplace<TextureComponent>(sphereEntity, sphereTexture);
     m_registry.emplace<ShaderProgramComponent>(sphereEntity, sphereShaderProgram);
-    m_registry.emplace<RenderBuffersComponent>(sphereEntity, sphereBuffers);
+    m_registry.emplace<RenderDataComponent>(sphereEntity, sphereGraphics);
 
     auto cubeEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(cubeEntity, cubeMaterial);
     m_registry.emplace<BodyTransformComponent>(cubeEntity, cubeTransform);
-    m_registry.emplace<MeshComponent>(cubeEntity, blockCubeMesh);
     m_registry.emplace<TextureComponent>(cubeEntity, cubeTexture);
     m_registry.emplace<ShaderProgramComponent>(cubeEntity, cubeShaderProgram);
-    m_registry.emplace<RenderBuffersComponent>(cubeEntity, cubeBuffers);
+    m_registry.emplace<RenderDataComponent>(cubeEntity, cubeGraphics);
 }
 
 // _____________________________________________________________________________
@@ -518,7 +510,7 @@ void Game::update(const float timeStep, const int32 velocityIterations, const in
 void Game::render(const float renderFactor) {
     // specify color values to then use in filling color buffer
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);   // R, G, B, Alpha
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     m_renderSystem.update(renderFactor, m_registry, m_screenWidth, m_screenHeight);
 
@@ -539,6 +531,7 @@ void Game::destroy() {
     // TODO: will need to use these methods between game levels
     m_renderSystem.deleteBuffers(m_registry);
     m_assetManager.deleteAssets();
+    m_registry.clear();
     
     m_inputInvoker->destroy();
     m_windowManager->destroy();

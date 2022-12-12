@@ -8,19 +8,11 @@
 #ifndef SYSTEM_RENDER_H
 #define SYSTEM_RENDER_H
 
-#include "component_body_circle.h"
-#include "component_body_polygon.h"
-#include "component_body_edge.h"
-#include "component_body_chain.h"
 #include "component_body_transform.h"
 #include "component_camera.h"
 #include "component_light.h"
 #include "component_material.h"
-#include "component_mesh.h"
-#include "meshes/component_mesh_cube.h"
-#include "meshes/component_mesh_ground.h"
-#include "meshes/component_mesh_sphere.h"
-#include "component_render_buffers.h"
+#include "component_render_data.h"
 #include "component_shader.h"
 #include "component_shader_program.h"
 #include "component_shader_program_reflector.h"

@@ -72,8 +72,44 @@ void WindowManager::initialize(unsigned int screenWidth, unsigned int screenHeig
         return;
     }
 
+    // tell GLFW to capture our mouse
+    glfwSetInputMode(m_glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    // _________________________________________________________________________
+    // -------------------------------------------------------------------------
     // configure global opengl state
-    glEnable(GL_DEPTH_TEST);    // used for z-buffer
+    // _________________________________________________________________________
+    // -------------------------------------------------------------------------
+    // enable z-buffer
+    glEnable(GL_DEPTH_TEST);
+    // passes if the fragment's depth value is less than the stored depth value
+    glDepthFunc(GL_LESS); 
+    // enable stencil-buffer
+    glEnable(GL_STENCIL_TEST);
+    // describe whether OpenGL should pass or discard fragments based on the stencil buffer's content
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    // contains three options to specify how to update stencil buffer
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+    // depth-testing options for future reference
+    // temporarily use a read-only depth buffer (disable writing to depth buffer)
+    // glDepthMask(GL_FALSE); 
+    // the depth test always passes.
+    // glDepthFunc(GL_ALWAYS);
+    // the depth test never passes.
+    // glDepthFunc(GL_NEVER); 
+    // passes if the fragment's depth value is less than the stored depth value.
+    // glDepthFunc(GL_LESS); 
+    // passes if the fragment's depth value is equal to the stored depth value.
+    // glDepthFunc(GL_EQUAL); 
+    // passes if the fragment's depth value is less than or equal to the stored depth value.
+    // glDepthFunc(GL_LEQUAL); 
+    // passes if the fragment's depth value is greater than the stored depth value.
+    // glDepthFunc(GL_GREATER); 
+    // passes if the fragment's depth value is not equal to the stored depth value.
+    // glDepthFunc(GL_NOTEQUAL); 
+    // passes if the fragment's depth value is greater than or equal to the stored depth value.
+    // glDepthFunc(GL_GEQUAL); 
 }
 
 void WindowManager::destroy() {

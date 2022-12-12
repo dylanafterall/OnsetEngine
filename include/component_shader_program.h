@@ -18,14 +18,21 @@ struct ShaderProgramComponent {
      *        fragment shader).
      */
     unsigned int m_shaderProgram;
+    /**
+     * \brief Unique OpenGL ID for a shader program (combination of a vertex and 
+     *        fragment shader) specifically used in outlining/stenciling an 
+     *        object when rendering.
+     */
+    unsigned int m_stencilProgram;
 
     /**
      * \brief   The constructor.
      * \details Receives a shader program from AssetManager shaderPrograms map
      *          using getShaderProgram.
      */
-    explicit ShaderProgramComponent(unsigned int shaderProgram) : 
-        m_shaderProgram(shaderProgram) {
+    ShaderProgramComponent(unsigned int shaderProgram, unsigned int stencilProgram) {
+        m_shaderProgram = shaderProgram;
+        m_stencilProgram = stencilProgram;
     }
 };
 

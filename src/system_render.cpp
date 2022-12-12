@@ -29,6 +29,7 @@ void RenderSystem::update(
     // 1) iterate over camera entities to store camera data
     // 2) iterate over light entities (dir / point / spot) to store light data
     // 3) iterate over game object (with material comp) entities to render
+    // 4) iterate over game object entities to stencil outline
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
@@ -37,10 +38,13 @@ void RenderSystem::update(
     // -------------------------------------------------------------------------
     auto cameras = registry.view<CameraComponent>();
     cameras.each([&](const auto& camera) {
-        cameraZoom = camera.m_zoom;
-        cameraPosition = camera.m_position;
-        cameraFront = camera.m_front;
-        cameraUp = camera.m_up;
+        // if 'first' camera (designates main camera)
+        if (camera.m_type == 1) {
+            cameraZoom = camera.m_zoom;
+            cameraPosition = camera.m_position;
+            cameraFront = camera.m_front;
+            cameraUp = camera.m_up;
+        }
     });
 
     // _________________________________________________________________________
@@ -51,18 +55,16 @@ void RenderSystem::update(
     auto lights = registry.view<
         LightComponent,
         BodyTransformComponent,
-        MeshComponent,
         ShaderProgramComponent,
         ReflectorShaderProgramComponent,
-        RenderBuffersComponent
+        RenderDataComponent
     >();
     lights.each([&](
         const auto& light,
         const auto& body,
-        const auto& mesh,
         const auto& shader,
         const auto& reflector,
-        const auto& vao
+        const auto& graphics
     ) {
         // prepare matrices for rendering point and spot lights
         glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -108,6 +110,7 @@ void RenderSystem::update(
 
             // now render the point light source to window
             glUseProgram(shader.m_shaderProgram);
+            glStencilMask(0x00);
             glUniform4f(glGetUniformLocation(shader.m_shaderProgram, "LightColor"), light.m_diffuse[0], light.m_diffuse[1], light.m_diffuse[2], 1.0f);
             glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
             glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
@@ -115,8 +118,8 @@ void RenderSystem::update(
             model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
             model = glm::scale(model, light.m_scale);
             glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
-            glBindVertexArray(vao.m_VAO);
-            glDrawArrays(GL_TRIANGLES, 0, mesh.m_vertexCount);
+            glBindVertexArray(graphics.m_VAO);
+            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
         }
         // _________________________________________________________________________
         // if spot light
@@ -141,6 +144,7 @@ void RenderSystem::update(
 
             // now render the spotlight source to window
             glUseProgram(shader.m_shaderProgram);
+            glStencilMask(0x00);
             glUniform4f(glGetUniformLocation(shader.m_shaderProgram, "LightColor"), light.m_diffuse[0], light.m_diffuse[1], light.m_diffuse[2], 1.0f);
             glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
             glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
@@ -148,8 +152,8 @@ void RenderSystem::update(
             model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
             model = glm::scale(model, light.m_scale);
             glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
-            glBindVertexArray(vao.m_VAO);
-            glDrawArrays(GL_TRIANGLES, 0, mesh.m_vertexCount);
+            glBindVertexArray(graphics.m_VAO);
+            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
         }
     });
 
@@ -161,27 +165,33 @@ void RenderSystem::update(
     auto objects = registry.view<
         MaterialComponent,
         BodyTransformComponent,
-        MeshComponent,
         TextureComponent, 
         ShaderProgramComponent,
-        RenderBuffersComponent
+        RenderDataComponent
     >();
     objects.each([&](
         const auto& material,
         const auto& body,
-        const auto& mesh,
         const auto& texture,
         const auto& shader,
-        const auto& vao
+        const auto& graphics
     ) {
         b2Vec2 bodyPos = body.m_body->GetPosition();
         float angle = body.m_body->GetAngle();
+        
         glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat3 normal = glm::mat3(1.0f);
-
+        
         glUseProgram(shader.m_shaderProgram);
+        if (graphics.m_stencilFlag == true) {
+            glStencilFunc(GL_ALWAYS, 1, 0xFF);
+            glStencilMask(0xFF);
+        }
+        else {
+            glStencilMask(0x00);
+        }
         glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
         glUniform1f(glGetUniformLocation(shader.m_shaderProgram, "material.shininess"), material.m_shininess);
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
@@ -191,21 +201,77 @@ void RenderSystem::update(
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
         normal = glm::mat3(transpose(inverse(model)));
         glUniformMatrix3fv(glGetUniformLocation(shader.m_shaderProgram, "normal"), 1, GL_FALSE, &normal[0][0]);
-        glBindVertexArray(vao.m_VAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture.m_specular);
-        glDrawArrays(GL_TRIANGLES, 0, mesh.m_vertexCount);
+        glBindVertexArray(graphics.m_VAO);
+        glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+    });
+
+    // _________________________________________________________________________
+    // -------------------------------------------------------------------------
+    // 4) iterate over game object entities to stencil outline
+    // _________________________________________________________________________
+    // -------------------------------------------------------------------------
+    auto stencils = registry.view<
+        MaterialComponent,
+        BodyTransformComponent,
+        TextureComponent, 
+        ShaderProgramComponent,
+        RenderDataComponent
+    >();
+    stencils.each([&](
+        const auto& material,
+        const auto& body,
+        const auto& texture,
+        const auto& shader,
+        const auto& graphics
+    ) {
+        if (graphics.m_stencilFlag == true) {
+            b2Vec2 bodyPos = body.m_body->GetPosition();
+            float angle = body.m_body->GetAngle();
+
+            glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+            glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+            glm::mat4 model = glm::mat4(1.0f);
+            glm::mat3 normal = glm::mat3(1.0f);
+            float scale = 1.1f;
+
+            glUseProgram(shader.m_stencilProgram);
+            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+            glStencilMask(0x00);
+            glDisable(GL_DEPTH_TEST);
+
+            glUniformMatrix4fv(glGetUniformLocation(shader.m_stencilProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(shader.m_stencilProgram, "view"), 1, GL_FALSE, &view[0][0]);
+            model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
+            model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::scale(model, glm::vec3(scale, scale, scale));
+            glUniformMatrix4fv(glGetUniformLocation(shader.m_stencilProgram, "model"), 1, GL_FALSE, &model[0][0]);
+            normal = glm::mat3(transpose(inverse(model)));
+            glUniformMatrix3fv(glGetUniformLocation(shader.m_stencilProgram, "normal"), 1, GL_FALSE, &normal[0][0]);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, texture.m_specular);
+            glBindVertexArray(graphics.m_VAO);
+            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+
+            glBindVertexArray(0);
+            glStencilMask(0xFF);
+            glStencilFunc(GL_ALWAYS, 0, 0xFF);
+            glEnable(GL_DEPTH_TEST);
+        }
     });
 }
 
 void RenderSystem::deleteBuffers(entt::registry& registry) {
     // retrieve a view of entities with applicable components
-    auto buffers = registry.view<RenderBuffersComponent>();
+    auto buffers = registry.view<RenderDataComponent>();
     // iterate over each entity in the view
-    buffers.each([&](auto& buffer) {
-        glDeleteVertexArrays(1, &buffer.m_VAO);
-        glDeleteBuffers(1, &buffer.m_VBO);
+    buffers.each([&](auto& graphics) {
+        glDeleteVertexArrays(1, &graphics.m_VAO);
+        glDeleteBuffers(1, &graphics.m_VBO);
     });
 }

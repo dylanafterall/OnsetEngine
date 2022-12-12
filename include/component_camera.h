@@ -12,6 +12,11 @@
 #include "glm/glm.hpp"
 
 /**
+ * \brief Camera type - for specifying which camera to act on.
+ */
+enum CameraType{first=1, second, third};
+
+/**
  * \brief Default camera yaw value.
  */
 const float YAW         = -90.0f;
@@ -37,6 +42,11 @@ const float ZOOM        =  45.0f;
  * \details A struct to hold data pertaining to the game's camera.
  */
 struct CameraComponent {
+    /**
+     * \brief Camera type, 1=first, 2=second, 3=third.
+     */
+    CameraType m_type;
+
     /**
      * \brief Camera yaw (euler angle) value member variable. Scalar.
      */

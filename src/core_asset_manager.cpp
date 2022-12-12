@@ -27,73 +27,52 @@ void AssetManager::setTexture(const std::string& assetId, const char* texturePat
     glTexParameteri(        // acts on currently active/bound texture
         GL_TEXTURE_2D,      // specify texture target (texture is in 2D)
         GL_TEXTURE_WRAP_S,  // what option to set and for which texture axis 
-        GL_CLAMP_TO_BORDER           // wrapping mode
+        GL_REPEAT           
     );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     // set texture FILTERING parameters
     glTexParameteri(
         GL_TEXTURE_2D,
         GL_TEXTURE_MIN_FILTER,  // minifying or magnifying? scaling down or up?
-        GL_LINEAR   // nearest texel center, linear interpolation, or Mipmaps
+        GL_LINEAR_MIPMAP_LINEAR   // nearest texel center, linear interpolation, or Mipmaps
     );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
-    // load texture from filepath
-    int width, height, nrChannels;
     // tell stb_image.h to flip loaded textures on the y-axis
     stbi_set_flip_vertically_on_load(true); // needed due to OpenGL coordinates 
-    unsigned char* data = stbi_load(
-        texturePath,
-        &width, 
-        &height, 
-        &nrChannels,    // number of color channels 
-        0
-    );
-    // use conditional to handle either png or jpg texture files
-    if (nrChannels == 4) {
-        if (data) {
-            glTexImage2D(
-                GL_TEXTURE_2D,      // texture target (1D/2D/3D) 
-                0,                  // level of detail (0 to nth mipmap reduction) 
-                GL_RGBA,            // number of color components (RGBA for .png) 
-                width,       
-                height, 
-                0,                  // border, value must be 0 
-                GL_RGBA,            // format of pixel data (RGBA for .png) 
-                GL_UNSIGNED_BYTE,   // data type of pixel data 
-                data                // pointer to image data in memory
-            );
-            glGenerateMipmap(GL_TEXTURE_2D);
-            // add new texture to Asset Manager's texture map
-            textures.emplace(assetId, texture);
-            ONSET_INFO("New Texture added to Asset Manager with id = {}", assetId);
+
+    // load texture from filepath
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load(texturePath, &width, &height, &nrChannels, 0);
+    if (data) {
+        GLenum format;
+        if (nrChannels == 1) {
+            format = GL_RED;
         }
-        else {
-            ONSET_ERROR("Failed to load texture");
+        else if (nrChannels == 3) {
+            format = GL_RGB;
         }
+        else {format = GL_RGBA;}
+
+        glTexImage2D(
+            GL_TEXTURE_2D,      // texture target (1D/2D/3D) 
+            0,                  // level of detail (0 to nth mipmap reduction) 
+            format,             // number of color components (RED / RGB / RGBA) 
+            width,       
+            height, 
+            0,                  // border, value must be 0 
+            format,             // format of pixel data (RED / RGB / RGBA) 
+            GL_UNSIGNED_BYTE,   // data type of pixel data 
+            data                // pointer to image data in memory
+        );
+        glGenerateMipmap(GL_TEXTURE_2D);
+        // add new texture to Asset Manager's texture map
+        textures.emplace(assetId, texture);
+        ONSET_INFO("New Texture added to Asset Manager with id = {}", assetId);
     }
     else {
-        if (data) {
-            glTexImage2D(
-                GL_TEXTURE_2D,      // texture target (1D/2D/3D) 
-                0,                  // level of detail (0 to nth mipmap reduction) 
-                GL_RGB,             // number of color components (RGBA for .png) 
-                width,       
-                height, 
-                0,                  // border, value must be 0 
-                GL_RGB,             // format of pixel data (RGBA for .png) 
-                GL_UNSIGNED_BYTE,   // data type of pixel data 
-                data                // pointer to image data in memory
-            );
-            glGenerateMipmap(GL_TEXTURE_2D);
-            // add new texture to Asset Manager's texture map
-            textures.emplace(assetId, texture);
-            ONSET_INFO("New Texture added to Asset Manager with id = {}", assetId);
-        }
-        else {
-            ONSET_ERROR("Failed to load texture");
-        }
+        ONSET_ERROR("Failed to load texture");
     }
 
     // de-allocate the memory for texture from stbi
