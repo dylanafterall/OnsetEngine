@@ -11,8 +11,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <string>
-
 void RenderSystem::update(
     const float timeStep, 
     entt::registry& registry,
@@ -29,7 +27,8 @@ void RenderSystem::update(
     // 1) iterate over camera entities to store camera data
     // 2) iterate over light entities (dir / point / spot) to store light data
     // 3) iterate over game object (with material comp) entities to render
-    // 4) iterate over game object entities to stencil outline
+    // 4) iterate over sprite entities to render
+    // 5) iterate over game object entities to stencil outline (always last)
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
@@ -211,7 +210,42 @@ void RenderSystem::update(
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // 4) iterate over game object entities to stencil outline
+    // 4) iterate over sprite entities to render
+    // _________________________________________________________________________
+    // -------------------------------------------------------------------------
+    auto sprites = registry.view<
+        SpriteComponent,
+        TextureComponent, 
+        ShaderProgramComponent,
+        RenderDataComponent
+    >();
+    sprites.each([&](
+        const auto& sprite,
+        const auto& texture,
+        const auto& shader,
+        const auto& graphics
+    ) { 
+        glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+        glm::mat4 model = glm::mat4(1.0f);
+
+        glUseProgram(shader.m_shaderProgram);
+        glStencilMask(0x00);
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
+        model = glm::translate(model, sprite.m_position);
+        model = glm::rotate(model, sprite.m_rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, sprite.m_scale);
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
+        glBindVertexArray(graphics.m_VAO);
+        glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+    });
+
+    // _________________________________________________________________________
+    // -------------------------------------------------------------------------
+    // 5) iterate over game object entities to stencil outline
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
     auto stencils = registry.view<

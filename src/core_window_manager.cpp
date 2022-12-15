@@ -90,6 +90,9 @@ void WindowManager::initialize(unsigned int screenWidth, unsigned int screenHeig
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
     // contains three options to specify how to update stencil buffer
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    // enable blending for object transparency
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // depth-testing options for future reference
     // temporarily use a read-only depth buffer (disable writing to depth buffer)

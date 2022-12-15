@@ -2,14 +2,12 @@
 // Onset Engine
 // https://github.com/dylanafterall/OnsetEngine.git
 //
-// system_all.h
-//  header of all system headers 
+// event_all.h
+//  header of all event headers 
 // -----------------------------------------------------------------------------
-#ifndef SYSTEM_ALL_H
-#define SYSTEM_ALL_H
+#ifndef EVENT_ALL_H
+#define EVENT_ALL_H
 
-#include "system_camera.h"
-#include "system_collision.h"
-#include "system_render.h"
+#include "event_player_collision.h"
 
-#endif // SYSTEM_ALL_H
+#endif // EVENT_ALL_H

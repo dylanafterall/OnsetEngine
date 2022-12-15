@@ -37,6 +37,8 @@ void Game::initialize() {
         m_screenWidth, 
         m_screenHeight
     );
+
+    m_world->SetContactListener(&m_collisionSystem);
 }
 
 void Game::setup() {
@@ -50,6 +52,7 @@ void Game::setup() {
     MeshCubeComponent cubeMesh;
     MeshSphereComponent sphereMesh;
     MeshGroundComponent groundMesh;
+    MeshSpriteComponent spriteMesh;
     // shaders
     // .........................................................................
     m_assetManager.setVShader("light_vert", "../assets/shaders/light.vert");
@@ -58,6 +61,8 @@ void Game::setup() {
     m_assetManager.setFShader("surface_frag", "../assets/shaders/surface.frag");
     m_assetManager.setVShader("stencil_vert", "../assets/shaders/stencil.vert");
     m_assetManager.setFShader("stencil_frag", "../assets/shaders/stencil.frag");
+    m_assetManager.setVShader("sprite_vert", "../assets/shaders/sprite.vert");
+    m_assetManager.setFShader("sprite_frag", "../assets/shaders/sprite.frag");
     // shader programs
     // .........................................................................
     unsigned int vertex = m_assetManager.getVShader("light_vert");
@@ -69,16 +74,23 @@ void Game::setup() {
     vertex = m_assetManager.getVShader("stencil_vert");
     fragment = m_assetManager.getFShader("stencil_frag");
     m_assetManager.setShaderProgram("stencil", vertex, fragment);
+    vertex = m_assetManager.getVShader("sprite_vert");
+    fragment = m_assetManager.getFShader("sprite_frag");
+    m_assetManager.setShaderProgram("sprite", vertex, fragment);
     // texture maps
     // .........................................................................
-    m_assetManager.setTexture("tiles_diff", "../assets/textures/black-white-tile_albedo.png");
-    m_assetManager.setTexture("tiles_spec", "../assets/textures/black-white-tile_metallic.png");
-    m_assetManager.setTexture("rusted_diff", "../assets/textures/rusted-steel_albedo.png");
-    m_assetManager.setTexture("rusted_spec", "../assets/textures/rusted-steel_metallic.png");
-    m_assetManager.setTexture("blocks_diff", "../assets/textures/angled-blocks-vegetation_albedo.png");
-    m_assetManager.setTexture("blocks_spec", "../assets/textures/angled-blocks-vegetation_metallic.png");
-    m_assetManager.setTexture("metal_diff", "../assets/textures/dull_metal_albedo.png");
-    m_assetManager.setTexture("metal_spec", "../assets/textures/dull_metal_metallic.png");
+    m_assetManager.setTexture("tiles_diff", "../assets/textures/black-white-tile_albedo.png", true);
+    m_assetManager.setTexture("tiles_spec", "../assets/textures/black-white-tile_metallic.png", true);
+    m_assetManager.setTexture("rusted_diff", "../assets/textures/rusted-steel_albedo.png", true);
+    m_assetManager.setTexture("rusted_spec", "../assets/textures/rusted-steel_metallic.png", true);
+    m_assetManager.setTexture("blocks_diff", "../assets/textures/angled-blocks-vegetation_albedo.png", true);
+    m_assetManager.setTexture("blocks_spec", "../assets/textures/angled-blocks-vegetation_metallic.png", true);
+    m_assetManager.setTexture("metal_diff", "../assets/textures/dull_metal_albedo.png", true);
+    m_assetManager.setTexture("metal_spec", "../assets/textures/dull_metal_metallic.png", true);
+    m_assetManager.setTexture("gold_diff", "../assets/textures/lightgold_albedo.png", false);
+    m_assetManager.setTexture("gold_spec", "../assets/textures/lightgold_metallic.png", false);
+    m_assetManager.setTexture("blending", "../assets/textures/blending_transparent_window.png", false);
+
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
@@ -99,19 +111,11 @@ void Game::setup() {
     ShaderProgramComponent sunLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent sunLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderDataComponent sunLightGraphics;
-    sunLightLight.m_type = 0;               // directional type
-    sunLightLight.m_direction[0] = 0.0f;    // pointed down
-    sunLightLight.m_direction[1] = -1.0f;
-    sunLightLight.m_direction[2] = 0.0f;
-    sunLightLight.m_ambient[0] = 0.5f;      // white ambient light
-    sunLightLight.m_ambient[1] = 0.5f;
-    sunLightLight.m_ambient[2] = 0.5f;
-    sunLightLight.m_diffuse[0] = 0.5f;      // white diffuse light
-    sunLightLight.m_diffuse[1] = 0.5f;
-    sunLightLight.m_diffuse[2] = 0.5f;
-    sunLightLight.m_specular[0] = 0.5f;     // white specular light
-    sunLightLight.m_specular[1] = 0.5f;
-    sunLightLight.m_specular[2] = 0.5f;
+    sunLightLight.m_type = 0;                                   // directional type
+    sunLightLight.m_direction = glm::vec3(0.0f, -1.0f, 0.0f);   // pointed down
+    sunLightLight.m_ambient = glm::vec3(0.5f, 0.5f, 0.5f);      // white ambient
+    sunLightLight.m_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);      // white diffuse
+    sunLightLight.m_specular = glm::vec3(0.5f, 0.5f, 0.5f);     // white specular
 
     // blueLight entity (dynamic point source, blue light)
     // .........................................................................
@@ -122,22 +126,14 @@ void Game::setup() {
     ShaderProgramComponent blueLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent blueLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderDataComponent blueLightGraphics;
-    blueLightLight.m_type = 1;              // point type 
-    blueLightLight.m_scale[0] = 0.5f;       // ensure Box2D radius matches this
-    blueLightLight.m_scale[1] = 0.5f;
-    blueLightLight.m_scale[2] = 0.5f;
+    blueLightLight.m_type = 1;                                  // point type 
+    blueLightLight.m_scale = glm::vec3(0.5f, 0.5f, 0.5f);       // check Box2D size
     blueLightLight.m_constant = 1.0f;
     blueLightLight.m_linear = 0.09f;
     blueLightLight.m_quadratic = 0.032f;
-    blueLightLight.m_ambient[0] = 0.0f;     // blue ambient light
-    blueLightLight.m_ambient[1] = 0.0f;
-    blueLightLight.m_ambient[2] = 1.0f;
-    blueLightLight.m_diffuse[0] = 0.0f;     // blue diffuse light
-    blueLightLight.m_diffuse[1] = 0.0f;
-    blueLightLight.m_diffuse[2] = 1.0f;
-    blueLightLight.m_specular[0] = 0.0f;    // blue specular light
-    blueLightLight.m_specular[1] = 0.0f;
-    blueLightLight.m_specular[2] = 1.0f;
+    blueLightLight.m_ambient = glm::vec3(0.0f, 0.0f, 1.0f);     // blue ambient
+    blueLightLight.m_diffuse = glm::vec3(0.0f, 0.0f, 1.0f);     // blue diffuse
+    blueLightLight.m_specular = glm::vec3(0.0f, 0.0f, 1.0f);    // blue specular
     blueLightGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     blueLightCircle.m_bodyDef.type = b2_dynamicBody;
@@ -167,22 +163,14 @@ void Game::setup() {
     ShaderProgramComponent greenLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent greenLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderDataComponent greenLightGraphics;
-    greenLightLight.m_type = 1;             // point type
-    greenLightLight.m_scale[0] = 1.5f;      // ensure Box2D radius matches this
-    greenLightLight.m_scale[1] = 1.5f;
-    greenLightLight.m_scale[2] = 1.5f;
+    greenLightLight.m_type = 1;                                 // point type
+    greenLightLight.m_scale = glm::vec3(1.5f, 1.5f, 1.5f);      // check Box2D
     greenLightLight.m_constant = 1.0f;
     greenLightLight.m_linear = 0.09f;
     greenLightLight.m_quadratic = 0.032f;
-    greenLightLight.m_ambient[0] = 0.0f;    // green ambient light
-    greenLightLight.m_ambient[1] = 1.0f;
-    greenLightLight.m_ambient[2] = 0.0f;
-    greenLightLight.m_diffuse[0] = 0.0f;    // green diffuse light
-    greenLightLight.m_diffuse[1] = 1.0f;
-    greenLightLight.m_diffuse[2] = 0.0f;
-    greenLightLight.m_specular[0] = 0.0f;   // green specular light
-    greenLightLight.m_specular[1] = 1.0f;
-    greenLightLight.m_specular[2] = 0.0f;
+    greenLightLight.m_ambient = glm::vec3(0.0f, 1.0f, 0.0f);    // green ambient
+    greenLightLight.m_diffuse = glm::vec3(0.0f, 1.0f, 0.0f);    // green diffuse
+    greenLightLight.m_specular = glm::vec3(0.0f, 1.0f, 0.0f);   // green specular
     greenLightGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     greenLightCircle.m_bodyDef.type = b2_dynamicBody;
@@ -212,27 +200,17 @@ void Game::setup() {
     ShaderProgramComponent streetLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent streetLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderDataComponent streetLightGraphics;
-    streetLightLight.m_type = 2;                // spot type
-    streetLightLight.m_scale[0] = 1.0f;         // ensure Box2D radius matches this
-    streetLightLight.m_scale[1] = 1.0f;
-    streetLightLight.m_scale[2] = 1.0f;
-    streetLightLight.m_direction[0] = 0.0f;     // pointed down
-    streetLightLight.m_direction[1] = -1.0f;
-    streetLightLight.m_direction[2] = 0.0f;
+    streetLightLight.m_type = 2;                                    // spot type
+    streetLightLight.m_scale = glm::vec3(1.0f, 1.0f, 1.0f);         // check Box2D size
+    streetLightLight.m_direction = glm::vec3(0.0f, -1.0f, 0.0f);    // pointed down
     streetLightLight.m_cutOff = glm::cos(glm::radians(12.5f));
     streetLightLight.m_outerCutOff = glm::cos(glm::radians(15.0f));
     streetLightLight.m_constant = 1.0f;
     streetLightLight.m_linear = 0.09f;
     streetLightLight.m_quadratic = 0.032f;
-    streetLightLight.m_ambient[0] = 0.0f;       // no ambient light
-    streetLightLight.m_ambient[1] = 0.0f;
-    streetLightLight.m_ambient[2] = 0.0f;
-    streetLightLight.m_diffuse[0] = 1.0f;       // yellow diffuse light
-    streetLightLight.m_diffuse[1] = 1.0f;
-    streetLightLight.m_diffuse[2] = 0.0f;
-    streetLightLight.m_specular[0] = 1.0f;      // yellow specular light
-    streetLightLight.m_specular[1] = 1.0f;
-    streetLightLight.m_specular[2] = 0.0f;
+    streetLightLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);    // no ambient
+    streetLightLight.m_diffuse = glm::vec3(1.0f, 1.0f, 0.0f);    // yellow diffuse
+    streetLightLight.m_specular = glm::vec3(1.0f, 1.0f, 0.0f);   // yellow specular
     streetLightGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
     streetLightCircle.m_bodyDef.position.Set(-10.0f, 10.0f);
@@ -399,6 +377,32 @@ void Game::setup() {
     glUniform1i(glGetUniformLocation(cubeShaderProgram.m_shaderProgram, "material.diffuse"), 0);
     glUniform1i(glGetUniformLocation(cubeShaderProgram.m_shaderProgram, "material.specular"), 1);
 
+    // background entity (flat, blended sprite)
+    // .........................................................................
+    // setup components
+    SpriteComponent backgroundSprite;
+    TextureComponent backgroundTexture = TextureComponent(m_assetManager.getTexture("blending"), m_assetManager.getTexture("gold_spec"));
+    ShaderProgramComponent backgroundShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("sprite"), m_assetManager.getShaderProgram("stencil"));
+    RenderDataComponent backgroundGraphics;
+    backgroundSprite.m_shininess = 32.0f;
+    backgroundSprite.m_position = glm::vec3(15.0f, 1.0f, 5.0f);
+    backgroundSprite.m_rotation = 0.0f;
+    backgroundSprite.m_scale = glm::vec3(1.0f, 1.0f, 1.0f);
+    backgroundGraphics.m_vertexCount = spriteMesh.m_vertexCount;
+    // setup OpenGL data
+    glGenVertexArrays(1, &backgroundGraphics.m_VAO);
+    glGenBuffers(1, &backgroundGraphics.m_VBO);
+    glBindVertexArray(backgroundGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, backgroundGraphics.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, spriteMesh.m_verticesSize, spriteMesh.m_vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glUseProgram(backgroundShaderProgram.m_shaderProgram);
+    glUniform1i(glGetUniformLocation(backgroundShaderProgram.m_shaderProgram, "texture1"), 0);
+
+
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
     // Registry
@@ -464,6 +468,12 @@ void Game::setup() {
     m_registry.emplace<TextureComponent>(cubeEntity, cubeTexture);
     m_registry.emplace<ShaderProgramComponent>(cubeEntity, cubeShaderProgram);
     m_registry.emplace<RenderDataComponent>(cubeEntity, cubeGraphics);
+
+    auto backgroundEntity = m_registry.create();
+    m_registry.emplace<SpriteComponent>(backgroundEntity, backgroundSprite);
+    m_registry.emplace<TextureComponent>(backgroundEntity, backgroundTexture);
+    m_registry.emplace<ShaderProgramComponent>(backgroundEntity, backgroundShaderProgram);
+    m_registry.emplace<RenderDataComponent>(backgroundEntity, backgroundGraphics);
 }
 
 // _____________________________________________________________________________

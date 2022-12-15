@@ -17,19 +17,25 @@
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
-void AssetManager::setTexture(const std::string& assetId, const char* texturePath) {
+void AssetManager::setTexture(const std::string& assetId, const char* texturePath, bool repeat) {
     // generate and bind texture for OpenGL configuration
     unsigned int texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-     // set the texture WRAPPING parameters - (s,t,r is equivalent of x,y,z)
-    glTexParameteri(        // acts on currently active/bound texture
-        GL_TEXTURE_2D,      // specify texture target (texture is in 2D)
-        GL_TEXTURE_WRAP_S,  // what option to set and for which texture axis 
-        GL_REPEAT           
-    );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    if (repeat) {
+        // set the texture WRAPPING parameters - (s,t,r is equivalent of x,y,z)
+        glTexParameteri(        // acts on currently active/bound texture
+        GL_TEXTURE_2D,          // specify texture target (texture is in 2D)
+        GL_TEXTURE_WRAP_S,      // what option to set and for which texture axis 
+        GL_REPEAT               // specify wrapping parameter         
+        );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);   
+    }
+    else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);  
+    }
 
     // set texture FILTERING parameters
     glTexParameteri(

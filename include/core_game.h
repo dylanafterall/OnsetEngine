@@ -10,12 +10,13 @@
 
 #define ONSET_CONFIG_DEBUG
 
-#include "component_all.h"
 #include "core_asset_manager.h"
 #include "core_window_manager.h"
 #include "core_input_invoker.h"
 #include "core_log_manager.h"
 #include "core_log_macros.h"
+#include "component_all.h"
+#include "event_all.h"
 #include "system_all.h"
 
 #include "GLFW/glfw3.h"
@@ -157,18 +158,28 @@ private:
     LogManager m_logManager;
 
     /**
-     * \brief Object to render entities of game's registry.
-     */
-    RenderSystem m_renderSystem;
-    /**
      * \brief Object to translate/rotate the camera.
      */
     CameraSystem m_cameraSystem;
+    /**
+     * \brief Object to handle Box2D object collisions.
+     */
+    CollisionSystem m_collisionSystem;
+    /**
+     * \brief Object to render entities of game's registry.
+     */
+    RenderSystem m_renderSystem;
+
+
 
     /**
      * \brief EnTT registry to manage all game entities.
      */
     entt::registry m_registry;
+    /**
+     * \brief EnTT dispatcher to .
+     */
+    entt::dispatcher m_dispatcher;
 
     /**
      * \brief Fixed time step for simulation (0.1 secs default).

@@ -16,12 +16,15 @@
 #include "component_shader.h"
 #include "component_shader_program.h"
 #include "component_shader_program_reflector.h"
+#include "component_sprite.h"
 #include "component_texture.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "entt/entt.hpp"
+
+#include <string>
 
 /** 
  * \brief   The RenderSystem class.

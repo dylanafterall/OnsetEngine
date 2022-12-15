@@ -45,9 +45,10 @@ public:
      *          saves a copy of its ID in a std::map member variable.
      * \param   assetId      ID name to serve as key in std::map textures.
      * \param   texturePath  Relative path to texture asset.
+     * \param   repeat       To declare if repeated texture pattern desired.
      * \return  void, none.
      */
-    void setTexture(const std::string&, const char*);
+    void setTexture(const std::string&, const char*, bool);
     /**
      * \brief   The function setVShader. 
      * \details This function imports a vertex shader file - .vert from the
