@@ -195,6 +195,14 @@ public:
      */
     void setWKeyCommand(IInputCommand*);
     /**
+     * \brief   The function setEKeyCommand. 
+     * \details This function assigns the key-E input a IInputCommand 
+     *          class.
+     * \param   command     The desired IInputCommand class to assign.
+     * \return  void, none.
+     */
+    void setEKeyCommand(IInputCommand*);
+    /**
      * \brief   The function setHKeyCommand. 
      * \details This function assigns the key-H input a IInputCommand 
      *          class.
@@ -361,6 +369,10 @@ private:
      * \brief Pointer to the IInputCommand class for a key-W input.
      */
     IInputCommand* m_keyW; 
+    /**
+     * \brief Pointer to the IInputCommand class for a key-E input.
+     */
+    IInputCommand* m_keyE; 
     /**
      * \brief Pointer to the IInputCommand class for a key-H input.
      */

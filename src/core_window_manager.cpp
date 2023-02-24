@@ -93,6 +93,8 @@ void WindowManager::initialize(unsigned int screenWidth, unsigned int screenHeig
     // enable blending for object transparency
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // enable backface culling
+    glEnable(GL_CULL_FACE); 
 
     // depth-testing options for future reference
     // temporarily use a read-only depth buffer (disable writing to depth buffer)

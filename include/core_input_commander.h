@@ -10,9 +10,10 @@
 #ifndef CORE_INPUT_COMMANDER_H
 #define CORE_INPUT_COMMANDER_H
 
+#include "component_body_transform.h"
 #include "component_camera.h"
 #include "component_player.h"
-#include "component_body_transform.h"
+#include "component_render_data.h"
 #include "core_log_macros.h"
 
 #include "glm/glm.hpp"
@@ -75,6 +76,17 @@ public:
  * 			functionality.
  */
 class UpCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+/** 
+ * \brief   The ToggleSelectModeCommand class.
+ * \details Derived from IInputCommand. Pointed to by InputInvoker class.
+ * 			Toggles 'Select Mode' - enabling stenciling of the player object
+ * 			and dynamic sphere objects it contacts.
+ */
+class ToggleSelectModeCommand : public IInputCommand {
 public:
 	void execute(entt::registry&) const override;
 };

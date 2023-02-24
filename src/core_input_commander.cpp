@@ -66,6 +66,21 @@ void UpCommand::execute(entt::registry& registry) const {
     });
 }
 
+
+void ToggleSelectModeCommand::execute(entt::registry& registry) const {
+    auto player = registry.view<
+        PlayerComponent,
+        RenderDataComponent
+    >();
+    player.each([&](
+        auto& player,
+        auto& renderData
+    ) {
+        // flip boolean value of stencilFlag: if true make false (& vice-versa)
+        renderData.m_stencilFlag = !renderData.m_stencilFlag;
+    });
+}
+
 // -----------------------------------------------------------------------------
 void NorthCommand::execute(entt::registry& registry) const {
     //ONSET_TRACE("moved north");

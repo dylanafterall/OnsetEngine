@@ -242,7 +242,7 @@ void Game::setup() {
     RenderDataComponent playerGraphics;
     playerMaterial.m_shininess = 128.0f;
     playerGraphics.m_vertexCount = sphereMesh.m_vertexCount;
-    playerGraphics.m_stencilFlag = true;
+    playerGraphics.m_stencilFlag = false;
     // setup Box2D data
     playerCircle.m_bodyDef.type = b2_dynamicBody;
     playerCircle.m_bodyDef.position.Set(0.0f, 5.0f);
@@ -312,7 +312,7 @@ void Game::setup() {
     RenderDataComponent sphereGraphics;
     sphereMaterial.m_shininess = 64.0f;
     sphereGraphics.m_vertexCount = sphereMesh.m_vertexCount;
-    sphereGraphics.m_stencilFlag = true;
+    sphereGraphics.m_stencilFlag = false;
     // setup Box2D data
     sphereCircle.m_bodyDef.type = b2_dynamicBody;
     sphereCircle.m_bodyDef.position.Set(-5.0f, 5.0f);
@@ -351,7 +351,7 @@ void Game::setup() {
     RenderDataComponent cubeGraphics;
     cubeMaterial.m_shininess = 32.0f;
     cubeGraphics.m_vertexCount = cubeMesh.m_vertexCount;
-    cubeGraphics.m_stencilFlag = true;
+    cubeGraphics.m_stencilFlag = false;
     // setup Box2D data
     cubePolygon.m_bodyDef.type = b2_dynamicBody;
     cubePolygon.m_bodyDef.position.Set(5.0f, 5.0f);

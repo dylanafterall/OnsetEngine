@@ -69,6 +69,7 @@ void InputInvoker::initialize(
     setSKeyCommand(new DownCommand());
     setDKeyCommand(new RightCommand());
     setWKeyCommand(new UpCommand());
+    setEKeyCommand(new ToggleSelectModeCommand());
     setHKeyCommand(new CameraLeftCommand());
     setJKeyCommand(new CameraDownCommand());
     setKKeyCommand(new CameraUpCommand());
@@ -96,6 +97,7 @@ void InputInvoker::destroy() {
     delete m_keyS;
     delete m_keyD;
     delete m_keyW;
+    delete m_keyE;
     delete m_keyH;
     delete m_keyJ;
     delete m_keyK;
@@ -131,6 +133,9 @@ void InputInvoker::handleKeyInput(GLFWwindow* window, int key, int action) {
                 break;
             case GLFW_KEY_W:
                 m_keyW->execute(*m_registryPtr);
+                break;
+            case GLFW_KEY_E:
+                m_keyE->execute(*m_registryPtr);
                 break;
             case GLFW_KEY_H:
                 m_keyH->execute(*m_registryPtr);
@@ -282,6 +287,10 @@ void InputInvoker::setDKeyCommand(IInputCommand* command) {
 
 void InputInvoker::setWKeyCommand(IInputCommand* command) {
     m_keyW = command;
+}
+
+void InputInvoker::setEKeyCommand(IInputCommand* command) {
+    m_keyE = command;
 }
 
 void InputInvoker::setHKeyCommand(IInputCommand* command) {

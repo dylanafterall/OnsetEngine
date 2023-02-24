@@ -115,6 +115,16 @@ new techniques and practices over time.
 
 ## Acknowledgements
 
+<p>This project uses the following assets:<br>
+<ul> 
+    <li>The PBR material: <a href="https://freepbr.com/materials/angled-blocks-vegetation/">"Angled Blocks Vegetation"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+    <li>The PBR material: <a href="https://freepbr.com/materials/black-white-tile-pbr/">"Black White Tile"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+    <li>The PBR material: <a href="https://freepbr.com/materials/dull-metal/">"Dull Metal"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+    <li>The PBR material: <a href="https://freepbr.com/materials/light-gold-pbr-metal-material/">"Light Gold"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+    <li>The PBR material: <a href="https://freepbr.com/materials/rusted-steel/">"Rusted Steel"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+</ul>
+</p>
+
 <p>This project was inspired by:<br>
 <ul> 
     <li>The online reference <a href="https://learnopengl.com/">"LearnOpenGL"</a>, by Joey deVries </li>

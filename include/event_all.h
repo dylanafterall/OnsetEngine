@@ -8,6 +8,4 @@
 #ifndef EVENT_ALL_H
 #define EVENT_ALL_H
 
-#include "event_player_collision.h"
-
 #endif // EVENT_ALL_H
