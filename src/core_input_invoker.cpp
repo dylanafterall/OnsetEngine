@@ -34,7 +34,7 @@ void InputInvoker::initialize(
 
     // keyboard input
     auto key_callback = [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleKeyInput(window, key, action);
+        static_cast<InputInvoker*>(glfwGetWindowUserPointer(window))->handleKeyInput(window, key, scancode, action, mods);
     };
     glfwSetKeyCallback(m_glfwWindow, key_callback);
     // glfwSetInputMode(m_glfwWindow, GLFW_STICKY_KEYS, 1);
@@ -80,6 +80,10 @@ void InputInvoker::initialize(
     set8KeyCommand(new CameraPitchDownCommand());
     set9KeyCommand(new CameraYawLeftCommand());
     set0KeyCommand(new CameraYawRightCommand());
+    setShiftAKeyCommand(new SelectedLeftCommand);
+    setShiftSKeyCommand(new SelectedDownCommand);
+    setShiftDKeyCommand(new SelectedRightCommand);
+    setShiftWKeyCommand(new SelectedUpCommand);
 }
 
 void InputInvoker::destroy() {
@@ -108,6 +112,10 @@ void InputInvoker::destroy() {
     delete m_key8;
     delete m_key9;
     delete m_key0;
+    delete m_keyShiftA;
+    delete m_keyShiftS;
+    delete m_keyShiftD;
+    delete m_keyShiftW;
 }
 
 // _____________________________________________________________________________
@@ -116,22 +124,38 @@ void InputInvoker::destroy() {
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
-void InputInvoker::handleKeyInput(GLFWwindow* window, int key, int action) {
+void InputInvoker::handleKeyInput(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (action == GLFW_PRESS) {
         switch (key) {
             case GLFW_KEY_ESCAPE:
                 glfwSetWindowShouldClose(window, true);
                 break;
             case GLFW_KEY_A:
+                if (mods == GLFW_MOD_SHIFT) {
+                    m_keyShiftA->execute(*m_registryPtr);
+                    break;
+                }
                 m_keyA->execute(*m_registryPtr);
                 break;
             case GLFW_KEY_S:
+                if (mods == GLFW_MOD_SHIFT) {
+                    m_keyShiftS->execute(*m_registryPtr);
+                    break;
+                }
                 m_keyS->execute(*m_registryPtr);
                 break;
             case GLFW_KEY_D:
+                if (mods == GLFW_MOD_SHIFT) {
+                    m_keyShiftD->execute(*m_registryPtr);
+                    break;
+                }
                 m_keyD->execute(*m_registryPtr);
                 break;
             case GLFW_KEY_W:
+                if (mods == GLFW_MOD_SHIFT) {
+                    m_keyShiftW->execute(*m_registryPtr);
+                    break;
+                }
                 m_keyW->execute(*m_registryPtr);
                 break;
             case GLFW_KEY_E:
@@ -331,4 +355,20 @@ void InputInvoker::set9KeyCommand(IInputCommand* command) {
 
 void InputInvoker::set0KeyCommand(IInputCommand* command) {
     m_key0 = command;
+}
+
+void InputInvoker::setShiftAKeyCommand(IInputCommand* command) {
+    m_keyShiftA = command;
+}
+
+void InputInvoker::setShiftSKeyCommand(IInputCommand* command) {
+    m_keyShiftS = command;
+}
+
+void InputInvoker::setShiftDKeyCommand(IInputCommand* command) {
+    m_keyShiftD = command;
+}
+
+void InputInvoker::setShiftWKeyCommand(IInputCommand* command) {
+    m_keyShiftW = command;
 }

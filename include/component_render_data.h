@@ -28,7 +28,7 @@ struct RenderDataComponent {
      */
     int m_vertexCount = 0;
     /**
-     * \brief Boolean flag to set whether outline/stencil should be rendered.
+     * \brief Flag representing whether to render stencil buffer for object.
      */
     bool m_stencilFlag = false;
 };

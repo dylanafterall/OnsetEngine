@@ -12,6 +12,7 @@
 
 #include "component_body_transform.h"
 #include "component_camera.h"
+#include "component_fixture_user_data.h"
 #include "component_player.h"
 #include "component_render_data.h"
 #include "core_log_macros.h"
@@ -76,6 +77,50 @@ public:
  * 			functionality.
  */
 class UpCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+/** 
+ * \brief   The SelectedLeftCommand class.
+ * \details Derived from IInputCommand. Pointed to by InputInvoker class.
+ * 			Moves the player entity and all selected entities left by 
+ * 			using Box2D's ApplyForce() functionality.
+ */
+class SelectedLeftCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+/** 
+ * \brief   The SelectedDownCommand class.
+ * \details Derived from IInputCommand. Pointed to by InputInvoker class.
+ * 			Moves the player entity and all selected entities down by 
+ * 			using Box2D's ApplyForce() functionality.
+ */
+class SelectedDownCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+/** 
+ * \brief   The SelectedRightCommand class.
+ * \details Derived from IInputCommand. Pointed to by InputInvoker class.
+ * 			Moves the player entity and all selected entities right by 
+ * 			using Box2D's ApplyForce() functionality.
+ */
+class SelectedRightCommand : public IInputCommand {
+public:
+	void execute(entt::registry&) const override;
+};
+
+/** 
+ * \brief   The SelectedUpCommand class.
+ * \details Derived from IInputCommand. Pointed to by InputInvoker class.
+ * 			Moves the player entity and all selected entities up by 
+ * 			using Box2D's ApplyForce() functionality.
+ */
+class SelectedUpCommand : public IInputCommand {
 public:
 	void execute(entt::registry&) const override;
 };

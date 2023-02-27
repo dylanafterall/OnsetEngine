@@ -39,6 +39,7 @@ void Game::initialize() {
     );
 
     m_world->SetContactListener(&m_collisionSystem);
+    m_collisionSystem.setRegistry(&m_registry);
 }
 
 void Game::setup() {
@@ -91,7 +92,6 @@ void Game::setup() {
     m_assetManager.setTexture("gold_spec", "../assets/textures/lightgold_metallic.png", false);
     m_assetManager.setTexture("blending", "../assets/textures/blending_transparent_window.png", false);
 
-
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
     // Entities
@@ -126,6 +126,7 @@ void Game::setup() {
     ShaderProgramComponent blueLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent blueLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderDataComponent blueLightGraphics;
+    FixtureUserDataComponent blueLightUserData;
     blueLightLight.m_type = 1;                                  // point type 
     blueLightLight.m_scale = glm::vec3(0.5f, 0.5f, 0.5f);       // check Box2D size
     blueLightLight.m_constant = 1.0f;
@@ -136,6 +137,7 @@ void Game::setup() {
     blueLightLight.m_specular = glm::vec3(0.0f, 0.0f, 1.0f);    // blue specular
     blueLightGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
+    blueLightUserData.m_fixtureType = 0;
     blueLightCircle.m_bodyDef.type = b2_dynamicBody;
     blueLightCircle.m_bodyDef.position.Set(-15.0f, 5.0f);
     blueLightTransform.m_body = m_world->CreateBody(&blueLightCircle.m_bodyDef);
@@ -163,6 +165,7 @@ void Game::setup() {
     ShaderProgramComponent greenLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent greenLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderDataComponent greenLightGraphics;
+    FixtureUserDataComponent greenLightUserData;
     greenLightLight.m_type = 1;                                 // point type
     greenLightLight.m_scale = glm::vec3(1.5f, 1.5f, 1.5f);      // check Box2D
     greenLightLight.m_constant = 1.0f;
@@ -173,6 +176,7 @@ void Game::setup() {
     greenLightLight.m_specular = glm::vec3(0.0f, 1.0f, 0.0f);   // green specular
     greenLightGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
+    greenLightUserData.m_fixtureType = 0;
     greenLightCircle.m_bodyDef.type = b2_dynamicBody;
     greenLightCircle.m_bodyDef.position.Set(10.0f, 5.0f);
     greenLightTransform.m_body = m_world->CreateBody(&greenLightCircle.m_bodyDef);
@@ -200,6 +204,7 @@ void Game::setup() {
     ShaderProgramComponent streetLightShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("light"), m_assetManager.getShaderProgram("stencil"));
     ReflectorShaderProgramComponent streetLightReflectorProgram = ReflectorShaderProgramComponent(m_assetManager.getShaderProgram("surface"));
     RenderDataComponent streetLightGraphics;
+    FixtureUserDataComponent streetLightUserData;
     streetLightLight.m_type = 2;                                    // spot type
     streetLightLight.m_scale = glm::vec3(1.0f, 1.0f, 1.0f);         // check Box2D size
     streetLightLight.m_direction = glm::vec3(0.0f, -1.0f, 0.0f);    // pointed down
@@ -213,6 +218,7 @@ void Game::setup() {
     streetLightLight.m_specular = glm::vec3(1.0f, 1.0f, 0.0f);   // yellow specular
     streetLightGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
+    streetLightUserData.m_fixtureType = 0;
     streetLightCircle.m_bodyDef.position.Set(-10.0f, 10.0f);
     streetLightTransform.m_body = m_world->CreateBody(&streetLightCircle.m_bodyDef);
     streetLightCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
@@ -240,10 +246,11 @@ void Game::setup() {
     TextureComponent playerTexture = TextureComponent(m_assetManager.getTexture("tiles_diff"), m_assetManager.getTexture("tiles_spec"));
     ShaderProgramComponent playerShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"), m_assetManager.getShaderProgram("stencil"));
     RenderDataComponent playerGraphics;
+    FixtureUserDataComponent playerUserData;
     playerMaterial.m_shininess = 128.0f;
     playerGraphics.m_vertexCount = sphereMesh.m_vertexCount;
-    playerGraphics.m_stencilFlag = false;
     // setup Box2D data
+    playerUserData.m_fixtureType = 2;
     playerCircle.m_bodyDef.type = b2_dynamicBody;
     playerCircle.m_bodyDef.position.Set(0.0f, 5.0f);
     playerTransform.m_body = m_world->CreateBody(&playerCircle.m_bodyDef);
@@ -252,6 +259,7 @@ void Game::setup() {
     playerCircle.m_fixtureDef.shape = &playerCircle.m_circleShape;
     playerCircle.m_fixtureDef.density = 1.0f;
     playerCircle.m_fixtureDef.friction = 0.3f;
+    playerCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&playerUserData);
     playerTransform.m_body->CreateFixture(&playerCircle.m_fixtureDef);
     // setup OpenGL data
     glGenVertexArrays(1, &playerGraphics.m_VAO);
@@ -278,9 +286,11 @@ void Game::setup() {
     TextureComponent floorTexture = TextureComponent(m_assetManager.getTexture("metal_diff"), m_assetManager.getTexture("metal_spec"));
     ShaderProgramComponent floorShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"), m_assetManager.getShaderProgram("stencil"));
     RenderDataComponent floorGraphics;
+    FixtureUserDataComponent floorUserData;
     floorMaterial.m_shininess = 32.0f;
     floorGraphics.m_vertexCount = groundMesh.m_vertexCount;
     // setup Box2D data
+    floorUserData.m_fixtureType = 4;
     floorPolygon.m_bodyDef.position.Set(0.0f, -1.0f);
     floorTransform.m_body = m_world->CreateBody(&floorPolygon.m_bodyDef);
     floorPolygon.m_polygonShape.SetAsBox(50.0f, 1.0f); // (SetAsBox(half-width, half-height))
@@ -310,10 +320,11 @@ void Game::setup() {
     TextureComponent sphereTexture = TextureComponent(m_assetManager.getTexture("rusted_diff"), m_assetManager.getTexture("rusted_spec"));
     ShaderProgramComponent sphereShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"), m_assetManager.getShaderProgram("stencil"));
     RenderDataComponent sphereGraphics;
+    FixtureUserDataComponent sphereUserData;
     sphereMaterial.m_shininess = 64.0f;
     sphereGraphics.m_vertexCount = sphereMesh.m_vertexCount;
-    sphereGraphics.m_stencilFlag = false;
     // setup Box2D data
+    sphereUserData.m_fixtureType = 3;
     sphereCircle.m_bodyDef.type = b2_dynamicBody;
     sphereCircle.m_bodyDef.position.Set(-5.0f, 5.0f);
     sphereTransform.m_body = m_world->CreateBody(&sphereCircle.m_bodyDef);
@@ -322,6 +333,7 @@ void Game::setup() {
     sphereCircle.m_fixtureDef.shape = &sphereCircle.m_circleShape;
     sphereCircle.m_fixtureDef.density = 1.0f;
     sphereCircle.m_fixtureDef.friction = 0.3f;
+    sphereCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&sphereUserData);
     sphereTransform.m_body->CreateFixture(&sphereCircle.m_fixtureDef);
     // setup OpenGL data
     glGenVertexArrays(1, &sphereGraphics.m_VAO);
@@ -349,10 +361,11 @@ void Game::setup() {
     TextureComponent cubeTexture = TextureComponent(m_assetManager.getTexture("blocks_diff"), m_assetManager.getTexture("blocks_spec"));
     ShaderProgramComponent cubeShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"), m_assetManager.getShaderProgram("stencil"));
     RenderDataComponent cubeGraphics;
+    FixtureUserDataComponent cubeUserData;
     cubeMaterial.m_shininess = 32.0f;
     cubeGraphics.m_vertexCount = cubeMesh.m_vertexCount;
-    cubeGraphics.m_stencilFlag = false;
     // setup Box2D data
+    cubeUserData.m_fixtureType = 4;
     cubePolygon.m_bodyDef.type = b2_dynamicBody;
     cubePolygon.m_bodyDef.position.Set(5.0f, 5.0f);
     cubeTransform.m_body = m_world->CreateBody(&cubePolygon.m_bodyDef);
@@ -360,6 +373,7 @@ void Game::setup() {
     cubePolygon.m_fixtureDef.shape = &cubePolygon.m_polygonShape;
     cubePolygon.m_fixtureDef.density = 1.0f;
     cubePolygon.m_fixtureDef.friction = 0.3f;
+    cubePolygon.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&cubeUserData);
     cubeTransform.m_body->CreateFixture(&cubePolygon.m_fixtureDef);
     // setup OpenGL data
     glGenVertexArrays(1, &cubeGraphics.m_VAO);
@@ -424,6 +438,8 @@ void Game::setup() {
     m_registry.emplace<ShaderProgramComponent>(blueLightEntity, blueLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(blueLightEntity, blueLightReflectorProgram);
     m_registry.emplace<RenderDataComponent>(blueLightEntity, blueLightGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(blueLightEntity, blueLightUserData);
+    blueLightUserData.m_enttEntity = &blueLightEntity;
 
     auto greenLightEntity = m_registry.create();
     m_registry.emplace<LightComponent>(greenLightEntity, greenLightLight);
@@ -431,6 +447,8 @@ void Game::setup() {
     m_registry.emplace<ShaderProgramComponent>(greenLightEntity, greenLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(greenLightEntity, greenLightReflectorProgram);
     m_registry.emplace<RenderDataComponent>(greenLightEntity, greenLightGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(greenLightEntity, greenLightUserData);
+    greenLightUserData.m_enttEntity = &greenLightEntity;
 
     auto streetLightEntity = m_registry.create();
     m_registry.emplace<LightComponent>(streetLightEntity, streetLightLight);
@@ -439,6 +457,8 @@ void Game::setup() {
     m_registry.emplace<ShaderProgramComponent>(streetLightEntity, streetLightShaderProgram);
     m_registry.emplace<ReflectorShaderProgramComponent>(streetLightEntity, streetLightReflectorProgram);
     m_registry.emplace<RenderDataComponent>(streetLightEntity, streetLightGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(streetLightEntity, streetLightUserData);
+    streetLightUserData.m_enttEntity = &streetLightEntity;
 
     auto playerEntity = m_registry.create();
     m_registry.emplace<PlayerComponent>(playerEntity, playerPlayer);
@@ -447,6 +467,8 @@ void Game::setup() {
     m_registry.emplace<TextureComponent>(playerEntity, playerTexture);
     m_registry.emplace<ShaderProgramComponent>(playerEntity, playerShaderProgram);
     m_registry.emplace<RenderDataComponent>(playerEntity, playerGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(playerEntity, playerUserData);
+    playerUserData.m_enttEntity = &playerEntity;
 
     auto floorEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(floorEntity, floorMaterial);
@@ -454,6 +476,8 @@ void Game::setup() {
     m_registry.emplace<TextureComponent>(floorEntity, floorTexture);
     m_registry.emplace<ShaderProgramComponent>(floorEntity, floorShaderProgram);
     m_registry.emplace<RenderDataComponent>(floorEntity, floorGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(floorEntity, floorUserData);
+    floorUserData.m_enttEntity = &floorEntity;
 
     auto sphereEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(sphereEntity, sphereMaterial);
@@ -461,6 +485,8 @@ void Game::setup() {
     m_registry.emplace<TextureComponent>(sphereEntity, sphereTexture);
     m_registry.emplace<ShaderProgramComponent>(sphereEntity, sphereShaderProgram);
     m_registry.emplace<RenderDataComponent>(sphereEntity, sphereGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(sphereEntity, sphereUserData);
+    sphereUserData.m_enttEntity = &sphereEntity;
 
     auto cubeEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(cubeEntity, cubeMaterial);
@@ -468,6 +494,8 @@ void Game::setup() {
     m_registry.emplace<TextureComponent>(cubeEntity, cubeTexture);
     m_registry.emplace<ShaderProgramComponent>(cubeEntity, cubeShaderProgram);
     m_registry.emplace<RenderDataComponent>(cubeEntity, cubeGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(cubeEntity, cubeUserData);
+    cubeUserData.m_enttEntity = &cubeEntity;
 
     auto backgroundEntity = m_registry.create();
     m_registry.emplace<SpriteComponent>(backgroundEntity, backgroundSprite);

@@ -59,10 +59,12 @@ public:
      *          key to its IInputCommand class (set in initialize()).
      * \param   window      For identifying the glfw window for associated input .
      * \param   key         For identifying which key user inputted.
+     * \param   scancode   
      * \param   action      For identifying how key was inputted (ex: press vs repeat).
+     * \param   mods        For identifying modifyer keys pressed (ex: shift, ctrl)
      * \return  void, none.
      */
-    void handleKeyInput(GLFWwindow*, int, int);
+    void handleKeyInput(GLFWwindow*, int, int, int, int);
     /**
      * \brief   The function handleMouseInput. 
      * \details This function calculates the change in mouse position by 
@@ -282,6 +284,38 @@ public:
      * \return  void, none.
      */
     void set0KeyCommand(IInputCommand*);
+    /**
+     * \brief   The function setShiftAKeyCommand. 
+     * \details This function assigns the key-(shift)A input a IInputCommand 
+     *          class.
+     * \param   command     The desired IInputCommand class to assign.
+     * \return  void, none.
+     */
+    void setShiftAKeyCommand(IInputCommand*);
+    /**
+     * \brief   The function setShiftSKeyCommand. 
+     * \details This function assigns the key-(shift)S input a IInputCommand 
+     *          class.
+     * \param   command     The desired IInputCommand class to assign.
+     * \return  void, none.
+     */
+    void setShiftSKeyCommand(IInputCommand*);
+    /**
+     * \brief   The function setShiftDKeyCommand. 
+     * \details This function assigns the key-(shift)D input a IInputCommand 
+     *          class.
+     * \param   command     The desired IInputCommand class to assign.
+     * \return  void, none.
+     */
+    void setShiftDKeyCommand(IInputCommand*);
+    /**
+     * \brief   The function setShiftWKeyCommand. 
+     * \details This function assigns the key-(shift)W input a IInputCommand 
+     *          class.
+     * \param   command     The desired IInputCommand class to assign.
+     * \return  void, none.
+     */
+    void setShiftWKeyCommand(IInputCommand*);
 
 private:
     /**
@@ -413,6 +447,22 @@ private:
      * \brief Pointer to the IInputCommand class for a key-0 input.
      */
     IInputCommand* m_key0;
+    /**
+     * \brief Pointer to the IInputCommand class for a key-(shift)A input.
+     */
+    IInputCommand* m_keyShiftA;
+    /**
+     * \brief Pointer to the IInputCommand class for a key-(shift)S input.
+     */
+    IInputCommand* m_keyShiftS;
+    /**
+     * \brief Pointer to the IInputCommand class for a key-(shift)D input.
+     */
+    IInputCommand* m_keyShiftD;
+    /**
+     * \brief Pointer to the IInputCommand class for a key-(shift)W input.
+     */
+    IInputCommand* m_keyShiftW;
 };
 
 #endif // CORE_INPUT_INVOKER_H

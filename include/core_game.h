@@ -153,7 +153,7 @@ private:
      */
     AssetManager m_assetManager;
     /**
-     * \brief Ojbect to act as a wrapper class around spdlog functionality.
+     * \brief Object to act as a wrapper class around spdlog functionality.
      */
     LogManager m_logManager;
 

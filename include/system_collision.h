@@ -8,6 +8,9 @@
 #ifndef SYSTEM_COLLISION_H
 #define SYSTEM_COLLISION_H
 
+#include "component_fixture_user_data.h"
+#include "component_render_data.h"
+
 #include "entt/entt.hpp"
 #include "box2d/box2d.h"
 
@@ -18,10 +21,15 @@ public:
     CollisionSystem() = default;
     ~CollisionSystem() = default;
 
+    void setRegistry(entt::registry*);
+
     void BeginContact(b2Contact* contact);
     void EndContact(b2Contact* contact);
     void PreSolve(b2Contact* contact, const b2Manifold* oldManifold);
     void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse);
+
+private:
+    entt::registry* m_registry;
 };
 
 #endif // SYSTEM_COLLISION_H

@@ -14,6 +14,7 @@
 #include "component_body_chain.h"
 #include "component_body_transform.h"
 #include "component_camera.h"
+#include "component_fixture_user_data.h"
 #include "component_light.h"
 #include "component_material.h"
 #include "meshes/component_mesh_cube.h"

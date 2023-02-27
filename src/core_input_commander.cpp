@@ -16,7 +16,7 @@ void LeftCommand::execute(entt::registry& registry) const {
         BodyTransformComponent
     >();
     player.each([&](
-        auto& player,
+        const auto& player,
         auto& body
     ) {
         b2Vec2 force = b2Vec2(-500.0f, 0.0f);
@@ -30,7 +30,7 @@ void DownCommand::execute(entt::registry& registry) const {
         BodyTransformComponent
     >();
     player.each([&](
-        auto& player,
+        const auto& player,
         auto& body
     ) {
         b2Vec2 force = b2Vec2(0.0f, -2000.0f);
@@ -44,7 +44,7 @@ void RightCommand::execute(entt::registry& registry) const {
         BodyTransformComponent
     >();
     player.each([&](
-        auto& player,
+        const auto& player,
         auto& body
     ) {
         b2Vec2 force = b2Vec2(500.0f, 0.0f);
@@ -58,7 +58,7 @@ void UpCommand::execute(entt::registry& registry) const {
         BodyTransformComponent
     >();
     player.each([&](
-        auto& player,
+        const auto& player,
         auto& body
     ) {
         b2Vec2 force = b2Vec2(0.0f, 2000.0f);
@@ -66,18 +66,191 @@ void UpCommand::execute(entt::registry& registry) const {
     });
 }
 
+void SelectedLeftCommand::execute(entt::registry& registry) const {
+    // get views of player and of selected objects
+    auto player = registry.view<
+        PlayerComponent,
+        BodyTransformComponent,
+        RenderDataComponent
+    >();
+    auto selectables = registry.view<
+        BodyTransformComponent,
+        FixtureUserDataComponent,
+        RenderDataComponent
+    >();
 
-void ToggleSelectModeCommand::execute(entt::registry& registry) const {
+    // move the player, then selectables if select mode is on
+    bool selectModeOn;
+    player.each([&](
+        const auto& player,
+        auto& body,
+        const auto& renderData
+    ) {
+        selectModeOn = renderData.m_stencilFlag;
+        b2Vec2 force = b2Vec2(-500.0f, 0.0f);
+        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+    });
+
+    if (selectModeOn) {
+        selectables.each([&](
+            auto& body,
+            const auto& userData,
+            const auto& renderData
+        ) {
+            if (userData.m_fixtureType == 3 && renderData.m_stencilFlag) {
+                b2Vec2 force = b2Vec2(-500.0f, 0.0f);
+                body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+            }
+        });
+    }
+}
+
+void SelectedDownCommand::execute(entt::registry& registry) const {
+    // get views of player and of selected objects
+    auto player = registry.view<
+        PlayerComponent,
+        BodyTransformComponent,
+        RenderDataComponent
+    >();
+    auto selectables = registry.view<
+        BodyTransformComponent,
+        FixtureUserDataComponent,
+        RenderDataComponent
+    >();
+
+    // move the player, then selectables if select mode is on
+    bool selectModeOn;
+    player.each([&](
+        const auto& player,
+        auto& body,
+        const auto& renderData
+    ) {
+        selectModeOn = renderData.m_stencilFlag;
+        b2Vec2 force = b2Vec2(0.0f, -2000.0f);
+        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+    });
+
+    if (selectModeOn) {
+        selectables.each([&](
+            auto& body,
+            const auto& userData,
+            const auto& renderData
+        ) {
+            if (userData.m_fixtureType == 3 && renderData.m_stencilFlag) {
+                b2Vec2 force = b2Vec2(0.0f, -2000.0f);
+                body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+            }
+        });
+    }
+}
+
+void SelectedRightCommand::execute(entt::registry& registry) const {
+    // get views of player and of selected objects
+    auto player = registry.view<
+        PlayerComponent,
+        BodyTransformComponent,
+        RenderDataComponent
+    >();
+    auto selectables = registry.view<
+        BodyTransformComponent,
+        FixtureUserDataComponent,
+        RenderDataComponent
+    >();
+
+    // move the player, then selectables if select mode is on
+    bool selectModeOn;
+    player.each([&](
+        const auto& player,
+        auto& body,
+        const auto& renderData
+    ) {
+        selectModeOn = renderData.m_stencilFlag;
+        b2Vec2 force = b2Vec2(500.0f, 0.0f);
+        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+    });
+
+    if (selectModeOn) {
+        selectables.each([&](
+            auto& body,
+            const auto& userData,
+            const auto& renderData
+        ) {
+            if (userData.m_fixtureType == 3 && renderData.m_stencilFlag) {
+                b2Vec2 force = b2Vec2(500.0f, 0.0f);
+                body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+            }
+        });
+    }
+}
+
+void SelectedUpCommand::execute(entt::registry& registry) const {
+    // get views of player and of selected objects
+    auto player = registry.view<
+        PlayerComponent,
+        BodyTransformComponent,
+        RenderDataComponent
+    >();
+    auto selectables = registry.view<
+        BodyTransformComponent,
+        FixtureUserDataComponent,
+        RenderDataComponent
+    >();
+
+    // move the player, then selectables if select mode is on
+    bool selectModeOn;
+    player.each([&](
+        const auto& player,
+        auto& body,
+        const auto& renderData
+    ) {
+        selectModeOn = renderData.m_stencilFlag;
+        b2Vec2 force = b2Vec2(0.0f, 2000.0f);
+        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+    });
+
+    if (selectModeOn) {
+        selectables.each([&](
+            auto& body,
+            const auto& userData,
+            const auto& renderData
+        ) {
+            if (userData.m_fixtureType == 3 && renderData.m_stencilFlag) {
+                b2Vec2 force = b2Vec2(0.0f, 2000.0f);
+                body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
+            }
+        });
+    }
+}
+
+
+void ToggleSelectModeCommand::execute(entt::registry& registry) const {    
     auto player = registry.view<
         PlayerComponent,
         RenderDataComponent
     >();
+    auto stencils = registry.view<
+        FixtureUserDataComponent,
+        RenderDataComponent
+    >();
+
     player.each([&](
-        auto& player,
+        const auto& player,
         auto& renderData
     ) {
         // flip boolean value of stencilFlag: if true make false (& vice-versa)
         renderData.m_stencilFlag = !renderData.m_stencilFlag;
+
+        // if we just turned off select mode, turn off all selected spheres
+        if (renderData.m_stencilFlag == false) {
+            stencils.each([&](
+                const auto& userData,
+                auto& renderData
+            ) {
+                if (userData.m_fixtureType == 3) {
+                    renderData.m_stencilFlag = false;
+                }
+            });
+        }
     });
 }
 
