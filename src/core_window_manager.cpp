@@ -45,6 +45,8 @@ void WindowManager::initialize(unsigned int screenWidth, unsigned int screenHeig
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
+    // use multisample buffer w/ N samples instead of normal buffer (for MSAA)
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     // create a GLFW window 
     m_glfwWindow = glfwCreateWindow(
@@ -95,6 +97,8 @@ void WindowManager::initialize(unsigned int screenWidth, unsigned int screenHeig
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // enable backface culling
     glEnable(GL_CULL_FACE); 
+    //  enable multisampling - used in MSAA
+    glEnable(GL_MULTISAMPLE);  
 
     // depth-testing options for future reference
     // temporarily use a read-only depth buffer (disable writing to depth buffer)
