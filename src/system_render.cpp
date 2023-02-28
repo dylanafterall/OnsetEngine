@@ -191,6 +191,7 @@ void RenderSystem::update(
         else {
             glStencilMask(0x00);
         }
+        glUniform1i(glGetUniformLocation(shader.m_shaderProgram, "blinn"), true); 
         glUniform3f(glGetUniformLocation(shader.m_shaderProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
         glUniform1f(glGetUniformLocation(shader.m_shaderProgram, "material.shininess"), material.m_shininess);
         glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
