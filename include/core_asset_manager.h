@@ -50,6 +50,17 @@ public:
      */
     void setTexture(const std::string&, const char*, bool);
     /**
+     * \brief   The function setCubemap. 
+     * \details This function imports a std::vector of 6 texture files - 
+     *          .png or .jpg from the assets directory, assigns the texture 
+     *          an ID for OpenGL, and saves a copy of its ID in a std::map 
+     *          member variable.
+     * \param   assetId      ID name to serve as key in std::map textures.
+     * \param   faces        std::vector of 6 texture filepaths (.jpg/.png)
+     * \return  void, none.
+     */
+    void setCubemap(const std::string&, std::vector<std::string>);
+    /**
      * \brief   The function setVShader. 
      * \details This function imports a vertex shader file - .vert from the
      *          assets directory, assigns the shader an ID for OpenGL, and 
@@ -86,19 +97,29 @@ public:
      * \details This function, given a key for std::map textures, returns
      *          the associated unsigned int ID from OpenGL.
      * \param   program      The name of the key to search the textures
-     *                          map for.
+     *                       map for.
      * \retval  ID   An unsigned int stored by OpenGL for an associated
-     *                  texture asset.
+     *               texture asset.
      */
     unsigned int getTexture(const std::string&);
+    /**
+     * \brief   The function getCubemap. 
+     * \details This function, given a key for std::map cubemaps, returns
+     *          the associated unsigned int ID from OpenGL.
+     * \param   program      The name of the key to search the cubemaps
+     *                       map for.
+     * \retval  ID   An unsigned int stored by OpenGL for an associated
+     *               cubemap asset.
+     */
+    unsigned int getCubemap(const std::string&);
     /**
      * \brief   The function getVShader. 
      * \details This function, given a key for std::map vshaders, returns
      *          the associated unsigned int ID from OpenGL.
      * \param   program      The name of the key to search the vshaders
-     *                          map for.
+     *                       map for.
      * \retval  ID   An unsigned int stored by OpenGL for an associated
-     *                  vertex shader asset.   
+     *               vertex shader asset.   
      */
     unsigned int getVShader(const std::string&);
     /**
@@ -106,9 +127,9 @@ public:
      * \details This function, given a key for std::map fshaders, returns
      *          the associated unsigned int ID from OpenGL.
      * \param   program      The name of the key to search the fshaders
-     *                          map for.
+     *                       map for.
      * \retval  ID   An unsigned int stored by OpenGL for an associated
-     *                  fragment shader asset.   
+     *               fragment shader asset.   
      */
     unsigned int getFShader(const std::string&);
     /**
@@ -116,9 +137,9 @@ public:
      * \details This function, given a key for std::map shaderPrograms, 
      *          returns the associated unsigned int ID from OpenGL.
      * \param   program      The name of the key to search the 
-     *                          shaderPrograms map for.
+     *                       shaderPrograms map for.
      * \retval  ID   An unsigned int stored by OpenGL for an associated
-     *                  shader program asset.  
+     *               shader program asset.  
      */
     unsigned int getShaderProgram(const std::string&);
 
@@ -136,9 +157,9 @@ public:
      *          shader assets into OpenGL, before being added to std::map 
      *          vshaders and fshaders.
      * \param   shader       The ID - assigned by OpenGL - for a shader to
-     *                          check for satisfactory compilation.
+     *                       check for satisfactory compilation.
      * \param   type         The type of shader (ex. vertex, fragment) to 
-     *                          check for satisfactory compilation.
+     *                       check for satisfactory compilation.
      * \return  void, none.
      */
     void checkShaderErrors(unsigned int, std::string);
@@ -148,7 +169,7 @@ public:
      *          vertex and fragment shaders into an OpenGL shader program, 
      *          before being added to std::map shaderPrograms.
      * \param   program      The ID - assigned by OpenGL - for a shader
-     *                          program, to check for satisfactory generation.
+     *                       program, to check for satisfactory generation.
      * \return  void, none.
      */
     void checkShaderProgramErrors(unsigned int);
@@ -159,6 +180,11 @@ private:
      *        new game entities.
      */
     std::map<std::string, unsigned int> textures;
+    /**
+     * \brief std::map used to store cubemap-texture IDs for easy lookup when 
+     *        creating new game entities.
+     */
+    std::map<std::string, unsigned int> cubemaps;
     
     /**
      * \brief std::map used to store vertex shader IDs for easy lookup when 

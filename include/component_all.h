@@ -19,6 +19,7 @@
 #include "component_material.h"
 #include "meshes/component_mesh_cube.h"
 #include "meshes/component_mesh_ground.h"
+#include "meshes/component_mesh_skybox.h"
 #include "meshes/component_mesh_sphere.h"
 #include "meshes/component_mesh_sprite.h"
 #include "component_player.h"
@@ -27,6 +28,7 @@
 #include "component_shader_program_reflector.h"
 #include "component_shader.h"
 #include "component_shape_square.h"
+#include "component_skybox.h"
 #include "component_sprite.h"
 #include "component_texture.h"
 

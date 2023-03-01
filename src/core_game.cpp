@@ -54,6 +54,7 @@ void Game::setup() {
     MeshSphereComponent sphereMesh;
     MeshGroundComponent groundMesh;
     MeshSpriteComponent spriteMesh;
+    MeshSkyboxComponent skyboxMesh;
     // shaders
     // .........................................................................
     m_assetManager.setVShader("light_vert", "../assets/shaders/light.vert");
@@ -64,6 +65,8 @@ void Game::setup() {
     m_assetManager.setFShader("stencil_frag", "../assets/shaders/stencil.frag");
     m_assetManager.setVShader("sprite_vert", "../assets/shaders/sprite.vert");
     m_assetManager.setFShader("sprite_frag", "../assets/shaders/sprite.frag");
+    m_assetManager.setVShader("skybox_vert", "../assets/shaders/skybox.vert");
+    m_assetManager.setFShader("skybox_frag", "../assets/shaders/skybox.frag");
     // shader programs
     // .........................................................................
     unsigned int vertex = m_assetManager.getVShader("light_vert");
@@ -78,6 +81,9 @@ void Game::setup() {
     vertex = m_assetManager.getVShader("sprite_vert");
     fragment = m_assetManager.getFShader("sprite_frag");
     m_assetManager.setShaderProgram("sprite", vertex, fragment);
+    vertex = m_assetManager.getVShader("skybox_vert");
+    fragment = m_assetManager.getFShader("skybox_frag");
+    m_assetManager.setShaderProgram("skybox", vertex, fragment);
     // texture maps
     // .........................................................................
     m_assetManager.setTexture("tiles_diff", "../assets/textures/black-white-tile_albedo.png", true);
@@ -91,6 +97,17 @@ void Game::setup() {
     m_assetManager.setTexture("gold_diff", "../assets/textures/lightgold_albedo.png", false);
     m_assetManager.setTexture("gold_spec", "../assets/textures/lightgold_metallic.png", false);
     m_assetManager.setTexture("blending", "../assets/textures/blending_transparent_window.png", false);
+    // skybox maps
+    // .........................................................................
+    std::vector<std::string> learnopenglFaces {
+        "../assets/textures/skybox/right.jpg",
+        "../assets/textures/skybox/left.jpg",
+        "../assets/textures/skybox/top.jpg",
+        "../assets/textures/skybox/bottom.jpg",
+        "../assets/textures/skybox/front.jpg",
+        "../assets/textures/skybox/back.jpg",
+    };
+    m_assetManager.setCubemap("learnopengl_skybox", learnopenglFaces);
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
@@ -102,6 +119,25 @@ void Game::setup() {
     // setup components
     CameraComponent camera(glm::vec3(0.0f, 0.0f, 20.0f));
     camera.m_type = first;
+
+    // skybox entity
+    // .........................................................................
+    SkyboxComponent skyboxSkybox;
+    TextureComponent skyboxTexture;
+    skyboxTexture.m_cubemap = m_assetManager.getCubemap("learnopengl_skybox");
+    ShaderProgramComponent skyboxShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("skybox"), m_assetManager.getShaderProgram("stencil"));
+    RenderDataComponent skyboxGraphics;
+    skyboxGraphics.m_vertexCount = cubeMesh.m_vertexCount;
+    // setup OpenGL data
+    glGenVertexArrays(1, &skyboxGraphics.m_VAO);
+    glGenBuffers(1, &skyboxGraphics.m_VBO);
+    glBindVertexArray(skyboxGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxGraphics.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, skyboxMesh.m_verticesSize, skyboxMesh.m_vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glUseProgram(skyboxShaderProgram.m_shaderProgram);
+    glUniform1i(glGetUniformLocation(skyboxShaderProgram.m_shaderProgram, "skybox"), 11);
 
     // sunLight entity (pointed down, white light)
     // .........................................................................
@@ -424,6 +460,12 @@ void Game::setup() {
     // -------------------------------------------------------------------------
     auto cameraEntity = m_registry.create();
     m_registry.emplace<CameraComponent>(cameraEntity, camera);
+
+    auto skyboxEntity = m_registry.create();
+    m_registry.emplace<SkyboxComponent>(skyboxEntity, skyboxSkybox);
+    m_registry.emplace<TextureComponent>(skyboxEntity, skyboxTexture);
+    m_registry.emplace<ShaderProgramComponent>(skyboxEntity, skyboxShaderProgram);
+    m_registry.emplace<RenderDataComponent>(skyboxEntity, skyboxGraphics);
 
     auto sunLightEntity = m_registry.create();
     m_registry.emplace<LightComponent>(sunLightEntity, sunLightLight);

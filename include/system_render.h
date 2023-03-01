@@ -16,6 +16,7 @@
 #include "component_shader.h"
 #include "component_shader_program.h"
 #include "component_shader_program_reflector.h"
+#include "component_skybox.h"
 #include "component_sprite.h"
 #include "component_texture.h"
 

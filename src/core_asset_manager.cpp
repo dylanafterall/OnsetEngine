@@ -85,6 +85,45 @@ void AssetManager::setTexture(const std::string& assetId, const char* texturePat
     stbi_image_free(data);
 }
 
+void AssetManager::setCubemap(const std::string& assetId, std::vector<std::string> faces) {
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    stbi_set_flip_vertically_on_load(false);
+    int width, height, nrComponents;
+    for (unsigned int i = 0; i < faces.size(); i++) {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
+        if (data) {
+            GLenum format;
+            if (nrComponents == 1) {
+                format = GL_RED;
+            }
+            else if (nrComponents == 3) {
+                format = GL_RGB;
+            }
+            else {format = GL_RGBA;}
+
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+        }
+        else {
+            ONSET_ERROR("Cubemap-texture failed to load at path: {}", faces[i]);
+            stbi_image_free(data);
+        }
+    }
+    stbi_set_flip_vertically_on_load(true);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    cubemaps.emplace(assetId, textureID);
+    ONSET_INFO("New Cubemap added to Asset Manager with id = {}", assetId);
+}
+
 void AssetManager::setVShader(const std::string& assetId, const char* vertexPath) {
     // retrieve the vertex source code from filePath 
     std::string vertexCode;
@@ -185,6 +224,10 @@ unsigned int AssetManager::getTexture(const std::string& assetId) {
     return textures[assetId];
 }
 
+unsigned int AssetManager::getCubemap(const std::string& assetId) {
+    return cubemaps[assetId];
+}
+
 unsigned int AssetManager::getVShader(const std::string& assetId) {
     return vshaders[assetId];
 }
@@ -208,6 +251,11 @@ void AssetManager::deleteAssets() {
         glDeleteTextures(1, &texture.second);
     }
     textures.clear();
+
+    for (auto cubemap : cubemaps) {
+        glDeleteTextures(1, &cubemap.second);
+    }
+    cubemaps.clear();
     
     for (auto vshader : vshaders) {
         glDeleteShader(vshader.second);

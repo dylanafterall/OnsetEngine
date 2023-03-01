@@ -21,6 +21,16 @@ struct TextureComponent {
      * \brief Unique OpenGL ID for a texture (texture map - specular).
      */
     unsigned int m_specular;
+    /**
+     * \brief Unique OpenGL ID for a cubemap.
+     */
+    unsigned int m_cubemap;
+
+    /**
+     * \brief   The constructor.
+     * \details Constructor without textures passed as parameters.
+     */
+    TextureComponent() {}
 
     /**
      * \brief   The constructor.

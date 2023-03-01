@@ -28,7 +28,8 @@ void RenderSystem::update(
     // 2) iterate over light entities (dir / point / spot) to store light data
     // 3) iterate over game object (with material comp) entities to render
     // 4) iterate over sprite entities to render
-    // 5) iterate over game object entities to stencil outline (always last)
+    // 5) iterate over game object entities to stencil outline
+    // 6) render skybox
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
@@ -154,6 +155,42 @@ void RenderSystem::update(
             glBindVertexArray(graphics.m_VAO);
             glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
         }
+    });
+
+    // _________________________________________________________________________
+    // -------------------------------------------------------------------------
+    // 6) render skybox
+    // _________________________________________________________________________
+    // -------------------------------------------------------------------------
+    auto skyboxes = registry.view<
+        SkyboxComponent,
+        TextureComponent, 
+        ShaderProgramComponent,
+        RenderDataComponent
+    >();
+    skyboxes.each([&](
+        const auto& skybox,
+        const auto& texture,
+        const auto& shader,
+        const auto& graphics
+    ) {
+        // change depth function so depth test passes when values are equal to depth buffer's content
+        glDepthFunc(GL_LEQUAL);
+        glUseProgram(shader.m_shaderProgram);
+
+        glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // remove translation from view matrix
+        glm::mat4 view = glm::mat4(glm::mat3(glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp)));
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
+
+        glBindVertexArray(graphics.m_VAO);
+        glActiveTexture(GL_TEXTURE11);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture.m_cubemap);
+        glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+        
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS); // set depth function back to default
     });
 
     // _________________________________________________________________________
@@ -302,9 +339,7 @@ void RenderSystem::update(
 }
 
 void RenderSystem::deleteBuffers(entt::registry& registry) {
-    // retrieve a view of entities with applicable components
     auto buffers = registry.view<RenderDataComponent>();
-    // iterate over each entity in the view
     buffers.each([&](auto& graphics) {
         glDeleteVertexArrays(1, &graphics.m_VAO);
         glDeleteBuffers(1, &graphics.m_VBO);
