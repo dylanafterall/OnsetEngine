@@ -75,7 +75,7 @@ void WindowManager::initialize(unsigned int screenWidth, unsigned int screenHeig
     }
 
     // tell GLFW to capture our mouse
-    glfwSetInputMode(m_glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // glfwSetInputMode(m_glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
@@ -97,7 +97,7 @@ void WindowManager::initialize(unsigned int screenWidth, unsigned int screenHeig
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // enable backface culling
     glEnable(GL_CULL_FACE); 
-    //  enable multisampling - used in MSAA
+    // enable multisampling - used in MSAA
     glEnable(GL_MULTISAMPLE);  
 
     // depth-testing options for future reference

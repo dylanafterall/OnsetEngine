@@ -17,7 +17,7 @@
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 
-void AssetManager::setTexture(const std::string& assetId, const char* texturePath, bool repeat) {
+void AssetManager::setTexture(const std::string& assetId, const char* texturePath, bool repeat, bool gamma) {
     // generate and bind texture for OpenGL configuration
     unsigned int texture;
     glGenTextures(1, &texture);
@@ -52,19 +52,27 @@ void AssetManager::setTexture(const std::string& assetId, const char* texturePat
     int width, height, nrChannels;
     unsigned char* data = stbi_load(texturePath, &width, &height, &nrChannels, 0);
     if (data) {
-        GLenum format;
+        GLenum internalFormat, format;
         if (nrChannels == 1) {
-            format = GL_RED;
+            internalFormat = format = GL_RED;
         }
         else if (nrChannels == 3) {
-            format = GL_RGB;
+            internalFormat = format = GL_RGB;
+            if (gamma) {
+                internalFormat = GL_SRGB;
+            }
         }
-        else {format = GL_RGBA;}
+        else {
+            internalFormat = format = GL_RGBA;
+            if (gamma) {
+                internalFormat = GL_SRGB_ALPHA;
+            }
+        }
 
         glTexImage2D(
             GL_TEXTURE_2D,      // texture target (1D/2D/3D) 
             0,                  // level of detail (0 to nth mipmap reduction) 
-            format,             // number of color components (RED / RGB / RGBA) 
+            internalFormat,     // number of color components (RED / RGB / RGBA) 
             width,       
             height, 
             0,                  // border, value must be 0 
@@ -85,7 +93,7 @@ void AssetManager::setTexture(const std::string& assetId, const char* texturePat
     stbi_image_free(data);
 }
 
-void AssetManager::setCubemap(const std::string& assetId, std::vector<std::string> faces) {
+void AssetManager::setCubemap(const std::string& assetId, std::vector<std::string> faces, bool gamma) {
     unsigned int textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
@@ -95,16 +103,24 @@ void AssetManager::setCubemap(const std::string& assetId, std::vector<std::strin
     for (unsigned int i = 0; i < faces.size(); i++) {
         unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
         if (data) {
-            GLenum format;
+            GLenum internalFormat, format;
             if (nrComponents == 1) {
-                format = GL_RED;
+                internalFormat = format = GL_RED;
             }
             else if (nrComponents == 3) {
-                format = GL_RGB;
+                internalFormat = format = GL_RGB;
+                if (gamma) {
+                    internalFormat = GL_SRGB;
+                }
             }
-            else {format = GL_RGBA;}
+            else {
+                internalFormat = format = GL_RGBA;
+                if (gamma) {
+                    internalFormat = GL_SRGB_ALPHA;
+                }
+            }
 
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
             stbi_image_free(data);
         }
         else {

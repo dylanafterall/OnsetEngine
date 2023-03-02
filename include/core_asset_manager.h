@@ -46,9 +46,10 @@ public:
      * \param   assetId      ID name to serve as key in std::map textures.
      * \param   texturePath  Relative path to texture asset.
      * \param   repeat       To declare if repeated texture pattern desired.
+     * \param   gamma        TO declare if gamma correction desired.
      * \return  void, none.
      */
-    void setTexture(const std::string&, const char*, bool);
+    void setTexture(const std::string&, const char*, bool, bool);
     /**
      * \brief   The function setCubemap. 
      * \details This function imports a std::vector of 6 texture files - 
@@ -57,9 +58,10 @@ public:
      *          member variable.
      * \param   assetId      ID name to serve as key in std::map textures.
      * \param   faces        std::vector of 6 texture filepaths (.jpg/.png)
+     * \param   gamma        To declare if gamma correction desired.
      * \return  void, none.
      */
-    void setCubemap(const std::string&, std::vector<std::string>);
+    void setCubemap(const std::string&, std::vector<std::string>, bool);
     /**
      * \brief   The function setVShader. 
      * \details This function imports a vertex shader file - .vert from the

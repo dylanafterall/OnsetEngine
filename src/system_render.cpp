@@ -119,7 +119,14 @@ void RenderSystem::update(
             model = glm::scale(model, light.m_scale);
             glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
             glBindVertexArray(graphics.m_VAO);
-            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+            if (m_gammaFlag) {
+                glEnable(GL_FRAMEBUFFER_SRGB);
+                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+                glDisable(GL_FRAMEBUFFER_SRGB);
+            }
+            else {
+                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+            }
         }
         // _________________________________________________________________________
         // if spot light
@@ -153,13 +160,20 @@ void RenderSystem::update(
             model = glm::scale(model, light.m_scale);
             glUniformMatrix4fv(glGetUniformLocation(shader.m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
             glBindVertexArray(graphics.m_VAO);
-            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+            if (m_gammaFlag) {
+                glEnable(GL_FRAMEBUFFER_SRGB);
+                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+                glDisable(GL_FRAMEBUFFER_SRGB);
+            }
+            else {
+                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+            }
         }
     });
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // 6) render skybox
+    // 3) render skybox
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
     auto skyboxes = registry.view<
@@ -187,7 +201,14 @@ void RenderSystem::update(
         glBindVertexArray(graphics.m_VAO);
         glActiveTexture(GL_TEXTURE11);
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture.m_cubemap);
-        glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+        if (m_gammaFlag) {
+            glEnable(GL_FRAMEBUFFER_SRGB);
+            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+            glDisable(GL_FRAMEBUFFER_SRGB);
+        }
+        else {
+            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+        }
         
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
@@ -195,7 +216,7 @@ void RenderSystem::update(
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // 3) iterate over game object (with material comp) entities to render
+    // 4) iterate over game object (with material comp) entities to render
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
     auto objects = registry.view<
@@ -243,12 +264,19 @@ void RenderSystem::update(
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture.m_specular);
         glBindVertexArray(graphics.m_VAO);
-        glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+        if (m_gammaFlag) {
+            glEnable(GL_FRAMEBUFFER_SRGB);
+            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+            glDisable(GL_FRAMEBUFFER_SRGB);
+        }
+        else {
+            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+        }
     });
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // 4) iterate over sprite entities to render
+    // 5) iterate over sprite entities to render
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
     auto sprites = registry.view<
@@ -278,12 +306,19 @@ void RenderSystem::update(
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
         glBindVertexArray(graphics.m_VAO);
-        glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+        if (m_gammaFlag) {
+            glEnable(GL_FRAMEBUFFER_SRGB);
+            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+            glDisable(GL_FRAMEBUFFER_SRGB);
+        }
+        else {
+            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+        }
     });
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // 5) iterate over game object entities to stencil outline
+    // 6) iterate over game object entities to stencil outline
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
     auto stencils = registry.view<
@@ -344,4 +379,8 @@ void RenderSystem::deleteBuffers(entt::registry& registry) {
         glDeleteVertexArrays(1, &graphics.m_VAO);
         glDeleteBuffers(1, &graphics.m_VBO);
     });
+}
+
+void RenderSystem::setGammaFlag(bool gammaFlag) {
+    m_gammaFlag = gammaFlag;
 }

@@ -63,6 +63,17 @@ public:
      * \return  void, none.
      */
     void deleteBuffers(entt::registry&);
+    /**
+     * \brief   The function setGammaFlag. 
+     * \details This function sets the Render System's GammaFlag, which determines
+     *          whether gamma correction will be applied by OpenGL.
+     * \param   gamma    Boolean representing if gamma correction is enabled (true).
+     * \return  void, none.
+     */
+    void setGammaFlag(bool);
+
+private:
+    bool m_gammaFlag = true;
 };
 
 #endif // SYSTEM_RENDER_H

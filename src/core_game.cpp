@@ -40,6 +40,8 @@ void Game::initialize() {
 
     m_world->SetContactListener(&m_collisionSystem);
     m_collisionSystem.setRegistry(&m_registry);
+
+    m_renderSystem.setGammaFlag(true);
 }
 
 void Game::setup() {
@@ -67,6 +69,7 @@ void Game::setup() {
     m_assetManager.setFShader("sprite_frag", "../assets/shaders/sprite.frag");
     m_assetManager.setVShader("skybox_vert", "../assets/shaders/skybox.vert");
     m_assetManager.setFShader("skybox_frag", "../assets/shaders/skybox.frag");
+
     // shader programs
     // .........................................................................
     unsigned int vertex = m_assetManager.getVShader("light_vert");
@@ -84,19 +87,20 @@ void Game::setup() {
     vertex = m_assetManager.getVShader("skybox_vert");
     fragment = m_assetManager.getFShader("skybox_frag");
     m_assetManager.setShaderProgram("skybox", vertex, fragment);
+
     // texture maps
     // .........................................................................
-    m_assetManager.setTexture("tiles_diff", "../assets/textures/black-white-tile_albedo.png", true);
-    m_assetManager.setTexture("tiles_spec", "../assets/textures/black-white-tile_metallic.png", true);
-    m_assetManager.setTexture("rusted_diff", "../assets/textures/rusted-steel_albedo.png", true);
-    m_assetManager.setTexture("rusted_spec", "../assets/textures/rusted-steel_metallic.png", true);
-    m_assetManager.setTexture("blocks_diff", "../assets/textures/angled-blocks-vegetation_albedo.png", true);
-    m_assetManager.setTexture("blocks_spec", "../assets/textures/angled-blocks-vegetation_metallic.png", true);
-    m_assetManager.setTexture("metal_diff", "../assets/textures/dull_metal_albedo.png", true);
-    m_assetManager.setTexture("metal_spec", "../assets/textures/dull_metal_metallic.png", true);
-    m_assetManager.setTexture("gold_diff", "../assets/textures/lightgold_albedo.png", false);
-    m_assetManager.setTexture("gold_spec", "../assets/textures/lightgold_metallic.png", false);
-    m_assetManager.setTexture("blending", "../assets/textures/blending_transparent_window.png", false);
+    m_assetManager.setTexture("tiles_diff", "../assets/textures/black-white-tile_albedo.png", true, true);
+    m_assetManager.setTexture("tiles_spec", "../assets/textures/black-white-tile_metallic.png", true, false);
+    m_assetManager.setTexture("rusted_diff", "../assets/textures/rusted-steel_albedo.png", true, true);
+    m_assetManager.setTexture("rusted_spec", "../assets/textures/rusted-steel_metallic.png", true, false);
+    m_assetManager.setTexture("blocks_diff", "../assets/textures/angled-blocks-vegetation_albedo.png", true, true);
+    m_assetManager.setTexture("blocks_spec", "../assets/textures/angled-blocks-vegetation_metallic.png", true, false);
+    m_assetManager.setTexture("metal_diff", "../assets/textures/dull_metal_albedo.png", true, true);
+    m_assetManager.setTexture("metal_spec", "../assets/textures/dull_metal_metallic.png", true, false);
+    m_assetManager.setTexture("gold_diff", "../assets/textures/lightgold_albedo.png", false, true);
+    m_assetManager.setTexture("gold_spec", "../assets/textures/lightgold_metallic.png", false, false);
+    m_assetManager.setTexture("blending", "../assets/textures/blending_transparent_window.png", false, true);
     // skybox maps
     // .........................................................................
     std::vector<std::string> learnopenglFaces {
@@ -107,7 +111,7 @@ void Game::setup() {
         "../assets/textures/skybox/front.jpg",
         "../assets/textures/skybox/back.jpg",
     };
-    m_assetManager.setCubemap("learnopengl_skybox", learnopenglFaces);
+    m_assetManager.setCubemap("learnopengl_skybox", learnopenglFaces, true);
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
@@ -387,6 +391,46 @@ void Game::setup() {
     glUniform1i(glGetUniformLocation(sphereShaderProgram.m_shaderProgram, "material.diffuse"), 0);
     glUniform1i(glGetUniformLocation(sphereShaderProgram.m_shaderProgram, "material.specular"), 1);
 
+    // mirror sphere entity (dynamic, reflecting surface)
+    // .........................................................................
+    // setup components
+    MaterialComponent mirrorMaterial;
+    BodyTransformComponent mirrorTransform;
+    BodyCircleComponent mirrorCircle;
+    TextureComponent mirrorTexture = TextureComponent(m_assetManager.getTexture("gold_diff"), m_assetManager.getTexture("gold_spec"));
+    ShaderProgramComponent mirrorShaderProgram = ShaderProgramComponent(m_assetManager.getShaderProgram("surface"), m_assetManager.getShaderProgram("stencil"));
+    RenderDataComponent mirrorGraphics;
+    FixtureUserDataComponent mirrorUserData;
+    mirrorMaterial.m_shininess = 64.0f;
+    mirrorGraphics.m_vertexCount = sphereMesh.m_vertexCount;
+    // setup Box2D data
+    mirrorUserData.m_fixtureType = 3;
+    mirrorCircle.m_bodyDef.type = b2_dynamicBody;
+    mirrorCircle.m_bodyDef.position.Set(-20.0f, 5.0f);
+    mirrorTransform.m_body = m_world->CreateBody(&mirrorCircle.m_bodyDef);
+    mirrorCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
+    mirrorCircle.m_circleShape.m_radius = 1.0f;
+    mirrorCircle.m_fixtureDef.shape = &mirrorCircle.m_circleShape;
+    mirrorCircle.m_fixtureDef.density = 1.0f;
+    mirrorCircle.m_fixtureDef.friction = 0.3f;
+    mirrorCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&mirrorUserData);
+    mirrorTransform.m_body->CreateFixture(&mirrorCircle.m_fixtureDef);
+    // setup OpenGL data
+    glGenVertexArrays(1, &mirrorGraphics.m_VAO);
+    glGenBuffers(1, &mirrorGraphics.m_VBO);
+    glBindVertexArray(mirrorGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, mirrorGraphics.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glUseProgram(mirrorShaderProgram.m_shaderProgram);
+    glUniform1i(glGetUniformLocation(mirrorShaderProgram.m_shaderProgram, "material.diffuse"), 0);
+    glUniform1i(glGetUniformLocation(mirrorShaderProgram.m_shaderProgram, "material.specular"), 1);
+
     // cube entity (dynamic, block-textured cube)
     // .........................................................................
     // setup components
@@ -529,6 +573,15 @@ void Game::setup() {
     m_registry.emplace<RenderDataComponent>(sphereEntity, sphereGraphics);
     m_registry.emplace<FixtureUserDataComponent>(sphereEntity, sphereUserData);
     sphereUserData.m_enttEntity = &sphereEntity;
+
+    auto mirrorEntity = m_registry.create();
+    m_registry.emplace<MaterialComponent>(mirrorEntity, mirrorMaterial);
+    m_registry.emplace<BodyTransformComponent>(mirrorEntity, mirrorTransform);
+    m_registry.emplace<TextureComponent>(mirrorEntity, mirrorTexture);
+    m_registry.emplace<ShaderProgramComponent>(mirrorEntity, mirrorShaderProgram);
+    m_registry.emplace<RenderDataComponent>(mirrorEntity, mirrorGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(mirrorEntity, mirrorUserData);
+    mirrorUserData.m_enttEntity = &mirrorEntity;
 
     auto cubeEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(cubeEntity, cubeMaterial);
