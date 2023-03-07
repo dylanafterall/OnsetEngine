@@ -120,6 +120,7 @@ private:
      * \brief Variable used to break the game loop.
      */
     bool m_isRunning = false;
+
     /**
      * \brief Variable used to change game's aspect ratio.
      */
@@ -128,6 +129,15 @@ private:
      * \brief Variable used to change game's aspect ratio.
      */
     unsigned int m_screenHeight = 600;
+    /**
+     * \brief Variable used to change shadow map resolution.
+     */
+    unsigned int m_shadowWidth = 1024;
+    /**
+     * \brief Variable used to change shadow map resolution.
+     */
+    unsigned int m_shadowHeight = 1024;
+
 
     /**
      * \brief Variable used in calculating game's deltaTime and lag.

@@ -1,7 +1,7 @@
 # Onset Engine
 
 <p>The Onset Engine is an ECS game engine written in C++, with 2D physics and 3D rendering. Shaders are written in GLSL. 
-The engine uses the OpenGL API for rendering. <br>
+The engine uses the OpenGL 3.3 Graphics API for rendering. <br>
 I am building this engine for my own education. It is not intended for 
 commerical application. Its development will be ongoing, as I try to incorporate 
 new techniques and practices over time. 
@@ -9,12 +9,39 @@ new techniques and practices over time.
 
 <p>Features:
 <ul>
-    <li> </li>
-    <li> </li>
-    <li>Tool to convert wavefront .obj (triangulated mesh) files to array for OpenGL VBO/VAO processing </li>
-    <li>External library management and versioning via vcpkg integration w/ CMake </li>
-    <li>HTML and LaTeX documentation via Doxygen integration w/ CMake </li>
-    <li>Rotating file logs (default 3 5MB files) via spdlog, log levels dependent on build type </li>
+    <li>Rendering: </li>
+        <ul>
+            <li>Lighting: </li>
+            <ul>
+                <li>Blinn-Phong Lighting Model </li>
+                <li>Directional lights, point lights, spot lights </li>
+                <li>Shadow Mapping: omnidirectional mapping, percentage-closer filtering </li>
+                <li>HDR ***(work in progress) </li>
+                <li>Bloom ***(work in progress) </li>
+                <li>Deferred Shading ***(work in progress) </li>
+            </ul>
+            <li>PBR Textures: </li>
+                <ul>
+                    <li>Albedo </li>
+                    <li>Metallic </li>
+                    <li>Normal ***(work in progress)</li>
+                </ul>
+            <li>Blending (transparent sprites) </li>
+            <li>Skybox (via GL_TEXTURE_CUBE_MAP) </li>
+            <li>Face Culling (via GL_CULL_FACE) </li>
+            <li>Multisample Anti-Aliasing (via GL_MULTISAMPLE) </li>
+            <li>Gamma Correction (via GL_FRAMEBUFFER_SRGB) </li>
+            <li>Model Instancing (via glDrawArraysInstanced) ***(work in progress) </li>
+            <li>Text Rendering ***(work in progress) </li>
+        </ul>
+    <li>Audio effects ***(work in progress) </li>
+    <li>Developer Tools: </li>
+    <ul>    
+        <li>Tool to convert wavefront .obj (triangulated mesh) files to array for OpenGL VBO/VAO processing </li>
+        <li>External library management and versioning via vcpkg integration w/ CMake </li>
+        <li>HTML and LaTeX documentation via Doxygen integration w/ CMake </li>
+        <li>Rotating file logs (default 3 5MB files) via spdlog, log levels dependent on build type </li>
+    </ul>
 </ul>
 </p>
 

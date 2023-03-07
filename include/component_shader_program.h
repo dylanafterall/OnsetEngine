@@ -24,16 +24,6 @@ struct ShaderProgramComponent {
      *        object when rendering.
      */
     unsigned int m_stencilProgram;
-
-    /**
-     * \brief   The constructor.
-     * \details Receives a shader program from AssetManager shaderPrograms map
-     *          using getShaderProgram.
-     */
-    ShaderProgramComponent(unsigned int shaderProgram, unsigned int stencilProgram) {
-        m_shaderProgram = shaderProgram;
-        m_stencilProgram = stencilProgram;
-    }
 };
 
 #endif // COMPONENT_SHADER_PROGRAM_H

@@ -9,19 +9,6 @@
 #include "core_window_manager.h"
 
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    // gets called when window first displayed and any subsequent resizing 
-    // glViewport maps OpenGL's coordinates into screen coordinates
-    //  - OpenGL coordinates (both x and y) will range from (-1 to 1) 
-    //  - we must map those coordinates to (0, width) and (0, height)
-    glViewport(
-        0,          // lower left corner x-coordinate
-        0,          // lower left corner y-coordinate
-        width,      // width of viewport 
-        height      // height of viewport
-    );
-}
-
 // _____________________________________________________________________________
 // -----------------------------------------------------------------------------
 // initialize and destroy
@@ -64,8 +51,6 @@ void WindowManager::initialize(unsigned int screenWidth, unsigned int screenHeig
 
     // only one current context per thread, only one thread per current context
     glfwMakeContextCurrent(m_glfwWindow);
-    // tell GLFW to call this on window resize
-    glfwSetFramebufferSizeCallback(m_glfwWindow, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
     // glfwGetProcAddress defines the correct function based on OS 
