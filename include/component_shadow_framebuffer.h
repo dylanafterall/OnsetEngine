@@ -18,6 +18,11 @@ struct ShadowFramebufferComponent {
      * \brief Unique OpenGL ID for a shadow FBO w/ depth map.
      */
     unsigned int m_shadowFramebuffer;
+    /**
+     * \brief Unique OpenGL ID for a depth map texture.
+     */
+    unsigned int m_depthMap;
+
 };
 
 #endif // COMPONENT_SHADOW_FRAMEBUFFER_H

@@ -12,6 +12,7 @@
 #include "component_camera.h"
 #include "component_light.h"
 #include "component_material.h"
+#include "component_quad.h"
 #include "component_render_data.h"
 #include "component_shader.h"
 #include "component_shader_program.h"
