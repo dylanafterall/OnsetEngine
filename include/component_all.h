@@ -23,15 +23,14 @@
 #include "meshes/component_mesh_sphere.h"
 #include "meshes/component_mesh_sprite.h"
 #include "component_player.h"
-#include "component_quad.h"
 #include "component_render_data.h"
 #include "component_shader_program.h"
-#include "component_shader_program_light.h"
 #include "component_shader.h"
 #include "component_shadow_framebuffer.h"
 #include "component_shape_square.h"
 #include "component_skybox.h"
 #include "component_sprite.h"
+#include "component_test.h"
 #include "component_texture.h"
 
 #endif // COMPONENT_ALL_H

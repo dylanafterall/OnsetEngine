@@ -12,14 +12,13 @@
 #include "component_camera.h"
 #include "component_light.h"
 #include "component_material.h"
-#include "component_quad.h"
 #include "component_render_data.h"
 #include "component_shader.h"
 #include "component_shader_program.h"
-#include "component_shader_program_light.h"
 #include "component_shadow_framebuffer.h"
 #include "component_skybox.h"
 #include "component_sprite.h"
+#include "component_test.h"
 #include "component_texture.h"
 
 #include <glad/glad.h>

@@ -17,7 +17,17 @@ struct ShaderProgramComponent {
      * \brief Unique OpenGL ID for a shader program (combination of a vertex and 
      *        fragment shader).
      */
-    unsigned int m_shaderProgram;
+    unsigned int m_outputProgram;
+    /**
+     * \brief Unique OpenGL ID for a shader program (combination of a vertex and 
+     *        fragment shader) for rendering light reflection.
+     */
+    unsigned int m_lightProgram;
+    /**
+     * \brief Unique OpenGL ID for a shader program (combination of a vertex and 
+     *        fragment shader) for surfaces in a shadow FBO depth map.
+     */
+    unsigned int m_shadowProgram;
     /**
      * \brief Unique OpenGL ID for a shader program (combination of a vertex and 
      *        fragment shader) specifically used in outlining/stenciling an 

@@ -81,7 +81,7 @@ void WindowManager::initialize(unsigned int screenWidth, unsigned int screenHeig
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // enable backface culling
-    glEnable(GL_CULL_FACE); 
+    // glEnable(GL_CULL_FACE); 
     // enable multisampling - used in MSAA
     glEnable(GL_MULTISAMPLE);  
 
