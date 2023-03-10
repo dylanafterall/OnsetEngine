@@ -23,6 +23,15 @@ struct ShadowFramebufferComponent {
      */
     unsigned int m_depthMap;
 
+    /**
+     * \brief Near plane distance for shadow depth mapping. 
+     */
+    float m_nearPlane;
+    /**
+     * \brief Far plane distance for shadow depth mapping. 
+     */
+    float m_farPlane;
+
 };
 
 #endif // COMPONENT_SHADOW_FRAMEBUFFER_H
