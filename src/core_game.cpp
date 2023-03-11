@@ -73,15 +73,21 @@ void Game::setup() {
     m_assetManager.setFShader("skybox_frag", "../assets/shaders/skybox.frag");
     m_assetManager.setVShader("shadow_depth_vert", "../assets/shaders/shadow_depth.vert");
     m_assetManager.setFShader("shadow_depth_frag", "../assets/shaders/shadow_depth.frag");
+    m_assetManager.setVShader("shadow_depth_cube_vert", "../assets/shaders/shadow_depth_cube.vert");
+    m_assetManager.setGShader("shadow_depth_cube_geom", "../assets/shaders/shadow_depth_cube.geom");
+    m_assetManager.setFShader("shadow_depth_cube_frag", "../assets/shaders/shadow_depth_cube.frag");
     m_assetManager.setVShader("shadow_render_vert", "../assets/shaders/shadow_render.vert");
     m_assetManager.setFShader("shadow_render_frag", "../assets/shaders/shadow_render.frag");
+    m_assetManager.setVShader("shadow_render2_vert", "../assets/shaders/shadow_render2.vert");
+    m_assetManager.setFShader("shadow_render2_frag", "../assets/shaders/shadow_render2.frag");
     m_assetManager.setVShader("shadow_framebuffer_vert", "../assets/shaders/shadow_framebuffer.vert");
     m_assetManager.setFShader("shadow_framebuffer_frag", "../assets/shaders/shadow_framebuffer.frag");
 
     // shader programs
     // .........................................................................
-    unsigned int vertex = m_assetManager.getVShader("solid_color_vert");
-    unsigned int fragment = m_assetManager.getFShader("solid_color_frag");
+    unsigned int vertex, fragment, geometry;
+    vertex = m_assetManager.getVShader("solid_color_vert");
+    fragment = m_assetManager.getFShader("solid_color_frag");
     m_assetManager.setShaderProgram("solid_color", vertex, fragment);
     vertex = m_assetManager.getVShader("reflector_vert");
     fragment = m_assetManager.getFShader("reflector_frag");
@@ -98,9 +104,16 @@ void Game::setup() {
     vertex = m_assetManager.getVShader("shadow_depth_vert");
     fragment = m_assetManager.getFShader("shadow_depth_frag");
     m_assetManager.setShaderProgram("shadow_depth", vertex, fragment);
+    vertex = m_assetManager.getVShader("shadow_depth_cube_vert");
+    geometry = m_assetManager.getGShader("shadow_depth_cube_geom");
+    fragment = m_assetManager.getFShader("shadow_depth_cube_frag");
+    m_assetManager.setShaderProgram("shadow_depth_cube", vertex, geometry, fragment);
     vertex = m_assetManager.getVShader("shadow_render_vert");
     fragment = m_assetManager.getFShader("shadow_render_frag");
     m_assetManager.setShaderProgram("shadow_render", vertex, fragment);
+    vertex = m_assetManager.getVShader("shadow_render2_vert");
+    fragment = m_assetManager.getFShader("shadow_render2_frag");
+    m_assetManager.setShaderProgram("shadow_render2", vertex, fragment);
     vertex = m_assetManager.getVShader("shadow_framebuffer_vert");
     fragment = m_assetManager.getFShader("shadow_framebuffer_frag");
     m_assetManager.setShaderProgram("shadow_framebuffer", vertex, fragment);
@@ -115,6 +128,9 @@ void Game::setup() {
     glUseProgram(m_assetManager.getShaderProgram("shadow_render"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render"), "diffuseTexture"), 0); 
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render"), "shadowMap"), 1); 
+    glUseProgram(m_assetManager.getShaderProgram("shadow_render2"));
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render2"), "diffuseTexture"), 0); 
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render2"), "depthMap"), 1); 
     glUseProgram(m_assetManager.getShaderProgram("shadow_framebuffer"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "depthMap"), 0); 
     glUniform1f(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "near_plane"), 1.0f);
@@ -152,8 +168,8 @@ void Game::setup() {
     // Entities
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-/*
-    // test entities (to test rendering)
+    /*
+    // test (quad) entity
     // .........................................................................
     float quadVertices[] = {
             // positions            // texture Coords
@@ -178,105 +194,7 @@ void Game::setup() {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(0);
-    
-    // .........................................................................
-    float boxVertices[] = {
-        // back face
-        -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-         1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-         1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
-         1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-        -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-        -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
-        // front face
-        -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-         1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-         1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-         1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-        -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-        -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-        // left face
-        -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-        -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
-        -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-        -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-        -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-        -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-        // right face
-         1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-         1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-         1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
-         1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-         1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-         1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
-        // bottom face
-        -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-         1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
-         1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-         1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-        -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-        -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-        // top face
-        -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-         1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-         1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
-         1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-        -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-        -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
-    };
-    TestComponent boxTest;
-    RenderDataComponent boxGraphics;
-    boxTest.m_testProgram = m_assetManager.getShaderProgram("shadow_depth");
-    boxTest.m_id = 1;
-    boxGraphics.m_vertexCount = 36;
-    // setup OpenGL data
-    glGenVertexArrays(1, &boxGraphics.m_VAO);
-    glGenBuffers(1, &boxGraphics.m_VBO);
-    // fill buffer
-    glBindBuffer(GL_ARRAY_BUFFER, boxGraphics.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(boxVertices), boxVertices, GL_STATIC_DRAW);
-    // link vertex attributes
-    glBindVertexArray(boxGraphics.m_VAO);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    // .........................................................................
-    float planeVertices[] = {
-        // positions            // normals         // texcoords
-         25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-        -25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-        -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-
-         25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-        -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-         25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
-    };
-    TestComponent planeTest;
-    RenderDataComponent planeGraphics;
-    planeTest.m_testProgram = m_assetManager.getShaderProgram("shadow_depth");
-    planeTest.m_id = 2;
-    planeGraphics.m_vertexCount = 6;
-    // setup OpenGL data
-    // plane VAO
-    glGenVertexArrays(1, &planeGraphics.m_VAO);
-    glGenBuffers(1, &planeGraphics.m_VBO);
-    glBindVertexArray(planeGraphics.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, planeGraphics.m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glBindVertexArray(0);
-*/
+    */
 
     // camera entity
     // .........................................................................
@@ -320,9 +238,10 @@ void Game::setup() {
     sunShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
     sunShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("reflector");
     sunShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
+    // setup shadow mapping
+    sunShadow.m_type = 0; // no shadow casting
     sunShadow.m_nearPlane = 1.0f;
     sunShadow.m_farPlane = 25.0f;
-    // configure depth map FBO, create depth texture
     glGenFramebuffers(1, &sunShadow.m_shadowFramebuffer);
     glGenTextures(1, &sunShadow.m_depthMap);
     glBindTexture(GL_TEXTURE_2D, sunShadow.m_depthMap);
@@ -331,7 +250,7 @@ void Game::setup() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float sunBorderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+    float sunBorderColor[] = {1.0, 1.0, 1.0, 1.0};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, sunBorderColor);
     // attach depth texture as FBO's depth buffer
     glBindFramebuffer(GL_FRAMEBUFFER, sunShadow.m_shadowFramebuffer);
@@ -381,6 +300,8 @@ void Game::setup() {
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // setup shadow mapping
+    blueOrbShadow.m_type = 0; // no shadow casting
 
     // greenOrb entity (dynamic point source, green light)
     // .........................................................................
@@ -423,6 +344,25 @@ void Game::setup() {
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // setup shadow mapping
+    greenOrbShadow.m_type = 2; // omnidirectional shadow casting
+    glGenFramebuffers(1, &greenOrbShadow.m_shadowFramebuffer);
+    glGenTextures(1, &greenOrbShadow.m_depthCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, greenOrbShadow.m_depthCubemap);
+    for (unsigned int i = 0; i < 6; ++i) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, m_shadowWidth, m_shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, greenOrbShadow.m_shadowFramebuffer);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, greenOrbShadow.m_depthCubemap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // streetLamp entity (pointed down, yellow light)
     // .........................................................................
@@ -467,6 +407,8 @@ void Game::setup() {
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // setup shadow mapping
+    streetLampShadow.m_type = 0; // no shadow casting
 
     // player entity (dynamic, marble-textured sphere)
     // .........................................................................
@@ -707,19 +649,11 @@ void Game::setup() {
     // Registry
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-/*
+    /*
     auto quadEntity = m_registry.create();
     m_registry.emplace<TestComponent>(quadEntity, quadTest);
     m_registry.emplace<RenderDataComponent>(quadEntity, quadGraphics);
-
-    auto boxEntity = m_registry.create();
-    m_registry.emplace<TestComponent>(boxEntity, boxTest);
-    m_registry.emplace<RenderDataComponent>(boxEntity, boxGraphics);
-
-    auto planeEntity = m_registry.create();
-    m_registry.emplace<TestComponent>(planeEntity, planeTest);
-    m_registry.emplace<RenderDataComponent>(planeEntity, planeGraphics);
-*/
+    */
 
     auto cameraEntity = m_registry.create();
     m_registry.emplace<CameraComponent>(cameraEntity, camera);

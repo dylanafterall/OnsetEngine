@@ -64,7 +64,7 @@ void RenderSystem::update(
     int fbHeight;
     glfwGetFramebufferSize(m_glfwWindow, &fbWidth, &fbHeight);
     // variables needed for later rendering to screen using depthmap as texture
-    glm::vec3 testPos(0.0f, 10.0f, 0.1f);
+    glm::vec3 testPos(-10.0f, 10.0f, 0.1f);
     glm::mat4 lightSpaceMatrix;
     unsigned int depthMap;
 
@@ -82,15 +82,15 @@ void RenderSystem::update(
         const auto& depthGraphics,
         const auto& depthShadow
     ) {
-        if (depthLight.m_type == 0) {
+        // shadow mapping monodirectional sources via 2D texture
+        if (depthShadow.m_type == 1) {
             depthMap = depthShadow.m_depthMap;
             glm::mat4 lightProjection; 
             glm::mat4 lightView;
-            lightProjection = glm::perspective(glm::radians(45.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, depthShadow.m_nearPlane, depthShadow.m_farPlane);
+            lightProjection = glm::perspective(glm::radians(90.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, depthShadow.m_nearPlane, depthShadow.m_farPlane);
             // lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, depthShadow.m_nearPlane, depthShadow.m_farPlane);
-            lightView = glm::lookAt(testPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+            lightView = glm::lookAt(testPos, glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             lightSpaceMatrix = lightProjection * lightView;
-
             // make the depth map
             glUseProgram(depthShader.m_shadowProgram);
             glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
@@ -107,12 +107,10 @@ void RenderSystem::update(
             ) {
                 b2Vec2 bodyPos = body.m_body->GetPosition();
                 float angle = body.m_body->GetAngle();
-
                 glm::mat4 model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
                 model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
                 glUniformMatrix4fv(glGetUniformLocation(shader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
-
                 glBindVertexArray(graphics.m_VAO);
                 glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
                 glBindVertexArray(0);
@@ -127,13 +125,11 @@ void RenderSystem::update(
                 if (light.m_type != 0) {
                     b2Vec2 bodyPos = body.m_body->GetPosition();
                     float angle = body.m_body->GetAngle();
-
                     glm::mat4 model = glm::mat4(1.0f);
                     model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
                     model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
                     model = glm::scale(model, light.m_scale);
                     glUniformMatrix4fv(glGetUniformLocation(shader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
-
                     glBindVertexArray(graphics.m_VAO);
                     glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
                     glBindVertexArray(0);
@@ -143,6 +139,10 @@ void RenderSystem::update(
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glViewport(0, 0, fbWidth, fbHeight);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        }
+        // shadow mapping omnidirectional sources via cubemap
+        else if (depthShadow.m_type == 2) {
+
         }
     });
 
@@ -526,5 +526,6 @@ void RenderSystem::deleteBuffers(entt::registry& registry) {
     framebuffers.each([&](auto& shadow) {
         glDeleteFramebuffers(1, &shadow.m_shadowFramebuffer);
         glDeleteTextures(1, &shadow.m_depthMap);
+        glDeleteTextures(1, &shadow.m_depthCubemap);
     });
 }

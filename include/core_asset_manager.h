@@ -83,6 +83,16 @@ public:
      */
     void setFShader(const std::string&, const char*);
     /**
+     * \brief   The function setGShader. 
+     * \details This function imports a geometry shader file - .geom from the
+     *          assets directory, assigns the shader an ID for OpenGL, and 
+     *          saves a copy of its ID in a std::map member variable.
+     * \param   assetId      ID name to serve as key in std::map fshaders.
+     * \param   geometryPath Relative path to .geom shader asset.
+     * \return  void, none.
+     */
+    void setGShader(const std::string&, const char*);
+    /**
      * \brief   The function setShaderProgram. 
      * \details This function combines a vertex and fragment shader, both 
      *          stored in OpenGL as an unsigned int (ID), into a shader 
@@ -93,6 +103,18 @@ public:
      * \return  void, none.
      */
     void setShaderProgram(const std::string&, unsigned int, unsigned int);
+    /**
+     * \brief   The function setShaderProgram. 
+     * \details This function combines a vertex and fragment shader, both 
+     *          stored in OpenGL as an unsigned int (ID), into a shader 
+     *          program to be used in rendering. 
+     * \param   assetId          ID name - key in std::map shaderPrograms.
+     * \param   vertexShader     OpenGL's ID of vertex shader to link.
+     * \param   geometryShader   OpenGL's ID of geometry shader to link.
+     * \param   fragmentShader   OpenGL's ID of fragment shader to link.
+     * \return  void, none.
+     */
+    void setShaderProgram(const std::string&, unsigned int, unsigned int, unsigned int);
 
     /**
      * \brief   The function getTexture. 
@@ -135,6 +157,16 @@ public:
      */
     unsigned int getFShader(const std::string&);
     /**
+     * \brief   The function getGShader. 
+     * \details This function, given a key for std::map gshaders, returns
+     *          the associated unsigned int ID from OpenGL.
+     * \param   program      The name of the key to search the gshaders
+     *                       map for.
+     * \retval  ID   An unsigned int stored by OpenGL for an associated
+     *               geometry shader asset.   
+     */
+    unsigned int getGShader(const std::string&);
+    /**
      * \brief   The function getShaderProgram. 
      * \details This function, given a key for std::map shaderPrograms, 
      *          returns the associated unsigned int ID from OpenGL.
@@ -175,6 +207,7 @@ public:
      * \return  void, none.
      */
     void checkShaderProgramErrors(unsigned int);
+    
 
 private:
     /**
@@ -198,6 +231,11 @@ private:
      *        creating new game entities.
      */
     std::map<std::string, unsigned int> fshaders;
+    /**
+     * \brief std::map used to store geometry shader IDs for easy lookup when 
+     *        creating new game entities.
+     */
+    std::map<std::string, unsigned int> gshaders;
     
     /**
      * \brief std::map used to store shader program IDs for easy lookup when 

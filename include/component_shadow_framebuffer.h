@@ -15,6 +15,15 @@
  */
 struct ShadowFramebufferComponent {
     /**
+     * \brief Identifies whether the light with this component casts
+     *        no shadows, casts to a 2D texture, or to a cubemap.
+     *        Type 0 = no shadow casting
+     *        Type 1 = mono/single direction shadow casting (2D texture)
+     *        Type 2 = omnidirectional shadow casting (cubemap)
+     */
+    int m_type;
+
+    /**
      * \brief Unique OpenGL ID for a shadow FBO w/ depth map.
      */
     unsigned int m_shadowFramebuffer;
@@ -22,6 +31,10 @@ struct ShadowFramebufferComponent {
      * \brief Unique OpenGL ID for a depth map texture.
      */
     unsigned int m_depthMap;
+    /**
+     * \brief Unique OpenGL ID for a depth cubemap texture.
+     */
+    unsigned int m_depthCubemap;
 
     /**
      * \brief Near plane distance for shadow depth mapping. 

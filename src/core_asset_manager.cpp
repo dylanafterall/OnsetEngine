@@ -216,9 +216,59 @@ void AssetManager::setFShader(const std::string& assetId, const char* fragmentPa
     ONSET_INFO("New FShader added to Asset Manager with id = {}", assetId);
 }
 
+void AssetManager::setGShader(const std::string& assetId, const char* geometryPath) {
+    // retrieve the shader source code from filePath 
+    std::string geometryCode;
+    std::ifstream gShaderFile;
+
+    // ensure ifstream objects can throw exceptions 
+    gShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    try {
+        // open file
+        gShaderFile.open(geometryPath);
+        std::stringstream gShaderStream;
+        // read file's buffer contents into streams
+        gShaderStream << gShaderFile.rdbuf();
+        // close file handlers
+        gShaderFile.close();
+        // convert stream into string
+        geometryCode = gShaderStream.str();
+    }
+    catch (std::ifstream::failure& e) {
+        ONSET_ERROR("GShader file not successfully read: {}", e.what());
+    }
+
+    const char* gShaderCode = geometryCode.c_str();
+
+    // compile geometry shader 
+    unsigned int geometry = glCreateShader(GL_GEOMETRY_SHADER);
+    glShaderSource(geometry, 1, &gShaderCode, NULL);
+    glCompileShader(geometry);
+    checkShaderErrors(geometry, "GEOMETRY");
+
+    // add fshader to asset manager's map
+    gshaders.emplace(assetId, geometry);
+    ONSET_INFO("New GShader added to Asset Manager with id = {}", assetId);
+}
+
 void AssetManager::setShaderProgram(const std::string& assetId, unsigned int vertexShader, unsigned int fragmentShader) {
     unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    // check shader linking for errors 
+    checkShaderProgramErrors(shaderProgram);
+
+    // add shaderProgram to asset manager's map 
+    shaderPrograms.emplace(assetId, shaderProgram);
+    ONSET_INFO("New ShaderProgram added to Asset Manager with id = {}", assetId);
+}
+
+void AssetManager::setShaderProgram(const std::string& assetId, unsigned int vertexShader, unsigned int geometryShader, unsigned int fragmentShader) {
+    unsigned int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, geometryShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
@@ -252,6 +302,10 @@ unsigned int AssetManager::getFShader(const std::string& assetId) {
     return fshaders[assetId];
 }
 
+unsigned int AssetManager::getGShader(const std::string& assetId) {
+    return gshaders[assetId];
+}
+
 unsigned int AssetManager::getShaderProgram(const std::string& assetId) {
     return shaderPrograms[assetId];
 }
@@ -282,6 +336,11 @@ void AssetManager::deleteAssets() {
         glDeleteShader(fshader.second);
     }
     fshaders.clear();
+
+    for (auto gshader : gshaders) {
+        glDeleteShader(gshader.second);
+    }
+    gshaders.clear();
 
     for (auto program : shaderPrograms) {
         glDeleteProgram(program.second);
