@@ -67,6 +67,7 @@ void RenderSystem::update(
     glm::vec3 testPos(-10.0f, 10.0f, 0.1f);
     glm::mat4 lightSpaceMatrix;
     unsigned int depthMap;
+    unsigned int depthCubemap;
 
     auto lightEntities = registry.view<
         LightComponent,
@@ -82,13 +83,14 @@ void RenderSystem::update(
         const auto& depthGraphics,
         const auto& depthShadow
     ) {
+        // .....................................................................
         // shadow mapping monodirectional sources via 2D texture
+        // .....................................................................
         if (depthShadow.m_type == 1) {
             depthMap = depthShadow.m_depthMap;
             glm::mat4 lightProjection; 
             glm::mat4 lightView;
             lightProjection = glm::perspective(glm::radians(90.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, depthShadow.m_nearPlane, depthShadow.m_farPlane);
-            // lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, depthShadow.m_nearPlane, depthShadow.m_farPlane);
             lightView = glm::lookAt(testPos, glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             lightSpaceMatrix = lightProjection * lightView;
             // make the depth map
@@ -110,7 +112,7 @@ void RenderSystem::update(
                 glm::mat4 model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
                 model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-                glUniformMatrix4fv(glGetUniformLocation(shader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
+                glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
                 glBindVertexArray(graphics.m_VAO);
                 glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
                 glBindVertexArray(0);
@@ -129,7 +131,7 @@ void RenderSystem::update(
                     model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
                     model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
                     model = glm::scale(model, light.m_scale);
-                    glUniformMatrix4fv(glGetUniformLocation(shader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
+                    glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
                     glBindVertexArray(graphics.m_VAO);
                     glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
                     glBindVertexArray(0);
@@ -140,32 +142,83 @@ void RenderSystem::update(
             glViewport(0, 0, fbWidth, fbHeight);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
+        // .....................................................................
         // shadow mapping omnidirectional sources via cubemap
+        // .....................................................................
         else if (depthShadow.m_type == 2) {
+            depthCubemap = depthShadow.m_depthCubemap;
 
+            // create depth cubemap transformation matrices
+            b2Vec2 lightBodyPos = depthBody.m_body->GetPosition();
+            glm::vec3 lightPos(lightBodyPos.x, lightBodyPos.y, 0.1f);
+            testPos = glm::vec3(lightBodyPos.x, lightBodyPos.y, 0.1f);
+            glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, depthShadow.m_nearPlane, depthShadow.m_farPlane);
+            std::vector<glm::mat4> shadowTransforms;
+            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+
+            // render scene to depth cubemap
+            glViewport(0, 0, m_shadowWidth, m_shadowHeight);
+            glBindFramebuffer(GL_FRAMEBUFFER, depthShadow.m_shadowFramebuffer);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glUseProgram(depthShader.m_shadowProgram);
+            std::string uniformName;
+            for (unsigned int i = 0; i < 6; ++i) {
+                uniformName = "shadowMatrices[" + std::to_string(i) + "]";
+                glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, uniformName.c_str()), 1, GL_FALSE, &(shadowTransforms[i])[0][0]);
+            }
+            glUniform1f(glGetUniformLocation(depthShader.m_shadowProgram, "far_plane"), depthShadow.m_farPlane);
+            glUniform3fv(glGetUniformLocation(depthShader.m_shadowProgram, "lightPos"), 1, &lightPos[0]); 
+            // "reverse_normals" is used if rendering 'inside' a cube - for testing shadow mapping
+            glUniform1i(glGetUniformLocation(depthShader.m_shadowProgram, "reverse_normals"), 0);
+
+            gameplayEntities.each([&](
+                const auto& material,
+                const auto& body,
+                const auto& texture,
+                const auto& shader,
+                const auto& graphics
+            ) {
+                b2Vec2 bodyPos = body.m_body->GetPosition();
+                float angle = body.m_body->GetAngle();
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
+                model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+                glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
+                glBindVertexArray(graphics.m_VAO);
+                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+                glBindVertexArray(0);
+            });
+            lightEntities.each([&](
+                const auto& light,
+                const auto& body,
+                const auto& shader,
+                const auto& graphics,
+                const auto& shadow
+            ) {
+                if (light.m_type != 0) {
+                    b2Vec2 bodyPos = body.m_body->GetPosition();
+                    float angle = body.m_body->GetAngle();
+                    glm::mat4 model = glm::mat4(1.0f);
+                    model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
+                    model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+                    model = glm::scale(model, light.m_scale);
+                    glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
+                    glBindVertexArray(graphics.m_VAO);
+                    glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+                    glBindVertexArray(0);
+                }
+            });
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glViewport(0, 0, fbWidth, fbHeight);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
     });
-
-/*
-    // render the depth map
-    auto tests = registry.view<
-        TestComponent,
-        RenderDataComponent
-    >();
-    tests.each([&](
-        const auto& quadTest,
-        const auto& quadGraphics
-    ) {
-        if (quadTest.m_id == 0) {
-            glUseProgram(quadTest.m_testProgram);
-            glBindVertexArray(quadGraphics.m_VAO);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, depthMap);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            glBindVertexArray(0);
-        }
-    });
-*/
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
@@ -356,23 +409,26 @@ void RenderSystem::update(
             glStencilMask(0x00);
         }
         /*
+        // using 'reflector' output shader
         glUniform1i(glGetUniformLocation(shader.m_outputProgram, "blinn"), true); 
         glUniform1f(glGetUniformLocation(shader.m_outputProgram, "material.shininess"), material.m_shininess);
         normal = glm::mat3(transpose(inverse(model)));
         glUniformMatrix3fv(glGetUniformLocation(shader.m_outputProgram, "normal"), 1, GL_FALSE, &normal[0][0]);
+
+        // using 'shadow_render' output shader
+        glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
         */
         glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "view"), 1, GL_FALSE, &view[0][0]);
         glUniform3f(glGetUniformLocation(shader.m_outputProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
         glUniform3f(glGetUniformLocation(shader.m_outputProgram, "lightPos"), testPos[0], testPos[1], testPos[2]);
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
         model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
         model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
         glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "model"), 1, GL_FALSE, &model[0][0]);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
         glBindVertexArray(graphics.m_VAO);
 
         if (m_gammaFlag) {
