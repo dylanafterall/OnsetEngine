@@ -7,22 +7,20 @@
 // -----------------------------------------------------------------------------
 
 #include "system_render.h"
+#include <iostream>
 
-/*
-    1) store camera data
-    2) render shadow depth maps to shadow framebuffer
-    3) store light data and render point lights & spot lights
-    4) render skybox
-    5) render game entities (including depth map from step 2)
-    6) render sprites
-    7) render stencil outlines
-*/
+//      1) store camera data
+//      2) store shadow mapping data
+//      3) store light reflection data & render lights
+//      4) render skybox
+//      5) render gameplay entities
+//      6) render sprites
+//      7) render stencil outlines
 
 void RenderSystem::update(
     const float timeStep, 
     entt::registry& registry
 ) {
-    // objects will be needed for rendering to shadowmaps prior to screen
     auto gameplayEntities = registry.view<
         MaterialComponent,
         BodyTransformComponent,
@@ -36,12 +34,11 @@ void RenderSystem::update(
     // 1) iterate over camera entities to store camera data
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // camera and light data
+    // camera data
     float cameraZoom;
     glm::vec3 cameraPosition;
     glm::vec3 cameraFront;
     glm::vec3 cameraUp;
-    int pointSourceCount;
 
     auto cameraEntities = registry.view<CameraComponent>();
     cameraEntities.each([&](const auto& camera) {
@@ -56,18 +53,14 @@ void RenderSystem::update(
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // 2) render shadow depth maps to shadow framebuffer
+    // 2) store shadow mapping data
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // variables needed for rendering depth map to shadow framebuffer
-    int fbWidth;
-    int fbHeight;
-    glfwGetFramebufferSize(m_glfwWindow, &fbWidth, &fbHeight);
-    // variables needed for later rendering to screen using depthmap as texture
-    glm::vec3 testPos(-10.0f, 10.0f, 0.1f);
-    glm::mat4 lightSpaceMatrix;
-    unsigned int depthMap;
-    unsigned int depthCubemap;
+    unsigned int depthTex;      // (saved for / needed in) step 4
+    unsigned int depthCubemap;  // (saved for / needed in) step 4
+    int framebufferWidth;
+    int framebufferHeight;
+    glfwGetFramebufferSize(m_glfwWindow, &framebufferWidth, &framebufferHeight);
 
     auto lightEntities = registry.view<
         LightComponent,
@@ -77,186 +70,205 @@ void RenderSystem::update(
         ShadowFramebufferComponent
     >();
     lightEntities.each([&](
-        const auto& depthLight,
-        const auto& depthBody,
-        const auto& depthShader,
-        const auto& depthGraphics,
-        const auto& depthShadow
+        const auto& rootLight,
+        const auto& rootBody,
+        const auto& rootShader,
+        const auto& rootGraphics,
+        const auto& rootShadow
     ) {
-        // .....................................................................
-        // shadow mapping monodirectional sources via 2D texture
-        // .....................................................................
-        if (depthShadow.m_type == 1) {
-            depthMap = depthShadow.m_depthMap;
-            glm::mat4 lightProjection; 
-            glm::mat4 lightView;
-            lightProjection = glm::perspective(glm::radians(90.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, depthShadow.m_nearPlane, depthShadow.m_farPlane);
-            lightView = glm::lookAt(testPos, glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            lightSpaceMatrix = lightProjection * lightView;
-            // make the depth map
-            glUseProgram(depthShader.m_shadowProgram);
-            glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+        b2Vec2 rootBodyPos;
+        glm::vec3 rootPos;
+        glm::vec3 offsetRootPos;
+
+        if (rootLight.m_type != 0) {
+            rootBodyPos = rootBody.m_body->GetPosition();
+            rootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.0f);
+            offsetRootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.1f);
+        }
+
+        // .................................................................
+        // 2.a(1) mono-directional shadow maps (2D textures); spot-lights
+        // .................................................................
+        if (rootShadow.m_type == 1) {
+            depthTex = rootShadow.m_depthMap;
+            glm::mat4 rootProjection = glm::perspective(glm::radians(35.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, rootShadow.m_nearPlane, rootShadow.m_farPlane);
+            glm::mat4 rootView = glm::lookAt(offsetRootPos, rootPos + rootLight.m_direction, glm::vec3(0.0f, 1.0f, 0.0f));
+            glm::mat4 rootSpaceMatrix = rootProjection * rootView;
+
+            glUseProgram(rootShader.m_lightProgram);
+            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_lightProgram, "lightSpaceMatrix"), 1, GL_FALSE, &rootSpaceMatrix[0][0]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLightPos"), rootPos[0], rootPos[1], rootPos[2]);
+            glUseProgram(rootShader.m_shadowProgram);
+            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "lightSpaceMatrix"), 1, GL_FALSE, &rootSpaceMatrix[0][0]);
+
             glViewport(0, 0, m_shadowWidth, m_shadowHeight);
-            glBindFramebuffer(GL_FRAMEBUFFER, depthShadow.m_shadowFramebuffer);
+            glBindFramebuffer(GL_FRAMEBUFFER, rootShadow.m_shadowFramebuffer);
             glClear(GL_DEPTH_BUFFER_BIT);
 
+            // render objects that cast a shadow to the 2D shadow map texture
             gameplayEntities.each([&](
-                const auto& material,
-                const auto& body,
-                const auto& texture,
-                const auto& shader,
-                const auto& graphics
+                const auto& gameMaterial,
+                const auto& gameBody,
+                const auto& gameTexture,
+                const auto& gameShader,
+                const auto& gameGraphics
             ) {
-                b2Vec2 bodyPos = body.m_body->GetPosition();
-                float angle = body.m_body->GetAngle();
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
-                model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-                glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
-                glBindVertexArray(graphics.m_VAO);
-                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+                b2Vec2 gameBodyPos = gameBody.m_body->GetPosition();
+                float gameAngle = gameBody.m_body->GetAngle();
+                glm::mat4 gameModel = glm::mat4(1.0f);
+                gameModel = glm::translate(gameModel, glm::vec3(gameBodyPos.x, gameBodyPos.y, 0.0f));
+                gameModel = glm::rotate(gameModel, gameAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+                glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &gameModel[0][0]);
+                glBindVertexArray(gameGraphics.m_VAO);
+                glDrawArrays(GL_TRIANGLES, 0, gameGraphics.m_vertexCount);
                 glBindVertexArray(0);
             });
             lightEntities.each([&](
-                const auto& light,
-                const auto& body,
-                const auto& shader,
-                const auto& graphics,
-                const auto& shadow
+                const auto& interiorLight,
+                const auto& interiorBody,
+                const auto& interiorShader,
+                const auto& interiorGraphics,
+                const auto& interiorShadow
             ) {
-                if (light.m_type != 0) {
-                    b2Vec2 bodyPos = body.m_body->GetPosition();
-                    float angle = body.m_body->GetAngle();
-                    glm::mat4 model = glm::mat4(1.0f);
-                    model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
-                    model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-                    model = glm::scale(model, light.m_scale);
-                    glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
-                    glBindVertexArray(graphics.m_VAO);
-                    glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+                // if point or spot light, it will cast a shadow
+                if (interiorLight.m_type != 0) {
+                    b2Vec2 interiorBodyPos = interiorBody.m_body->GetPosition();
+                    float interiorAngle = interiorBody.m_body->GetAngle();
+                    glm::mat4 interiorModel = glm::mat4(1.0f);
+                    interiorModel = glm::translate(interiorModel, glm::vec3(interiorBodyPos.x, interiorBodyPos.y, 0.0f));
+                    interiorModel = glm::rotate(interiorModel, interiorAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+                    interiorModel = glm::scale(interiorModel, interiorLight.m_scale);
+                    glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &interiorModel[0][0]);
+                    glBindVertexArray(interiorGraphics.m_VAO);
+                    glDrawArrays(GL_TRIANGLES, 0, interiorGraphics.m_vertexCount);
                     glBindVertexArray(0);
                 }
             });
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glViewport(0, 0, fbWidth, fbHeight);
+            glViewport(0, 0, framebufferWidth, framebufferHeight);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
-        // .....................................................................
-        // shadow mapping omnidirectional sources via cubemap
-        // .....................................................................
-        else if (depthShadow.m_type == 2) {
-            depthCubemap = depthShadow.m_depthCubemap;
+        // .................................................................
+        // 2.a(2) omni-directional shadow maps (3D cubemaps); point-lights
+        // .................................................................
+        else if (rootShadow.m_type == 2) {
+            depthCubemap = rootShadow.m_depthCubemap;
+            glm::mat4 rootProjection = glm::perspective(glm::radians(90.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, rootShadow.m_nearPlane, rootShadow.m_farPlane);
+            std::vector<glm::mat4> rootTransforms;
+            rootTransforms.push_back(rootProjection * glm::lookAt(offsetRootPos, rootPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+            rootTransforms.push_back(rootProjection * glm::lookAt(offsetRootPos, rootPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+            rootTransforms.push_back(rootProjection * glm::lookAt(offsetRootPos, rootPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+            rootTransforms.push_back(rootProjection * glm::lookAt(offsetRootPos, rootPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+            rootTransforms.push_back(rootProjection * glm::lookAt(offsetRootPos, rootPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+            rootTransforms.push_back(rootProjection * glm::lookAt(offsetRootPos, rootPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 
-            // create depth cubemap transformation matrices
-            b2Vec2 lightBodyPos = depthBody.m_body->GetPosition();
-            glm::vec3 lightPos(lightBodyPos.x, lightBodyPos.y, 0.1f);
-            testPos = glm::vec3(lightBodyPos.x, lightBodyPos.y, 0.1f);
-            glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, depthShadow.m_nearPlane, depthShadow.m_farPlane);
-            std::vector<glm::mat4> shadowTransforms;
-            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-            shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-
-            // render scene to depth cubemap
-            glViewport(0, 0, m_shadowWidth, m_shadowHeight);
-            glBindFramebuffer(GL_FRAMEBUFFER, depthShadow.m_shadowFramebuffer);
-            glClear(GL_DEPTH_BUFFER_BIT);
-            glUseProgram(depthShader.m_shadowProgram);
+            glUseProgram(rootShader.m_lightProgram);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "pointLightPos"), rootPos[0], rootPos[1], rootPos[2]);
+            glUseProgram(rootShader.m_shadowProgram);
             std::string uniformName;
             for (unsigned int i = 0; i < 6; ++i) {
                 uniformName = "shadowMatrices[" + std::to_string(i) + "]";
-                glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, uniformName.c_str()), 1, GL_FALSE, &(shadowTransforms[i])[0][0]);
+                glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, uniformName.c_str()), 1, GL_FALSE, &(rootTransforms[i])[0][0]);
             }
-            glUniform1f(glGetUniformLocation(depthShader.m_shadowProgram, "far_plane"), depthShadow.m_farPlane);
-            glUniform3fv(glGetUniformLocation(depthShader.m_shadowProgram, "lightPos"), 1, &lightPos[0]); 
-            // "reverse_normals" is used if rendering 'inside' a cube - for testing shadow mapping
-            glUniform1i(glGetUniformLocation(depthShader.m_shadowProgram, "reverse_normals"), 0);
+            glUniform1f(glGetUniformLocation(rootShader.m_shadowProgram, "far_plane"), rootShadow.m_farPlane);
+            glUniform3fv(glGetUniformLocation(rootShader.m_shadowProgram, "lightPos"), 1, &offsetRootPos[0]); 
 
+            glViewport(0, 0, m_shadowWidth, m_shadowHeight);
+            glBindFramebuffer(GL_FRAMEBUFFER, rootShadow.m_shadowFramebuffer);
+            glClear(GL_DEPTH_BUFFER_BIT);
+
+            // render objects that cast a shadow to the 3D shadow map cubemap
             gameplayEntities.each([&](
-                const auto& material,
-                const auto& body,
-                const auto& texture,
-                const auto& shader,
-                const auto& graphics
+                const auto& gameMaterial,
+                const auto& gameBody,
+                const auto& gameTexture,
+                const auto& gameShader,
+                const auto& gameGraphics
             ) {
-                b2Vec2 bodyPos = body.m_body->GetPosition();
-                float angle = body.m_body->GetAngle();
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
-                model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-                glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
-                glBindVertexArray(graphics.m_VAO);
-                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+                b2Vec2 gameBodyPos = gameBody.m_body->GetPosition();
+                float gameAngle = gameBody.m_body->GetAngle();
+                glm::mat4 gameModel = glm::mat4(1.0f);
+                gameModel = glm::translate(gameModel, glm::vec3(gameBodyPos.x, gameBodyPos.y, 0.0f));
+                gameModel = glm::rotate(gameModel, gameAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+                glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &gameModel[0][0]);
+                glBindVertexArray(gameGraphics.m_VAO);
+                glDrawArrays(GL_TRIANGLES, 0, gameGraphics.m_vertexCount);
                 glBindVertexArray(0);
             });
             lightEntities.each([&](
-                const auto& light,
-                const auto& body,
-                const auto& shader,
-                const auto& graphics,
-                const auto& shadow
+                const auto& interiorLight,
+                const auto& interiorBody,
+                const auto& interiorShader,
+                const auto& interiorGraphics,
+                const auto& interiorShadow
             ) {
-                if (light.m_type != 0) {
-                    b2Vec2 bodyPos = body.m_body->GetPosition();
-                    float angle = body.m_body->GetAngle();
-                    glm::mat4 model = glm::mat4(1.0f);
-                    model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
-                    model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-                    model = glm::scale(model, light.m_scale);
-                    glUniformMatrix4fv(glGetUniformLocation(depthShader.m_shadowProgram, "model"), 1, GL_FALSE, &model[0][0]);
-                    glBindVertexArray(graphics.m_VAO);
-                    glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+                // if point or spot light, it will cast a shadow
+                if (interiorLight.m_type != 0) {
+                    b2Vec2 interiorBodyPos = interiorBody.m_body->GetPosition();
+                    float interiorAngle = interiorBody.m_body->GetAngle();
+                    glm::mat4 interiorModel = glm::mat4(1.0f);
+                    interiorModel = glm::translate(interiorModel, glm::vec3(interiorBodyPos.x, interiorBodyPos.y, 0.0f));
+                    interiorModel = glm::rotate(interiorModel, interiorAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+                    interiorModel = glm::scale(interiorModel, interiorLight.m_scale);
+                    glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &interiorModel[0][0]);
+                    glBindVertexArray(interiorGraphics.m_VAO);
+                    glDrawArrays(GL_TRIANGLES, 0, interiorGraphics.m_vertexCount);
                     glBindVertexArray(0);
                 }
             });
-
+            
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glViewport(0, 0, fbWidth, fbHeight);
+            glViewport(0, 0, framebufferWidth, framebufferHeight);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
     });
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // 3) iterate over light entities for light data and screen rendering
+    // 3) store reflection rendering data & render lights
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
+    int pointSourceCount = 0;
+
     lightEntities.each([&](
-        const auto& light,
-        const auto& body,
-        const auto& shader,
-        const auto& graphics,
-        const auto& shadow
+        const auto& rootLight,
+        const auto& rootBody,
+        const auto& rootShader,
+        const auto& rootGraphics,
+        const auto& rootShadow
     ) {
-        // prepare matrices for rendering point and spot lights
-        glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)m_screenWidth / (float)m_screenHeight, 0.1f, 100.0f);
-        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
-        glm::mat4 model = glm::mat4(1.0f);
+        b2Vec2 rootBodyPos;
+        glm::vec3 rootPos;
+        glm::vec3 offsetRootPos;
+        float rootAngle;
 
-        // _____________________________________________________________________
-        // if directional light
-        // ---------------------------------------------------------------------
-        if (light.m_type == 0) {
-            // save directional light data for rendering game objects in step 5) of update()
-            glUseProgram(shader.m_lightProgram);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, "dirLight.direction"), light.m_direction[0], light.m_direction[1], light.m_direction[2]);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, "dirLight.ambient"), light.m_ambient[0], light.m_ambient[1], light.m_ambient[2]);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, "dirLight.diffuse"), light.m_diffuse[0], light.m_diffuse[1], light.m_diffuse[2]);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, "dirLight.specular"), light.m_specular[0], light.m_specular[1], light.m_specular[2]);
+        if (rootLight.m_type != 0) {
+            rootBodyPos = rootBody.m_body->GetPosition();
+            rootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.0f);
+            offsetRootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.1f);
+            rootAngle = rootBody.m_body->GetAngle();
         }
-        // _____________________________________________________________________
-        // if point light
-        // ---------------------------------------------------------------------
-        else if (light.m_type == 1) {
-            b2Vec2 bodyPos = body.m_body->GetPosition();
-            glm::vec3 lightPos(bodyPos.x, bodyPos.y, 0.0f);
-            float angle = body.m_body->GetAngle();
 
-            // save point light data for rendering game objects in step 5) of update()
+        // .................................................................
+        // 2.b(1) directional-light type
+        // .................................................................
+        if (rootLight.m_type == 0) {
+            // _____________________________________________________________
+            // directional-light: store reflection data
+            glUseProgram(rootShader.m_lightProgram);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "dirLight.direction"), rootLight.m_direction[0], rootLight.m_direction[1], rootLight.m_direction[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "dirLight.ambient"), rootLight.m_ambient[0], rootLight.m_ambient[1], rootLight.m_ambient[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "dirLight.diffuse"), rootLight.m_diffuse[0], rootLight.m_diffuse[1], rootLight.m_diffuse[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "dirLight.specular"), rootLight.m_specular[0], rootLight.m_specular[1], rootLight.m_specular[2]);
+        }
+
+        // .................................................................
+        // 2.b(2) point-light type
+        // .................................................................
+        else if (rootLight.m_type == 1) {
+            // _____________________________________________________________
+            // point-light: store reflection data
             std::string positionAddress = "pointLights[" + std::to_string(pointSourceCount) + "].position";
             std::string ambientAddress = "pointLights[" + std::to_string(pointSourceCount) + "].ambient";
             std::string diffuseAddress = "pointLights[" + std::to_string(pointSourceCount) + "].diffuse";
@@ -264,76 +276,74 @@ void RenderSystem::update(
             std::string constantAddress = "pointLights[" + std::to_string(pointSourceCount) + "].constant";
             std::string linearAddress = "pointLights[" + std::to_string(pointSourceCount) + "].linear";
             std::string quadraticAddress = "pointLights[" + std::to_string(pointSourceCount) + "].quadratic";
-            glUseProgram(shader.m_lightProgram);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, positionAddress.c_str()), lightPos[0], lightPos[1], lightPos[2]);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, ambientAddress.c_str()), light.m_ambient[0], light.m_ambient[1], light.m_ambient[2]);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, diffuseAddress.c_str()), light.m_diffuse[0], light.m_diffuse[1], light.m_diffuse[2]);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, specularAddress.c_str()), light.m_specular[0], light.m_specular[1], light.m_specular[2]);
-            glUniform1f(glGetUniformLocation(shader.m_lightProgram, constantAddress.c_str()), light.m_constant);
-            glUniform1f(glGetUniformLocation(shader.m_lightProgram, linearAddress.c_str()), light.m_linear);
-            glUniform1f(glGetUniformLocation(shader.m_lightProgram, quadraticAddress.c_str()), light.m_quadratic);
+            glUseProgram(rootShader.m_lightProgram);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, positionAddress.c_str()), rootPos[0], rootPos[1], rootPos[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, ambientAddress.c_str()), rootLight.m_ambient[0], rootLight.m_ambient[1], rootLight.m_ambient[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, diffuseAddress.c_str()), rootLight.m_diffuse[0], rootLight.m_diffuse[1], rootLight.m_diffuse[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, specularAddress.c_str()), rootLight.m_specular[0], rootLight.m_specular[1], rootLight.m_specular[2]);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, constantAddress.c_str()), rootLight.m_constant);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, linearAddress.c_str()), rootLight.m_linear);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, quadraticAddress.c_str()), rootLight.m_quadratic);
             pointSourceCount++;
 
-            // now render the point light source to window
-            glUseProgram(shader.m_outputProgram);
+            // _____________________________________________________________
+            // point-light: render
+            glm::mat4 pointProjection = glm::perspective(glm::radians(cameraZoom), (float)m_screenWidth / (float)m_screenHeight, 0.1f, 100.0f);
+            glm::mat4 pointView = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+            glm::mat4 pointModel = glm::mat4(1.0f);
+            glUseProgram(rootShader.m_outputProgram);
             glStencilMask(0x00);
-            glUniform4f(glGetUniformLocation(shader.m_outputProgram, "LightColor"), light.m_diffuse[0], light.m_diffuse[1], light.m_diffuse[2], 1.0f);
-            glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "view"), 1, GL_FALSE, &view[0][0]);
-            model = glm::translate(model, lightPos);
-            model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-            model = glm::scale(model, light.m_scale);
-            glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "model"), 1, GL_FALSE, &model[0][0]);
-            glBindVertexArray(graphics.m_VAO);
-            if (m_gammaFlag) {
-                glEnable(GL_FRAMEBUFFER_SRGB);
-                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
-                glDisable(GL_FRAMEBUFFER_SRGB);
-            }
-            else {
-                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
-            }
+            glUniform4f(glGetUniformLocation(rootShader.m_outputProgram, "LightColor"), rootLight.m_diffuse[0], rootLight.m_diffuse[1], rootLight.m_diffuse[2], 1.0f);
+            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_outputProgram, "projection"), 1, GL_FALSE, &pointProjection[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_outputProgram, "view"), 1, GL_FALSE, &pointView[0][0]);
+            pointModel = glm::translate(pointModel, rootPos);
+            pointModel = glm::rotate(pointModel, rootAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+            pointModel = glm::scale(pointModel, rootLight.m_scale);
+            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_outputProgram, "model"), 1, GL_FALSE, &pointModel[0][0]);
+            glBindVertexArray(rootGraphics.m_VAO);
+            glEnable(GL_FRAMEBUFFER_SRGB);
+            glDrawArrays(GL_TRIANGLES, 0, rootGraphics.m_vertexCount);
+            glDisable(GL_FRAMEBUFFER_SRGB);
+            glBindVertexArray(0);
         }
-        // _____________________________________________________________________
-        // if spot light
-        // ---------------------------------------------------------------------
+
+        // .................................................................
+        // 2.b(3) spot-light type
+        // .................................................................
         else {
-            b2Vec2 bodyPos = body.m_body->GetPosition();
-            glm::vec3 lightPos(bodyPos.x, bodyPos.y, 0.0f);
-            float angle = body.m_body->GetAngle();
+            // _____________________________________________________________
+            // spot-light: store reflection data
+            glUseProgram(rootShader.m_lightProgram);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.position"), rootPos[0], rootPos[1], rootPos[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.direction"), rootLight.m_direction[0], rootLight.m_direction[1], rootLight.m_direction[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.ambient"), rootLight.m_ambient[0], rootLight.m_ambient[1], rootLight.m_ambient[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.diffuse"), rootLight.m_diffuse[0], rootLight.m_diffuse[1], rootLight.m_diffuse[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.specular"), rootLight.m_specular[0], rootLight.m_specular[1], rootLight.m_specular[2]);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.constant"), rootLight.m_constant);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.linear"), rootLight.m_linear);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.quadratic"), rootLight.m_quadratic);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.cutOff"), rootLight.m_cutOff);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.outerCutOff"), rootLight.m_outerCutOff);
 
-            // save spotlight data for rendering game objects in step 5) of update()
-            glUseProgram(shader.m_lightProgram);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, "spotLight.position"), lightPos[0], lightPos[1], lightPos[2]);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, "spotLight.direction"), light.m_direction[0], light.m_direction[1], light.m_direction[2]);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, "spotLight.ambient"), light.m_ambient[0], light.m_ambient[1], light.m_ambient[2]);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, "spotLight.diffuse"), light.m_diffuse[0], light.m_diffuse[1], light.m_diffuse[2]);
-            glUniform3f(glGetUniformLocation(shader.m_lightProgram, "spotLight.specular"), light.m_specular[0], light.m_specular[1], light.m_specular[2]);
-            glUniform1f(glGetUniformLocation(shader.m_lightProgram, "spotLight.constant"), light.m_constant);
-            glUniform1f(glGetUniformLocation(shader.m_lightProgram, "spotLight.linear"), light.m_linear);
-            glUniform1f(glGetUniformLocation(shader.m_lightProgram, "spotLight.quadratic"), light.m_quadratic);
-            glUniform1f(glGetUniformLocation(shader.m_lightProgram, "spotLight.cutOff"), light.m_cutOff);
-            glUniform1f(glGetUniformLocation(shader.m_lightProgram, "spotLight.outerCutOff"), light.m_outerCutOff);
-
-            // now render the spotlight source to window
-            glUseProgram(shader.m_outputProgram);
+            // _____________________________________________________________
+            // spot-light: render
+            glm::mat4 spotProjection = glm::perspective(glm::radians(cameraZoom), (float)m_screenWidth / (float)m_screenHeight, 0.1f, 100.0f);
+            glm::mat4 spotView = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+            glm::mat4 spotModel = glm::mat4(1.0f);
+            glUseProgram(rootShader.m_outputProgram);
             glStencilMask(0x00);
-            glUniform4f(glGetUniformLocation(shader.m_outputProgram, "LightColor"), light.m_diffuse[0], light.m_diffuse[1], light.m_diffuse[2], 1.0f);
-            glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "view"), 1, GL_FALSE, &view[0][0]);
-            model = glm::translate(model, lightPos);
-            model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-            model = glm::scale(model, light.m_scale);
-            glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "model"), 1, GL_FALSE, &model[0][0]);
-            glBindVertexArray(graphics.m_VAO);
-            if (m_gammaFlag) {
-                glEnable(GL_FRAMEBUFFER_SRGB);
-                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
-                glDisable(GL_FRAMEBUFFER_SRGB);
-            }
-            else {
-                glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
-            }
+            glUniform4f(glGetUniformLocation(rootShader.m_outputProgram, "LightColor"), rootLight.m_diffuse[0], rootLight.m_diffuse[1], rootLight.m_diffuse[2], 1.0f);
+            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_outputProgram, "projection"), 1, GL_FALSE, &spotProjection[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_outputProgram, "view"), 1, GL_FALSE, &spotView[0][0]);
+            spotModel = glm::translate(spotModel, rootPos);
+            spotModel = glm::rotate(spotModel, rootAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+            spotModel = glm::scale(spotModel, rootLight.m_scale);
+            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_outputProgram, "model"), 1, GL_FALSE, &spotModel[0][0]);
+            glBindVertexArray(rootGraphics.m_VAO);
+            glEnable(GL_FRAMEBUFFER_SRGB);
+            glDrawArrays(GL_TRIANGLES, 0, rootGraphics.m_vertexCount);
+            glDisable(GL_FRAMEBUFFER_SRGB);
+            glBindVertexArray(0);
         }
     });
 
@@ -367,14 +377,9 @@ void RenderSystem::update(
         glBindVertexArray(graphics.m_VAO);
         glActiveTexture(GL_TEXTURE11);
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture.m_cubemap);
-        if (m_gammaFlag) {
-            glEnable(GL_FRAMEBUFFER_SRGB);
-            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
-            glDisable(GL_FRAMEBUFFER_SRGB);
-        }
-        else {
-            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
-        }
+        glEnable(GL_FRAMEBUFFER_SRGB);
+        glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+        glDisable(GL_FRAMEBUFFER_SRGB);
         
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
@@ -385,6 +390,7 @@ void RenderSystem::update(
     // 5) iterate over game objects/entities to render to screen
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
+
     gameplayEntities.each([&](
         const auto& material,
         const auto& body,
@@ -398,7 +404,7 @@ void RenderSystem::update(
         glm::mat4 projection = glm::perspective(glm::radians(cameraZoom), (float)m_screenWidth / (float)m_screenHeight, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
         glm::mat4 model = glm::mat4(1.0f);
-        // glm::mat3 normal = glm::mat3(1.0f);
+        glm::mat3 normal = glm::mat3(1.0f);
         
         glUseProgram(shader.m_outputProgram);
         if (graphics.m_stencilFlag == true) {
@@ -408,37 +414,29 @@ void RenderSystem::update(
         else {
             glStencilMask(0x00);
         }
-        /*
-        // using 'reflector' output shader
-        glUniform1i(glGetUniformLocation(shader.m_outputProgram, "blinn"), true); 
+        
         glUniform1f(glGetUniformLocation(shader.m_outputProgram, "material.shininess"), material.m_shininess);
-        normal = glm::mat3(transpose(inverse(model)));
-        glUniformMatrix3fv(glGetUniformLocation(shader.m_outputProgram, "normal"), 1, GL_FALSE, &normal[0][0]);
-
-        // using 'shadow_render' output shader
-        glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
-        */
+        glUniform3f(glGetUniformLocation(shader.m_outputProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
         glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "view"), 1, GL_FALSE, &view[0][0]);
-        glUniform3f(glGetUniformLocation(shader.m_outputProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-        glUniform3f(glGetUniformLocation(shader.m_outputProgram, "lightPos"), testPos[0], testPos[1], testPos[2]);
         model = glm::translate(model, glm::vec3(bodyPos.x, bodyPos.y, 0.0f));
         model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
         glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "model"), 1, GL_FALSE, &model[0][0]);
+        normal = glm::mat3(transpose(inverse(model)));
+        glUniformMatrix3fv(glGetUniformLocation(shader.m_outputProgram, "normal"), 1, GL_FALSE, &normal[0][0]);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
         glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture.m_specular);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, depthTex);
+        glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
         glBindVertexArray(graphics.m_VAO);
-
-        if (m_gammaFlag) {
-            glEnable(GL_FRAMEBUFFER_SRGB);
-            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
-            glDisable(GL_FRAMEBUFFER_SRGB);
-        }
-        else {
-            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
-        }
+        glEnable(GL_FRAMEBUFFER_SRGB);
+        glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+        glDisable(GL_FRAMEBUFFER_SRGB);
+        glBindVertexArray(0);
     });
 
     // _________________________________________________________________________
@@ -473,14 +471,10 @@ void RenderSystem::update(
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.m_diffuse);
         glBindVertexArray(graphics.m_VAO);
-        if (m_gammaFlag) {
-            glEnable(GL_FRAMEBUFFER_SRGB);
-            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
-            glDisable(GL_FRAMEBUFFER_SRGB);
-        }
-        else {
-            glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
-        }
+        glEnable(GL_FRAMEBUFFER_SRGB);
+        glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);
+        glDisable(GL_FRAMEBUFFER_SRGB);
+        glBindVertexArray(0);
     });
 
     // _________________________________________________________________________

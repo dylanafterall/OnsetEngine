@@ -59,12 +59,11 @@ void Game::setup() {
     MeshGroundComponent groundMesh;
     MeshSpriteComponent spriteMesh;
     MeshSkyboxComponent skyboxMesh;
+
     // shaders
     // .........................................................................
     m_assetManager.setVShader("solid_color_vert", "../assets/shaders/solid_color.vert");
     m_assetManager.setFShader("solid_color_frag", "../assets/shaders/solid_color.frag");
-    m_assetManager.setVShader("reflector_vert", "../assets/shaders/reflector.vert");
-    m_assetManager.setFShader("reflector_frag", "../assets/shaders/reflector.frag");
     m_assetManager.setVShader("stencil_vert", "../assets/shaders/stencil.vert");
     m_assetManager.setFShader("stencil_frag", "../assets/shaders/stencil.frag");
     m_assetManager.setVShader("sprite_vert", "../assets/shaders/sprite.vert");
@@ -78,8 +77,8 @@ void Game::setup() {
     m_assetManager.setFShader("shadow_depth_cube_frag", "../assets/shaders/shadow_depth_cube.frag");
     m_assetManager.setVShader("shadow_render_vert", "../assets/shaders/shadow_render.vert");
     m_assetManager.setFShader("shadow_render_frag", "../assets/shaders/shadow_render.frag");
-    m_assetManager.setVShader("shadow_render2_vert", "../assets/shaders/shadow_render2.vert");
-    m_assetManager.setFShader("shadow_render2_frag", "../assets/shaders/shadow_render2.frag");
+    m_assetManager.setVShader("basic_lighting_vert", "../assets/shaders/basic_lighting.vert");
+    m_assetManager.setFShader("basic_lighting_frag", "../assets/shaders/basic_lighting.frag");
     m_assetManager.setVShader("shadow_framebuffer_vert", "../assets/shaders/shadow_framebuffer.vert");
     m_assetManager.setFShader("shadow_framebuffer_frag", "../assets/shaders/shadow_framebuffer.frag");
 
@@ -89,9 +88,6 @@ void Game::setup() {
     vertex = m_assetManager.getVShader("solid_color_vert");
     fragment = m_assetManager.getFShader("solid_color_frag");
     m_assetManager.setShaderProgram("solid_color", vertex, fragment);
-    vertex = m_assetManager.getVShader("reflector_vert");
-    fragment = m_assetManager.getFShader("reflector_frag");
-    m_assetManager.setShaderProgram("reflector", vertex, fragment);
     vertex = m_assetManager.getVShader("stencil_vert");
     fragment = m_assetManager.getFShader("stencil_frag");
     m_assetManager.setShaderProgram("stencil", vertex, fragment);
@@ -111,32 +107,30 @@ void Game::setup() {
     vertex = m_assetManager.getVShader("shadow_render_vert");
     fragment = m_assetManager.getFShader("shadow_render_frag");
     m_assetManager.setShaderProgram("shadow_render", vertex, fragment);
-    vertex = m_assetManager.getVShader("shadow_render2_vert");
-    fragment = m_assetManager.getFShader("shadow_render2_frag");
-    m_assetManager.setShaderProgram("shadow_render2", vertex, fragment);
+    vertex = m_assetManager.getVShader("basic_lighting_vert");
+    fragment = m_assetManager.getFShader("basic_lighting_frag");
+    m_assetManager.setShaderProgram("basic_lighting", vertex, fragment);
     vertex = m_assetManager.getVShader("shadow_framebuffer_vert");
     fragment = m_assetManager.getFShader("shadow_framebuffer_frag");
     m_assetManager.setShaderProgram("shadow_framebuffer", vertex, fragment);
 
     // shader configuration
     // .........................................................................
-    glUseProgram(m_assetManager.getShaderProgram("reflector"));
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("reflector"), "material.diffuse"), 0);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("reflector"), "material.specular"), 1);
     glUseProgram(m_assetManager.getShaderProgram("sprite"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("sprite"), "texture1"), 0);
     glUseProgram(m_assetManager.getShaderProgram("shadow_render"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render"), "diffuseTexture"), 0); 
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render"), "shadowMap"), 1); 
-    glUseProgram(m_assetManager.getShaderProgram("shadow_render2"));
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render2"), "diffuseTexture"), 0); 
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render2"), "depthMap"), 1); 
-    glUniform1f(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render2"), "far_plane"), 25.0f);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render2"), "shadows"), 1); 
+    glUseProgram(m_assetManager.getShaderProgram("basic_lighting"));
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "material.diffuse"), 0); 
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "material.specular"), 1);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "depthTex"), 2);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "depthCube"), 3);
+    glUniform1f(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "far_plane"), 15.0f);
     glUseProgram(m_assetManager.getShaderProgram("shadow_framebuffer"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "depthMap"), 0); 
     glUniform1f(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "near_plane"), 1.0f);
-    glUniform1f(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "far_plane"), 25.0f);
+    glUniform1f(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "far_plane"), 15.0f);
 
     // texture maps
     // .........................................................................
@@ -209,29 +203,9 @@ void Game::setup() {
     sunLight.m_ambient = glm::vec3(0.5f, 0.5f, 0.5f);      // white ambient
     sunLight.m_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);      // white diffuse
     sunLight.m_specular = glm::vec3(0.5f, 0.5f, 0.5f);     // white specular
-    sunShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
-    sunShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("reflector");
-    sunShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
+    sunShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     // setup shadow mapping
     sunShadow.m_type = 0; // no shadow casting
-    sunShadow.m_nearPlane = 1.0f;
-    sunShadow.m_farPlane = 25.0f;
-    glGenFramebuffers(1, &sunShadow.m_shadowFramebuffer);
-    glGenTextures(1, &sunShadow.m_depthMap);
-    glBindTexture(GL_TEXTURE_2D, sunShadow.m_depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_shadowWidth, m_shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float sunBorderColor[] = {1.0, 1.0, 1.0, 1.0};
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, sunBorderColor);
-    // attach depth texture as FBO's depth buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, sunShadow.m_shadowFramebuffer);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, sunShadow.m_depthMap, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // blueOrb entity (dynamic point source, blue light)
     // .........................................................................
@@ -246,13 +220,13 @@ void Game::setup() {
     blueOrbLight.m_type = 1;                                  // point type 
     blueOrbLight.m_scale = glm::vec3(0.5f, 0.5f, 0.5f);       // check Box2D size
     blueOrbLight.m_constant = 1.0f;
-    blueOrbLight.m_linear = 0.09f;
-    blueOrbLight.m_quadratic = 0.032f;
+    blueOrbLight.m_linear = 0.22f;
+    blueOrbLight.m_quadratic = 0.20f;
     blueOrbLight.m_ambient = glm::vec3(0.0f, 0.0f, 1.0f);     // blue ambient
     blueOrbLight.m_diffuse = glm::vec3(0.0f, 0.0f, 1.0f);     // blue diffuse
     blueOrbLight.m_specular = glm::vec3(0.0f, 0.0f, 1.0f);    // blue specular
     blueOrbShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
-    blueOrbShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("reflector");
+    blueOrbShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     blueOrbShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
     blueOrbGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
@@ -290,13 +264,13 @@ void Game::setup() {
     greenOrbLight.m_type = 1;                                 // point type
     greenOrbLight.m_scale = glm::vec3(1.5f, 1.5f, 1.5f);      // check Box2D
     greenOrbLight.m_constant = 1.0f;
-    greenOrbLight.m_linear = 0.09f;
-    greenOrbLight.m_quadratic = 0.032f;
+    greenOrbLight.m_linear = 0.22f;
+    greenOrbLight.m_quadratic = 0.20f;
     greenOrbLight.m_ambient = glm::vec3(0.0f, 1.0f, 0.0f);    // green ambient
     greenOrbLight.m_diffuse = glm::vec3(0.0f, 1.0f, 0.0f);    // green diffuse
     greenOrbLight.m_specular = glm::vec3(0.0f, 1.0f, 0.0f);   // green specular
     greenOrbShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
-    greenOrbShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("reflector");
+    greenOrbShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     greenOrbShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth_cube");
     greenOrbGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
@@ -321,7 +295,7 @@ void Game::setup() {
     // setup shadow mapping
     greenOrbShadow.m_type = 2; // omnidirectional shadow casting
     greenOrbShadow.m_nearPlane = 1.0f;
-    greenOrbShadow.m_farPlane = 25.0f;
+    greenOrbShadow.m_farPlane = 15.0f;
     glGenFramebuffers(1, &greenOrbShadow.m_shadowFramebuffer);
     glGenTextures(1, &greenOrbShadow.m_depthCubemap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, greenOrbShadow.m_depthCubemap);
@@ -353,8 +327,8 @@ void Game::setup() {
     streetLampLight.m_type = 2;                                    // spot type
     streetLampLight.m_scale = glm::vec3(1.0f, 1.0f, 1.0f);         // check Box2D size
     streetLampLight.m_direction = glm::vec3(0.0f, -1.0f, 0.0f);    // pointed down
-    streetLampLight.m_cutOff = glm::cos(glm::radians(12.5f));
-    streetLampLight.m_outerCutOff = glm::cos(glm::radians(15.0f));
+    streetLampLight.m_cutOff = glm::cos(glm::radians(15.0f));
+    streetLampLight.m_outerCutOff = glm::cos(glm::radians(17.5f));
     streetLampLight.m_constant = 1.0f;
     streetLampLight.m_linear = 0.09f;
     streetLampLight.m_quadratic = 0.032f;
@@ -362,7 +336,7 @@ void Game::setup() {
     streetLampLight.m_diffuse = glm::vec3(1.0f, 1.0f, 0.0f);    // yellow diffuse
     streetLampLight.m_specular = glm::vec3(1.0f, 1.0f, 0.0f);   // yellow specular
     streetLampShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
-    streetLampShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("reflector");
+    streetLampShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     streetLampShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
     streetLampGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
@@ -384,7 +358,25 @@ void Game::setup() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // setup shadow mapping
-    streetLampShadow.m_type = 0; // no shadow casting
+    streetLampShadow.m_type = 1; // mono-directional shadow casting
+    streetLampShadow.m_nearPlane = 1.0f;
+    streetLampShadow.m_farPlane = 15.0f;
+    glGenFramebuffers(1, &streetLampShadow.m_shadowFramebuffer);
+    glGenTextures(1, &streetLampShadow.m_depthMap);
+    glBindTexture(GL_TEXTURE_2D, streetLampShadow.m_depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_shadowWidth, m_shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float streetLampBorderColor[] = {1.0, 1.0, 1.0, 1.0};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, streetLampBorderColor);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, streetLampShadow.m_shadowFramebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, streetLampShadow.m_depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // player entity (dynamic, marble-textured sphere)
     // .........................................................................
@@ -400,7 +392,7 @@ void Game::setup() {
     playerMaterial.m_shininess = 128.0f;
     playerTexture.m_diffuse = m_assetManager.getTexture("tiles_diff");
     playerTexture.m_specular = m_assetManager.getTexture("tiles_spec");
-    playerShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("shadow_render2");
+    playerShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     playerShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     playerGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
@@ -441,7 +433,7 @@ void Game::setup() {
     floorMaterial.m_shininess = 32.0f;
     floorTexture.m_diffuse = m_assetManager.getTexture("metal_diff");
     floorTexture.m_specular = m_assetManager.getTexture("metal_spec");
-    floorShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("shadow_render2");
+    floorShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     floorShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     floorGraphics.m_vertexCount = groundMesh.m_vertexCount;
     // setup Box2D data
@@ -473,10 +465,10 @@ void Game::setup() {
     ShaderProgramComponent sphereShaderProgram;
     RenderDataComponent sphereGraphics;
     FixtureUserDataComponent sphereUserData;
-    sphereMaterial.m_shininess = 64.0f;
+    sphereMaterial.m_shininess = 32.0f;
     sphereTexture.m_diffuse = m_assetManager.getTexture("rusted_diff");
     sphereTexture.m_specular = m_assetManager.getTexture("rusted_spec");
-    sphereShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("shadow_render2");
+    sphereShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     sphereShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     sphereGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
@@ -514,10 +506,10 @@ void Game::setup() {
     ShaderProgramComponent mirrorShaderProgram;
     RenderDataComponent mirrorGraphics;
     FixtureUserDataComponent mirrorUserData;
-    mirrorMaterial.m_shininess = 64.0f;
+    mirrorMaterial.m_shininess = 256.0f;
     mirrorTexture.m_diffuse = m_assetManager.getTexture("gold_diff");
     mirrorTexture.m_specular = m_assetManager.getTexture("gold_spec");
-    mirrorShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("shadow_render2");
+    mirrorShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     mirrorShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     mirrorGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
@@ -559,7 +551,7 @@ void Game::setup() {
     cubeMaterial.m_shininess = 32.0f;
     cubeTexture.m_diffuse = m_assetManager.getTexture("blocks_diff");
     cubeTexture.m_specular = m_assetManager.getTexture("blocks_spec");
-    cubeShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("shadow_render2");
+    cubeShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     cubeShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     cubeGraphics.m_vertexCount = cubeMesh.m_vertexCount;
     // setup Box2D data
