@@ -22,6 +22,13 @@ struct ShadowFramebufferComponent {
      *        Type 2 = omnidirectional shadow casting (cubemap)
      */
     int m_type;
+    /**
+     * \brief Identifies the index used to build arrays in both shaders 
+     *        and the RenderSystem, ensuring identical order of light
+     *        sources in both. Shadow textures and cubemaps will have
+     *        separate indices.
+     */
+    unsigned int m_index;
 
     /**
      * \brief Unique OpenGL ID for a shadow FBO w/ depth map.

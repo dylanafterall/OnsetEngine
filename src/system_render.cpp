@@ -10,8 +10,8 @@
 #include <iostream>
 
 //      1) store camera data
-//      2) store shadow mapping data
-//      3) store light reflection data & render lights
+//      2) store shadow map data for point/spot lights
+//      3) store reflection data for directional/point/spot, render point/spot
 //      4) render skybox
 //      5) render gameplay entities
 //      6) render sprites
@@ -21,6 +21,14 @@ void RenderSystem::update(
     const float timeStep, 
     entt::registry& registry
 ) {
+    int framebufferWidth;
+    int framebufferHeight;
+    glfwGetFramebufferSize(m_glfwWindow, &framebufferWidth, &framebufferHeight);
+
+    int depthTexture;
+    // unsigned int shadowTextures[3];
+    unsigned int shadowCubes[3];
+
     auto gameplayEntities = registry.view<
         MaterialComponent,
         BodyTransformComponent,
@@ -53,15 +61,9 @@ void RenderSystem::update(
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // 2) store shadow mapping data
+    // 2) shadow mapping
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    unsigned int depthTex;      // (saved for / needed in) step 4
-    unsigned int depthCubemap;  // (saved for / needed in) step 4
-    int framebufferWidth;
-    int framebufferHeight;
-    glfwGetFramebufferSize(m_glfwWindow, &framebufferWidth, &framebufferHeight);
-
     auto lightEntities = registry.view<
         LightComponent,
         BodyTransformComponent,
@@ -76,35 +78,28 @@ void RenderSystem::update(
         const auto& rootGraphics,
         const auto& rootShadow
     ) {
-        b2Vec2 rootBodyPos;
-        glm::vec3 rootPos;
-        glm::vec3 offsetRootPos;
-
-        if (rootLight.m_type != 0) {
-            rootBodyPos = rootBody.m_body->GetPosition();
-            rootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.0f);
-            offsetRootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.1f);
-        }
-
         // .................................................................
-        // 2.a(1) mono-directional shadow maps (2D textures); spot-lights
+        // spotlight: monodirectional shadow mapping
         // .................................................................
         if (rootShadow.m_type == 1) {
-            depthTex = rootShadow.m_depthMap;
+            depthTexture = rootShadow.m_depthMap;
+            b2Vec2 rootBodyPos = rootBody.m_body->GetPosition();
+            glm::vec3 rootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.0f);
+            glm::vec3 offsetRootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.1f);
+
             glm::mat4 rootProjection = glm::perspective(glm::radians(35.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, rootShadow.m_nearPlane, rootShadow.m_farPlane);
             glm::mat4 rootView = glm::lookAt(offsetRootPos, rootPos + rootLight.m_direction, glm::vec3(0.0f, 1.0f, 0.0f));
             glm::mat4 rootSpaceMatrix = rootProjection * rootView;
 
             glUseProgram(rootShader.m_lightProgram);
-            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_lightProgram, "lightSpaceMatrix"), 1, GL_FALSE, &rootSpaceMatrix[0][0]);
-            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLightPos"), rootPos[0], rootPos[1], rootPos[2]);
+            glUniform1i(glGetUniformLocation(rootShader.m_lightProgram, "spotShadow.shadowFlag"), true);
+            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_lightProgram, "spotShadow.lightSpaceMatrix"), 1, GL_FALSE, &rootSpaceMatrix[0][0]);
             glUseProgram(rootShader.m_shadowProgram);
             glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "lightSpaceMatrix"), 1, GL_FALSE, &rootSpaceMatrix[0][0]);
 
             glViewport(0, 0, m_shadowWidth, m_shadowHeight);
             glBindFramebuffer(GL_FRAMEBUFFER, rootShadow.m_shadowFramebuffer);
             glClear(GL_DEPTH_BUFFER_BIT);
-
             // render objects that cast a shadow to the 2D shadow map texture
             gameplayEntities.each([&](
                 const auto& gameMaterial,
@@ -144,16 +139,25 @@ void RenderSystem::update(
                     glBindVertexArray(0);
                 }
             });
-
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glViewport(0, 0, framebufferWidth, framebufferHeight);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
         // .................................................................
-        // 2.a(2) omni-directional shadow maps (3D cubemaps); point-lights
+        // pointlight: omnidirectional shadow mapping
         // .................................................................
         else if (rootShadow.m_type == 2) {
-            depthCubemap = rootShadow.m_depthCubemap;
+            shadowCubes[rootShadow.m_index] = rootShadow.m_depthCubemap;
+            b2Vec2 rootBodyPos = rootBody.m_body->GetPosition();
+            glm::vec3 rootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.0f);
+            glm::vec3 offsetRootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.1f);
+
+            glUseProgram(rootShader.m_lightProgram);
+            std::string farPlaneAddress = "pointShadows[" + std::to_string(rootShadow.m_index) + "].farPlane";
+            std::string shadowFlagAddress = "pointShadows[" + std::to_string(rootShadow.m_index) + "].shadowFlag";
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, farPlaneAddress.c_str()), rootShadow.m_farPlane);
+            glUniform1i(glGetUniformLocation(rootShader.m_lightProgram, shadowFlagAddress.c_str()), true);
+
             glm::mat4 rootProjection = glm::perspective(glm::radians(90.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, rootShadow.m_nearPlane, rootShadow.m_farPlane);
             std::vector<glm::mat4> rootTransforms;
             rootTransforms.push_back(rootProjection * glm::lookAt(offsetRootPos, rootPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
@@ -163,8 +167,6 @@ void RenderSystem::update(
             rootTransforms.push_back(rootProjection * glm::lookAt(offsetRootPos, rootPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
             rootTransforms.push_back(rootProjection * glm::lookAt(offsetRootPos, rootPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 
-            glUseProgram(rootShader.m_lightProgram);
-            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "pointLightPos"), rootPos[0], rootPos[1], rootPos[2]);
             glUseProgram(rootShader.m_shadowProgram);
             std::string uniformName;
             for (unsigned int i = 0; i < 6; ++i) {
@@ -177,7 +179,6 @@ void RenderSystem::update(
             glViewport(0, 0, m_shadowWidth, m_shadowHeight);
             glBindFramebuffer(GL_FRAMEBUFFER, rootShadow.m_shadowFramebuffer);
             glClear(GL_DEPTH_BUFFER_BIT);
-
             // render objects that cast a shadow to the 3D shadow map cubemap
             gameplayEntities.each([&](
                 const auto& gameMaterial,
@@ -217,7 +218,6 @@ void RenderSystem::update(
                     glBindVertexArray(0);
                 }
             });
-            
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glViewport(0, 0, framebufferWidth, framebufferHeight);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -226,11 +226,9 @@ void RenderSystem::update(
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // 3) store reflection rendering data & render lights
+    // 3) store reflection data and render lights
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    int pointSourceCount = 0;
-
     lightEntities.each([&](
         const auto& rootLight,
         const auto& rootBody,
@@ -238,44 +236,34 @@ void RenderSystem::update(
         const auto& rootGraphics,
         const auto& rootShadow
     ) {
-        b2Vec2 rootBodyPos;
-        glm::vec3 rootPos;
-        glm::vec3 offsetRootPos;
-        float rootAngle;
-
-        if (rootLight.m_type != 0) {
-            rootBodyPos = rootBody.m_body->GetPosition();
-            rootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.0f);
-            offsetRootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.1f);
-            rootAngle = rootBody.m_body->GetAngle();
-        }
-
-        // .................................................................
-        // 2.b(1) directional-light type
-        // .................................................................
+        // .....................................................................
+        // directional lights
+        // .....................................................................
         if (rootLight.m_type == 0) {
-            // _____________________________________________________________
-            // directional-light: store reflection data
             glUseProgram(rootShader.m_lightProgram);
             glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "dirLight.direction"), rootLight.m_direction[0], rootLight.m_direction[1], rootLight.m_direction[2]);
             glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "dirLight.ambient"), rootLight.m_ambient[0], rootLight.m_ambient[1], rootLight.m_ambient[2]);
             glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "dirLight.diffuse"), rootLight.m_diffuse[0], rootLight.m_diffuse[1], rootLight.m_diffuse[2]);
             glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "dirLight.specular"), rootLight.m_specular[0], rootLight.m_specular[1], rootLight.m_specular[2]);
         }
-
-        // .................................................................
-        // 2.b(2) point-light type
-        // .................................................................
+        // .....................................................................
+        // point lights
+        // .....................................................................
         else if (rootLight.m_type == 1) {
-            // _____________________________________________________________
-            // point-light: store reflection data
-            std::string positionAddress = "pointLights[" + std::to_string(pointSourceCount) + "].position";
-            std::string ambientAddress = "pointLights[" + std::to_string(pointSourceCount) + "].ambient";
-            std::string diffuseAddress = "pointLights[" + std::to_string(pointSourceCount) + "].diffuse";
-            std::string specularAddress = "pointLights[" + std::to_string(pointSourceCount) + "].specular";
-            std::string constantAddress = "pointLights[" + std::to_string(pointSourceCount) + "].constant";
-            std::string linearAddress = "pointLights[" + std::to_string(pointSourceCount) + "].linear";
-            std::string quadraticAddress = "pointLights[" + std::to_string(pointSourceCount) + "].quadratic";
+            b2Vec2 rootBodyPos = rootBody.m_body->GetPosition();
+            glm::vec3 rootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.0f);
+            glm::vec3 offsetRootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.1f);
+            float rootAngle = rootBody.m_body->GetAngle();
+
+            // .................................................................
+            // pointlight: store reflection data
+            std::string positionAddress = "pointLights[" + std::to_string(rootShadow.m_index) + "].position";
+            std::string ambientAddress = "pointLights[" + std::to_string(rootShadow.m_index) + "].ambient";
+            std::string diffuseAddress = "pointLights[" + std::to_string(rootShadow.m_index) + "].diffuse";
+            std::string specularAddress = "pointLights[" + std::to_string(rootShadow.m_index) + "].specular";
+            std::string constantAddress = "pointLights[" + std::to_string(rootShadow.m_index) + "].constant";
+            std::string linearAddress = "pointLights[" + std::to_string(rootShadow.m_index) + "].linear";
+            std::string quadraticAddress = "pointLights[" + std::to_string(rootShadow.m_index) + "].quadratic";
             glUseProgram(rootShader.m_lightProgram);
             glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, positionAddress.c_str()), rootPos[0], rootPos[1], rootPos[2]);
             glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, ambientAddress.c_str()), rootLight.m_ambient[0], rootLight.m_ambient[1], rootLight.m_ambient[2]);
@@ -284,10 +272,9 @@ void RenderSystem::update(
             glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, constantAddress.c_str()), rootLight.m_constant);
             glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, linearAddress.c_str()), rootLight.m_linear);
             glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, quadraticAddress.c_str()), rootLight.m_quadratic);
-            pointSourceCount++;
 
-            // _____________________________________________________________
-            // point-light: render
+            // .................................................................
+            // pointlight: render
             glm::mat4 pointProjection = glm::perspective(glm::radians(cameraZoom), (float)m_screenWidth / (float)m_screenHeight, 0.1f, 100.0f);
             glm::mat4 pointView = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
             glm::mat4 pointModel = glm::mat4(1.0f);
@@ -306,13 +293,43 @@ void RenderSystem::update(
             glDisable(GL_FRAMEBUFFER_SRGB);
             glBindVertexArray(0);
         }
-
-        // .................................................................
-        // 2.b(3) spot-light type
-        // .................................................................
+        // .....................................................................
+        // spot lights
+        // .....................................................................
         else {
-            // _____________________________________________________________
-            // spot-light: store reflection data
+            b2Vec2 rootBodyPos = rootBody.m_body->GetPosition();
+            glm::vec3 rootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.0f);
+            glm::vec3 offsetRootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.1f);
+            float rootAngle = rootBody.m_body->GetAngle();
+
+            // .................................................................
+            // spotlight: store reflection data
+/*
+            std::string positionAddress = "spotLights[" + std::to_string(spotSourceCount) + "].position";
+            std::string directionAddress = "spotLights[" + std::to_string(spotSourceCount) + "].direction";
+            std::string ambientAddress = "spotLights[" + std::to_string(spotSourceCount) + "].ambient";
+            std::string diffuseAddress = "spotLights[" + std::to_string(spotSourceCount) + "].diffuse";
+            std::string specularAddress = "spotLights[" + std::to_string(spotSourceCount) + "].specular";
+            std::string constantAddress = "spotLights[" + std::to_string(spotSourceCount) + "].constant";
+            std::string linearAddress = "spotLights[" + std::to_string(spotSourceCount) + "].linear";
+            std::string quadraticAddress = "spotLights[" + std::to_string(spotSourceCount) + "].quadratic";
+            std::string cutOffAddress = "spotLights[" + std::to_string(spotSourceCount) + "].cutOff";
+            std::string outerCutOffAddress = "spotLights[" + std::to_string(spotSourceCount) + "].outerCutOff";
+            std::string lightSpaceMatrixAddress = "spotLights[" + std::to_string(spotSourceCount) + "].lightSpaceMatrix";
+            std::string shadowFlagAddress = "spotLights[" + std::to_string(spotSourceCount) + "].shadowFlag";
+            glUseProgram(rootShader.m_lightProgram);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, positionAddress.c_str()), rootPos[0], rootPos[1], rootPos[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, directionAddress.c_str()), rootLight.m_direction[0], rootLight.m_direction[1], rootLight.m_direction[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, ambientAddress.c_str()), rootLight.m_ambient[0], rootLight.m_ambient[1], rootLight.m_ambient[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, diffuseAddress.c_str()), rootLight.m_diffuse[0], rootLight.m_diffuse[1], rootLight.m_diffuse[2]);
+            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, specularAddress.c_str()), rootLight.m_specular[0], rootLight.m_specular[1], rootLight.m_specular[2]);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, constantAddress.c_str()), rootLight.m_constant);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, linearAddress.c_str()), rootLight.m_linear);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, quadraticAddress.c_str()), rootLight.m_quadratic);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, cutOffAddress.c_str()), rootLight.m_cutOff);
+            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, outerCutOffAddress.c_str()), rootLight.m_outerCutOff);
+            glUniform1i(glGetUniformLocation(rootShader.m_lightProgram, shadowFlagAddress.c_str()), (int)false);
+*/
             glUseProgram(rootShader.m_lightProgram);
             glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.position"), rootPos[0], rootPos[1], rootPos[2]);
             glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.direction"), rootLight.m_direction[0], rootLight.m_direction[1], rootLight.m_direction[2]);
@@ -324,9 +341,10 @@ void RenderSystem::update(
             glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.quadratic"), rootLight.m_quadratic);
             glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.cutOff"), rootLight.m_cutOff);
             glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.outerCutOff"), rootLight.m_outerCutOff);
+            // glUniform1i(glGetUniformLocation(rootShader.m_lightProgram, "spotShadow.shadowFlag"), false);
 
-            // _____________________________________________________________
-            // spot-light: render
+            // .................................................................
+            // spotlight: render
             glm::mat4 spotProjection = glm::perspective(glm::radians(cameraZoom), (float)m_screenWidth / (float)m_screenHeight, 0.1f, 100.0f);
             glm::mat4 spotView = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
             glm::mat4 spotModel = glm::mat4(1.0f);
@@ -414,7 +432,6 @@ void RenderSystem::update(
         else {
             glStencilMask(0x00);
         }
-        
         glUniform1f(glGetUniformLocation(shader.m_outputProgram, "material.shininess"), material.m_shininess);
         glUniform3f(glGetUniformLocation(shader.m_outputProgram, "viewPos"), cameraPosition[0], cameraPosition[1], cameraPosition[2]);
         glUniformMatrix4fv(glGetUniformLocation(shader.m_outputProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
@@ -429,9 +446,13 @@ void RenderSystem::update(
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture.m_specular);
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, depthTex);
+        glBindTexture(GL_TEXTURE_2D, depthTexture);
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, shadowCubes[0]);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, shadowCubes[1]);
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, shadowCubes[2]);
         glBindVertexArray(graphics.m_VAO);
         glEnable(GL_FRAMEBUFFER_SRGB);
         glDrawArrays(GL_TRIANGLES, 0, graphics.m_vertexCount);

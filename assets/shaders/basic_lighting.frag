@@ -1,7 +1,7 @@
 #version 330 core
 out vec4 FragColor;
 
-#define NR_POINT_LIGHTS 2
+#define NR_POINT_LIGHTS 3
 
 struct Material {
     sampler2D diffuse;
@@ -24,6 +24,8 @@ struct PointLight {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+    float farPlane;
+    bool shadowFlag;
 };
 
 struct SpotLight {
@@ -36,7 +38,19 @@ struct SpotLight {
     float quadratic;
     vec3 ambient;
     vec3 diffuse;
-    vec3 specular;       
+    vec3 specular;
+};
+
+struct PointShadow {
+    samplerCube depthCube;
+    float farPlane;
+    bool shadowFlag;
+};
+
+struct SpotShadow {
+    sampler2D depthTex;
+    mat4 lightSpaceMatrix;
+    bool shadowFlag;
 };
 
 vec3 gridSamplingDisk[20] = vec3[] (    // array of offset direction for sampling
@@ -60,34 +74,25 @@ in VS_OUT {
 } fs_in;
 
 uniform vec3 viewPos;
-
 uniform Material material;
 uniform DirLight dirLight;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 uniform SpotLight spotLight;
-
-uniform vec3 spotLightPos;
-uniform mat4 lightSpaceMatrix;
-uniform sampler2D depthTex;
-
-uniform vec3 pointLightPos;
-uniform samplerCube depthCube;
-uniform float far_plane;
+uniform PointShadow pointShadows[NR_POINT_LIGHTS];
+uniform SpotShadow spotShadow;
 
 // ____________________________________________________________________________
-// ----------------------------------------------------------------------------
 // helper function declarations
-// ____________________________________________________________________________
 // ----------------------------------------------------------------------------
 
 // directional lights
 mat3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 // point lights
 mat3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
-float ShadowCubeCalculation(vec3 fragPos);
+float ShadowCubeCalculation(PointLight light, PointShadow pShadow, vec3 fragPos);
 // spot lights
 mat3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
-float ShadowTexCalculation(SpotLight light, vec4 fragPosLightSpace);
+float ShadowTexCalculation(SpotLight light, SpotShadow sShadow, vec4 fragPosLightSpace);
 
 // ____________________________________________________________________________
 // ----------------------------------------------------------------------------
@@ -104,16 +109,19 @@ void main() {
     vec3 totalLighting = dirLighting[0] + dirLighting[1] + dirLighting[2];
 
     // point lights
-    for(int i = 0; i < NR_POINT_LIGHTS; i++) {
+    for (int i = 0; i < NR_POINT_LIGHTS; i++) {
         mat3 pointLighting = CalcPointLight(pointLights[i], normal, fs_in.FragPos, viewDir);
-        // float cubeShadow = ShadowCubeCalculation(fs_in.FragPos);
-        totalLighting += (pointLighting[0] + (1.0) * (pointLighting[1] + pointLighting[2])); 
+        float cubeShadow = ShadowCubeCalculation(pointLights[i], pointShadows[i], fs_in.FragPos);
+        totalLighting += (pointLighting[0] + (1.0 - cubeShadow) * (pointLighting[1] + pointLighting[2])); 
     }
 
     // spot lights
     mat3 spotLighting = CalcSpotLight(spotLight, normal, fs_in.FragPos, viewDir);
-    vec4 fragPosSpace = lightSpaceMatrix * vec4(fs_in.FragPos, 1.0);
-    float texShadow = ShadowTexCalculation(spotLight, fragPosSpace);
+    vec4 fragPosSpace = spotShadow.lightSpaceMatrix * vec4(fs_in.FragPos, 1.0);
+    float texShadow = 0.0;
+    if (spotShadow.shadowFlag) {
+        texShadow = ShadowTexCalculation(spotLight, spotShadow, fragPosSpace);
+    }
     totalLighting += (spotLighting[0] + (1.0 - texShadow) * (spotLighting[1] + spotLighting[2]));
 
     // final output
@@ -121,13 +129,8 @@ void main() {
 }
 
 // ____________________________________________________________________________
-// ----------------------------------------------------------------------------
-// helper function definitions
-// ____________________________________________________________________________
-// ----------------------------------------------------------------------------
-
-// ____________________________________________________________________________
 // directional lights
+// ----------------------------------------------------------------------------
 mat3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
     vec3 lightDir = normalize(-light.direction);
     // diffuse shading
@@ -147,6 +150,7 @@ mat3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
 
 // ____________________________________________________________________________
 // point lights
+// ----------------------------------------------------------------------------
 mat3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     vec3 lightDir = normalize(light.position - fragPos);
     // diffuse shading
@@ -170,9 +174,9 @@ mat3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     return mat3(ambient, diffuse, specular);
 }
 
-float ShadowCubeCalculation(vec3 fragPos) {
+float ShadowCubeCalculation(PointLight light, PointShadow pShadow, vec3 fragPos) {
     // get vector between fragment position and light position
-    vec3 fragToLight = fragPos - pointLightPos;
+    vec3 fragToLight = fragPos - light.position;
     // now get current linear depth as the length between the fragment and light position
     float currentDepth = length(fragToLight);
     // PCF
@@ -180,10 +184,10 @@ float ShadowCubeCalculation(vec3 fragPos) {
     float bias = 0.15;
     int samples = 20;
     float viewDistance = length(viewPos - fragPos);
-    float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+    float diskRadius = (1.0 + (viewDistance / pShadow.farPlane)) / 25.0;
     for(int i = 0; i < samples; ++i) {
-        float closestDepth = texture(depthCube, fragToLight + gridSamplingDisk[i] * diskRadius).r;
-        closestDepth *= far_plane;   // undo mapping [0;1]
+        float closestDepth = texture(pShadow.depthCube, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= pShadow.farPlane;   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
     }
@@ -194,6 +198,7 @@ float ShadowCubeCalculation(vec3 fragPos) {
 
 // ____________________________________________________________________________
 // spot lights
+// ----------------------------------------------------------------------------
 mat3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     // diffuse shading
     vec3 lightDir = normalize(light.position - fragPos);
@@ -223,13 +228,13 @@ mat3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     return mat3(ambient, diffuse, specular);
 }
 
-float ShadowTexCalculation(SpotLight light, vec4 fragPosLightSpace) {
+float ShadowTexCalculation(SpotLight light, SpotShadow sShadow, vec4 fragPosLightSpace) {
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(depthTex, projCoords.xy).r; 
+    float closestDepth = texture(sShadow.depthTex, projCoords.xy).r; 
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     // calculate bias (based on depth map resolution and slope)
@@ -238,10 +243,10 @@ float ShadowTexCalculation(SpotLight light, vec4 fragPosLightSpace) {
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
     // PCF
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / textureSize(depthTex, 0);
+    vec2 texelSize = 1.0 / textureSize(sShadow.depthTex, 0);
     for(int x = -1; x <= 1; ++x) {
         for(int y = -1; y <= 1; ++y) {
-            float pcfDepth = texture(depthTex, projCoords.xy + vec2(x, y) * texelSize).r; 
+            float pcfDepth = texture(sShadow.depthTex, projCoords.xy + vec2(x, y) * texelSize).r; 
             shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
         }    
     }

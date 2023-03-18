@@ -124,9 +124,10 @@ void Game::setup() {
     glUseProgram(m_assetManager.getShaderProgram("basic_lighting"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "material.diffuse"), 0); 
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "material.specular"), 1);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "depthTex"), 2);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "depthCube"), 3);
-    glUniform1f(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "far_plane"), 15.0f);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotShadow.depthTex"), 2);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointShadows[0].depthCube"), 3);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointShadows[1].depthCube"), 4);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointShadows[2].depthCube"), 5);
     glUseProgram(m_assetManager.getShaderProgram("shadow_framebuffer"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "depthMap"), 0); 
     glUniform1f(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "near_plane"), 1.0f);
@@ -200,56 +201,76 @@ void Game::setup() {
     ShadowFramebufferComponent sunShadow;
     sunLight.m_type = 0;                                   // directional type
     sunLight.m_direction = glm::vec3(0.0f, -1.0f, 0.0f);   // pointed down
-    sunLight.m_ambient = glm::vec3(0.5f, 0.5f, 0.5f);      // white ambient
-    sunLight.m_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);      // white diffuse
-    sunLight.m_specular = glm::vec3(0.5f, 0.5f, 0.5f);     // white specular
+    sunLight.m_ambient = glm::vec3(0.15f, 0.15f, 0.15f);      // white ambient
+    sunLight.m_diffuse = glm::vec3(0.15f, 0.15f, 0.15f);      // white diffuse
+    sunLight.m_specular = glm::vec3(0.15f, 0.15f, 0.15f);     // white specular
     sunShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     // setup shadow mapping
     sunShadow.m_type = 0; // no shadow casting
 
-    // blueOrb entity (dynamic point source, blue light)
+    // redOrb entity (dynamic point source, red light)
     // .........................................................................
     // setup components
-    LightComponent blueOrbLight;
-    BodyTransformComponent blueOrbTransform;
-    BodyCircleComponent blueOrbCircle;
-    ShaderProgramComponent blueOrbShaderProgram;
-    RenderDataComponent blueOrbGraphics;
-    FixtureUserDataComponent blueOrbUserData;
-    ShadowFramebufferComponent blueOrbShadow;
-    blueOrbLight.m_type = 1;                                  // point type 
-    blueOrbLight.m_scale = glm::vec3(0.5f, 0.5f, 0.5f);       // check Box2D size
-    blueOrbLight.m_constant = 1.0f;
-    blueOrbLight.m_linear = 0.22f;
-    blueOrbLight.m_quadratic = 0.20f;
-    blueOrbLight.m_ambient = glm::vec3(0.0f, 0.0f, 1.0f);     // blue ambient
-    blueOrbLight.m_diffuse = glm::vec3(0.0f, 0.0f, 1.0f);     // blue diffuse
-    blueOrbLight.m_specular = glm::vec3(0.0f, 0.0f, 1.0f);    // blue specular
-    blueOrbShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
-    blueOrbShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
-    blueOrbShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
-    blueOrbGraphics.m_vertexCount = sphereMesh.m_vertexCount;
+    LightComponent redOrbLight;
+    BodyTransformComponent redOrbTransform;
+    BodyCircleComponent redOrbCircle;
+    ShaderProgramComponent redOrbShaderProgram;
+    RenderDataComponent redOrbGraphics;
+    FixtureUserDataComponent redOrbUserData;
+    ShadowFramebufferComponent redOrbShadow;
+    redOrbLight.m_type = 1;                                  // point type 
+    redOrbLight.m_scale = glm::vec3(1.0f, 1.0f, 1.0f);       // check Box2D size
+    redOrbLight.m_constant = 1.0f;
+    redOrbLight.m_linear = 0.14f;
+    redOrbLight.m_quadratic = 0.07f;
+    redOrbLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);     // red ambient
+    redOrbLight.m_diffuse = glm::vec3(1.0f, 0.0f, 0.0f);     // red diffuse
+    redOrbLight.m_specular = glm::vec3(1.0f, 0.0f, 0.0f);    // red specular
+    redOrbShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
+    redOrbShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
+    redOrbShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth_cube");
+    redOrbGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
-    blueOrbUserData.m_fixtureType = 0;
-    blueOrbCircle.m_bodyDef.type = b2_dynamicBody;
-    blueOrbCircle.m_bodyDef.position.Set(-15.0f, 5.0f);
-    blueOrbTransform.m_body = m_world->CreateBody(&blueOrbCircle.m_bodyDef);
-    blueOrbCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
-    blueOrbCircle.m_circleShape.m_radius = 0.5f;
-    blueOrbCircle.m_fixtureDef.shape = &blueOrbCircle.m_circleShape;
-    blueOrbCircle.m_fixtureDef.density = 1.0f;
-    blueOrbCircle.m_fixtureDef.friction = 0.3f;
-    blueOrbTransform.m_body->CreateFixture(&blueOrbCircle.m_fixtureDef);
+    redOrbUserData.m_fixtureType = 0;
+    redOrbCircle.m_bodyDef.type = b2_dynamicBody;
+    redOrbCircle.m_bodyDef.position.Set(10.0f, 5.0f);
+    redOrbTransform.m_body = m_world->CreateBody(&redOrbCircle.m_bodyDef);
+    redOrbCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
+    redOrbCircle.m_circleShape.m_radius = 1.0f;
+    redOrbCircle.m_fixtureDef.shape = &redOrbCircle.m_circleShape;
+    redOrbCircle.m_fixtureDef.density = 1.0f;
+    redOrbCircle.m_fixtureDef.friction = 0.3f;
+    redOrbTransform.m_body->CreateFixture(&redOrbCircle.m_fixtureDef);
     // setup OpenGL data
-    glGenVertexArrays(1, &blueOrbGraphics.m_VAO);
-    glGenBuffers(1, &blueOrbGraphics.m_VBO);
-    glBindVertexArray(blueOrbGraphics.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, blueOrbGraphics.m_VBO);
+    glGenVertexArrays(1, &redOrbGraphics.m_VAO);
+    glGenBuffers(1, &redOrbGraphics.m_VBO);
+    glBindVertexArray(redOrbGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, redOrbGraphics.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // setup shadow mapping
-    blueOrbShadow.m_type = 0; // no shadow casting
+    redOrbShadow.m_type = 2; // omnidirectional shadow casting
+    redOrbShadow.m_index = 0;
+    redOrbShadow.m_nearPlane = 1.0f;
+    redOrbShadow.m_farPlane = 32.0f;
+    glGenFramebuffers(1, &redOrbShadow.m_shadowFramebuffer);
+    glGenTextures(1, &redOrbShadow.m_depthCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, redOrbShadow.m_depthCubemap);
+    for (unsigned int i = 0; i < 6; ++i) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, m_shadowWidth, m_shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, redOrbShadow.m_shadowFramebuffer);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, redOrbShadow.m_depthCubemap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // greenOrb entity (dynamic point source, green light)
     // .........................................................................
@@ -262,11 +283,11 @@ void Game::setup() {
     FixtureUserDataComponent greenOrbUserData;
     ShadowFramebufferComponent greenOrbShadow;
     greenOrbLight.m_type = 1;                                 // point type
-    greenOrbLight.m_scale = glm::vec3(1.5f, 1.5f, 1.5f);      // check Box2D
+    greenOrbLight.m_scale = glm::vec3(1.0f, 1.0f, 1.0f);      // check Box2D
     greenOrbLight.m_constant = 1.0f;
-    greenOrbLight.m_linear = 0.22f;
-    greenOrbLight.m_quadratic = 0.20f;
-    greenOrbLight.m_ambient = glm::vec3(0.0f, 1.0f, 0.0f);    // green ambient
+    greenOrbLight.m_linear = 0.14f;
+    greenOrbLight.m_quadratic = 0.07f;
+    greenOrbLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);    // green ambient
     greenOrbLight.m_diffuse = glm::vec3(0.0f, 1.0f, 0.0f);    // green diffuse
     greenOrbLight.m_specular = glm::vec3(0.0f, 1.0f, 0.0f);   // green specular
     greenOrbShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
@@ -276,10 +297,10 @@ void Game::setup() {
     // setup Box2D data
     greenOrbUserData.m_fixtureType = 0;
     greenOrbCircle.m_bodyDef.type = b2_dynamicBody;
-    greenOrbCircle.m_bodyDef.position.Set(10.0f, 5.0f);
+    greenOrbCircle.m_bodyDef.position.Set(25.0f, 5.0f);
     greenOrbTransform.m_body = m_world->CreateBody(&greenOrbCircle.m_bodyDef);
     greenOrbCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
-    greenOrbCircle.m_circleShape.m_radius = 1.5f;
+    greenOrbCircle.m_circleShape.m_radius = 1.0f;
     greenOrbCircle.m_fixtureDef.shape = &greenOrbCircle.m_circleShape;
     greenOrbCircle.m_fixtureDef.density = 1.0f;
     greenOrbCircle.m_fixtureDef.friction = 0.3f;
@@ -294,8 +315,9 @@ void Game::setup() {
     glEnableVertexAttribArray(0);
     // setup shadow mapping
     greenOrbShadow.m_type = 2; // omnidirectional shadow casting
+    greenOrbShadow.m_index = 1;
     greenOrbShadow.m_nearPlane = 1.0f;
-    greenOrbShadow.m_farPlane = 15.0f;
+    greenOrbShadow.m_farPlane = 32.0f;
     glGenFramebuffers(1, &greenOrbShadow.m_shadowFramebuffer);
     glGenTextures(1, &greenOrbShadow.m_depthCubemap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, greenOrbShadow.m_depthCubemap);
@@ -314,66 +336,261 @@ void Game::setup() {
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // streetLamp entity (pointed down, yellow light)
+    // blueOrb entity (dynamic point source, blue light)
     // .........................................................................
     // setup components
-    LightComponent streetLampLight;
-    BodyTransformComponent streetLampTransform;
-    BodyCircleComponent streetLampCircle;
-    ShaderProgramComponent streetLampShaderProgram;
-    RenderDataComponent streetLampGraphics;
-    FixtureUserDataComponent streetLampUserData;
-    ShadowFramebufferComponent streetLampShadow;
-    streetLampLight.m_type = 2;                                    // spot type
-    streetLampLight.m_scale = glm::vec3(1.0f, 1.0f, 1.0f);         // check Box2D size
-    streetLampLight.m_direction = glm::vec3(0.0f, -1.0f, 0.0f);    // pointed down
-    streetLampLight.m_cutOff = glm::cos(glm::radians(15.0f));
-    streetLampLight.m_outerCutOff = glm::cos(glm::radians(17.5f));
-    streetLampLight.m_constant = 1.0f;
-    streetLampLight.m_linear = 0.09f;
-    streetLampLight.m_quadratic = 0.032f;
-    streetLampLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);    // no ambient
-    streetLampLight.m_diffuse = glm::vec3(1.0f, 1.0f, 0.0f);    // yellow diffuse
-    streetLampLight.m_specular = glm::vec3(1.0f, 1.0f, 0.0f);   // yellow specular
-    streetLampShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
-    streetLampShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
-    streetLampShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
-    streetLampGraphics.m_vertexCount = sphereMesh.m_vertexCount;
+    LightComponent blueOrbLight;
+    BodyTransformComponent blueOrbTransform;
+    BodyCircleComponent blueOrbCircle;
+    ShaderProgramComponent blueOrbShaderProgram;
+    RenderDataComponent blueOrbGraphics;
+    FixtureUserDataComponent blueOrbUserData;
+    ShadowFramebufferComponent blueOrbShadow;
+    blueOrbLight.m_type = 1;                                  // point type 
+    blueOrbLight.m_scale = glm::vec3(1.0f, 1.0f, 1.0f);       // check Box2D size
+    blueOrbLight.m_constant = 1.0f;
+    blueOrbLight.m_linear = 0.14f;
+    blueOrbLight.m_quadratic = 0.07f;
+    blueOrbLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);     // blue ambient
+    blueOrbLight.m_diffuse = glm::vec3(0.0f, 0.0f, 1.0f);     // blue diffuse
+    blueOrbLight.m_specular = glm::vec3(0.0f, 0.0f, 1.0f);    // blue specular
+    blueOrbShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
+    blueOrbShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
+    blueOrbShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth_cube");
+    blueOrbGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
-    streetLampUserData.m_fixtureType = 0;
-    streetLampCircle.m_bodyDef.position.Set(-10.0f, 10.0f);
-    streetLampTransform.m_body = m_world->CreateBody(&streetLampCircle.m_bodyDef);
-    streetLampCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
-    streetLampCircle.m_circleShape.m_radius = 1.0f;
-    streetLampCircle.m_fixtureDef.shape = &streetLampCircle.m_circleShape;
-    streetLampCircle.m_fixtureDef.density = 1.0f;
-    streetLampCircle.m_fixtureDef.friction = 0.3f;
-    streetLampTransform.m_body->CreateFixture(&streetLampCircle.m_fixtureDef);
+    blueOrbUserData.m_fixtureType = 0;
+    blueOrbCircle.m_bodyDef.type = b2_dynamicBody;
+    blueOrbCircle.m_bodyDef.position.Set(-15.0f, 5.0f);
+    blueOrbTransform.m_body = m_world->CreateBody(&blueOrbCircle.m_bodyDef);
+    blueOrbCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
+    blueOrbCircle.m_circleShape.m_radius = 1.0f;
+    blueOrbCircle.m_fixtureDef.shape = &blueOrbCircle.m_circleShape;
+    blueOrbCircle.m_fixtureDef.density = 1.0f;
+    blueOrbCircle.m_fixtureDef.friction = 0.3f;
+    blueOrbTransform.m_body->CreateFixture(&blueOrbCircle.m_fixtureDef);
     // setup OpenGL data
-    glGenVertexArrays(1, &streetLampGraphics.m_VAO);
-    glGenBuffers(1, &streetLampGraphics.m_VBO);
-    glBindVertexArray(streetLampGraphics.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, streetLampGraphics.m_VBO);
+    glGenVertexArrays(1, &blueOrbGraphics.m_VAO);
+    glGenBuffers(1, &blueOrbGraphics.m_VBO);
+    glBindVertexArray(blueOrbGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, blueOrbGraphics.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // setup shadow mapping
-    streetLampShadow.m_type = 1; // mono-directional shadow casting
-    streetLampShadow.m_nearPlane = 1.0f;
-    streetLampShadow.m_farPlane = 15.0f;
-    glGenFramebuffers(1, &streetLampShadow.m_shadowFramebuffer);
-    glGenTextures(1, &streetLampShadow.m_depthMap);
-    glBindTexture(GL_TEXTURE_2D, streetLampShadow.m_depthMap);
+    blueOrbShadow.m_type = 2; // omnidirectional shadow casting
+    blueOrbShadow.m_index = 2;
+    blueOrbShadow.m_nearPlane = 1.0f;
+    blueOrbShadow.m_farPlane = 32.0f;
+    glGenFramebuffers(1, &blueOrbShadow.m_shadowFramebuffer);
+    glGenTextures(1, &blueOrbShadow.m_depthCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, blueOrbShadow.m_depthCubemap);
+    for (unsigned int i = 0; i < 6; ++i) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, m_shadowWidth, m_shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, blueOrbShadow.m_shadowFramebuffer);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, blueOrbShadow.m_depthCubemap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // yellowLamp entity (fixed position, pointed down, yellow light)
+    // .........................................................................
+    // setup components
+    LightComponent yellowLampLight;
+    BodyTransformComponent yellowLampTransform;
+    BodyCircleComponent yellowLampCircle;
+    ShaderProgramComponent yellowLampShaderProgram;
+    RenderDataComponent yellowLampGraphics;
+    FixtureUserDataComponent yellowLampUserData;
+    ShadowFramebufferComponent yellowLampShadow;
+    yellowLampLight.m_type = 2;                                    // spot type
+    yellowLampLight.m_scale = glm::vec3(1.0f, 1.0f, 1.0f);         // check Box2D size
+    yellowLampLight.m_direction = glm::vec3(0.0f, -1.0f, 0.0f);    // pointed down
+    yellowLampLight.m_cutOff = glm::cos(glm::radians(15.0f));
+    yellowLampLight.m_outerCutOff = glm::cos(glm::radians(17.5f));
+    yellowLampLight.m_constant = 1.0f;
+    yellowLampLight.m_linear = 0.09f;
+    yellowLampLight.m_quadratic = 0.032f;
+    yellowLampLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);    // no ambient
+    yellowLampLight.m_diffuse = glm::vec3(1.0f, 1.0f, 0.0f);    // yellow diffuse
+    yellowLampLight.m_specular = glm::vec3(1.0f, 1.0f, 0.0f);   // yellow specular
+    yellowLampShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
+    yellowLampShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
+    yellowLampShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
+    yellowLampGraphics.m_vertexCount = sphereMesh.m_vertexCount;
+    // setup Box2D data
+    yellowLampUserData.m_fixtureType = 0;
+    yellowLampCircle.m_bodyDef.position.Set(-10.0f, 10.0f);
+    yellowLampTransform.m_body = m_world->CreateBody(&yellowLampCircle.m_bodyDef);
+    yellowLampCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
+    yellowLampCircle.m_circleShape.m_radius = 1.0f;
+    yellowLampCircle.m_fixtureDef.shape = &yellowLampCircle.m_circleShape;
+    yellowLampCircle.m_fixtureDef.density = 1.0f;
+    yellowLampCircle.m_fixtureDef.friction = 0.3f;
+    yellowLampTransform.m_body->CreateFixture(&yellowLampCircle.m_fixtureDef);
+    // setup OpenGL data
+    glGenVertexArrays(1, &yellowLampGraphics.m_VAO);
+    glGenBuffers(1, &yellowLampGraphics.m_VBO);
+    glBindVertexArray(yellowLampGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, yellowLampGraphics.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // setup shadow mapping
+    yellowLampShadow.m_type = 1; // mono-directional shadow casting
+    yellowLampShadow.m_index = 0;
+    yellowLampShadow.m_nearPlane = 1.0f;
+    yellowLampShadow.m_farPlane = 15.0f;
+    glGenFramebuffers(1, &yellowLampShadow.m_shadowFramebuffer);
+    glGenTextures(1, &yellowLampShadow.m_depthMap);
+    glBindTexture(GL_TEXTURE_2D, yellowLampShadow.m_depthMap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_shadowWidth, m_shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float streetLampBorderColor[] = {1.0, 1.0, 1.0, 1.0};
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, streetLampBorderColor);
+    float yellowLampBorderColor[] = {1.0, 1.0, 1.0, 1.0};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, yellowLampBorderColor);
     // attach depth texture as FBO's depth buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, streetLampShadow.m_shadowFramebuffer);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, streetLampShadow.m_depthMap, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, yellowLampShadow.m_shadowFramebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, yellowLampShadow.m_depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // magentaLamp entity (fixed position, pointed down, magenta light)
+    // .........................................................................
+    // setup components
+    LightComponent magentaLampLight;
+    BodyTransformComponent magentaLampTransform;
+    BodyCircleComponent magentaLampCircle;
+    ShaderProgramComponent magentaLampShaderProgram;
+    RenderDataComponent magentaLampGraphics;
+    FixtureUserDataComponent magentaLampUserData;
+    ShadowFramebufferComponent magentaLampShadow;
+    magentaLampLight.m_type = 2;                                    // spot type
+    magentaLampLight.m_scale = glm::vec3(1.25f, 1.25f, 1.25f);      // check Box2D size
+    magentaLampLight.m_direction = glm::vec3(0.0f, -1.0f, 0.0f);    // pointed down
+    magentaLampLight.m_cutOff = glm::cos(glm::radians(15.0f));
+    magentaLampLight.m_outerCutOff = glm::cos(glm::radians(17.5f));
+    magentaLampLight.m_constant = 1.0f;
+    magentaLampLight.m_linear = 0.09f;
+    magentaLampLight.m_quadratic = 0.032f;
+    magentaLampLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);    // no ambient
+    magentaLampLight.m_diffuse = glm::vec3(1.0f, 0.0f, 1.0f);    // magenta diffuse
+    magentaLampLight.m_specular = glm::vec3(1.0f, 0.0f, 1.0f);   // magenta specular
+    magentaLampShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
+    magentaLampShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
+    magentaLampShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
+    magentaLampGraphics.m_vertexCount = sphereMesh.m_vertexCount;
+    // setup Box2D data
+    magentaLampUserData.m_fixtureType = 0;
+    magentaLampCircle.m_bodyDef.position.Set(-25.0f, 10.0f);
+    magentaLampTransform.m_body = m_world->CreateBody(&magentaLampCircle.m_bodyDef);
+    magentaLampCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
+    magentaLampCircle.m_circleShape.m_radius = 1.25f;
+    magentaLampCircle.m_fixtureDef.shape = &magentaLampCircle.m_circleShape;
+    magentaLampCircle.m_fixtureDef.density = 1.0f;
+    magentaLampCircle.m_fixtureDef.friction = 0.3f;
+    magentaLampTransform.m_body->CreateFixture(&magentaLampCircle.m_fixtureDef);
+    // setup OpenGL data
+    glGenVertexArrays(1, &magentaLampGraphics.m_VAO);
+    glGenBuffers(1, &magentaLampGraphics.m_VBO);
+    glBindVertexArray(magentaLampGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, magentaLampGraphics.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // setup shadow mapping
+    magentaLampShadow.m_type = 0; // no shadow casting
+    magentaLampShadow.m_index = 1;
+    magentaLampShadow.m_nearPlane = 1.0f;
+    magentaLampShadow.m_farPlane = 15.0f;
+    glGenFramebuffers(1, &magentaLampShadow.m_shadowFramebuffer);
+    glGenTextures(1, &magentaLampShadow.m_depthMap);
+    glBindTexture(GL_TEXTURE_2D, magentaLampShadow.m_depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_shadowWidth, m_shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float magentaLampBorderColor[] = {1.0, 1.0, 1.0, 1.0};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, magentaLampBorderColor);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, magentaLampShadow.m_shadowFramebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, magentaLampShadow.m_depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // cyanLamp entity (fixed position, pointed down, cyan light)
+    // .........................................................................
+    // setup components
+    LightComponent cyanLampLight;
+    BodyTransformComponent cyanLampTransform;
+    BodyCircleComponent cyanLampCircle;
+    ShaderProgramComponent cyanLampShaderProgram;
+    RenderDataComponent cyanLampGraphics;
+    FixtureUserDataComponent cyanLampUserData;
+    ShadowFramebufferComponent cyanLampShadow;
+    cyanLampLight.m_type = 2;                                    // spot type
+    cyanLampLight.m_scale = glm::vec3(0.75f, 0.75f, 0.75f);      // check Box2D size
+    cyanLampLight.m_direction = glm::vec3(0.0f, -1.0f, 0.0f);    // pointed down
+    cyanLampLight.m_cutOff = glm::cos(glm::radians(15.0f));
+    cyanLampLight.m_outerCutOff = glm::cos(glm::radians(17.5f));
+    cyanLampLight.m_constant = 1.0f;
+    cyanLampLight.m_linear = 0.09f;
+    cyanLampLight.m_quadratic = 0.032f;
+    cyanLampLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);    // no ambient
+    cyanLampLight.m_diffuse = glm::vec3(0.0f, 1.0f, 1.0f);    // cyan diffuse
+    cyanLampLight.m_specular = glm::vec3(0.0f, 1.0f, 1.0f);   // cyan specular
+    cyanLampShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
+    cyanLampShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
+    cyanLampShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
+    cyanLampGraphics.m_vertexCount = sphereMesh.m_vertexCount;
+    // setup Box2D data
+    cyanLampUserData.m_fixtureType = 0;
+    cyanLampCircle.m_bodyDef.position.Set(20.0f, 10.0f);
+    cyanLampTransform.m_body = m_world->CreateBody(&cyanLampCircle.m_bodyDef);
+    cyanLampCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
+    cyanLampCircle.m_circleShape.m_radius = 0.75f;
+    cyanLampCircle.m_fixtureDef.shape = &cyanLampCircle.m_circleShape;
+    cyanLampCircle.m_fixtureDef.density = 1.0f;
+    cyanLampCircle.m_fixtureDef.friction = 0.3f;
+    cyanLampTransform.m_body->CreateFixture(&cyanLampCircle.m_fixtureDef);
+    // setup OpenGL data
+    glGenVertexArrays(1, &cyanLampGraphics.m_VAO);
+    glGenBuffers(1, &cyanLampGraphics.m_VBO);
+    glBindVertexArray(cyanLampGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cyanLampGraphics.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // setup shadow mapping
+    cyanLampShadow.m_type = 0; // no shadow casting
+    cyanLampShadow.m_index = 2;
+    cyanLampShadow.m_nearPlane = 1.0f;
+    cyanLampShadow.m_farPlane = 15.0f;
+    glGenFramebuffers(1, &cyanLampShadow.m_shadowFramebuffer);
+    glGenTextures(1, &cyanLampShadow.m_depthMap);
+    glBindTexture(GL_TEXTURE_2D, cyanLampShadow.m_depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_shadowWidth, m_shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float cyanLampBorderColor[] = {1.0, 1.0, 1.0, 1.0};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, cyanLampBorderColor);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, cyanLampShadow.m_shadowFramebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, cyanLampShadow.m_depthMap, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -496,39 +713,39 @@ void Game::setup() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    // mirror sphere entity (dynamic, reflecting surface)
+    // gold sphere entity (dynamic, reflecting surface)
     // .........................................................................
     // setup components
-    MaterialComponent mirrorMaterial;
-    BodyTransformComponent mirrorTransform;
-    BodyCircleComponent mirrorCircle;
-    TextureComponent mirrorTexture;
-    ShaderProgramComponent mirrorShaderProgram;
-    RenderDataComponent mirrorGraphics;
-    FixtureUserDataComponent mirrorUserData;
-    mirrorMaterial.m_shininess = 256.0f;
-    mirrorTexture.m_diffuse = m_assetManager.getTexture("gold_diff");
-    mirrorTexture.m_specular = m_assetManager.getTexture("gold_spec");
-    mirrorShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
-    mirrorShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
-    mirrorGraphics.m_vertexCount = sphereMesh.m_vertexCount;
+    MaterialComponent goldMaterial;
+    BodyTransformComponent goldTransform;
+    BodyCircleComponent goldCircle;
+    TextureComponent goldTexture;
+    ShaderProgramComponent goldShaderProgram;
+    RenderDataComponent goldGraphics;
+    FixtureUserDataComponent goldUserData;
+    goldMaterial.m_shininess = 256.0f;
+    goldTexture.m_diffuse = m_assetManager.getTexture("gold_diff");
+    goldTexture.m_specular = m_assetManager.getTexture("gold_spec");
+    goldShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
+    goldShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
+    goldGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
-    mirrorUserData.m_fixtureType = 3;
-    mirrorCircle.m_bodyDef.type = b2_dynamicBody;
-    mirrorCircle.m_bodyDef.position.Set(-20.0f, 5.0f);
-    mirrorTransform.m_body = m_world->CreateBody(&mirrorCircle.m_bodyDef);
-    mirrorCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
-    mirrorCircle.m_circleShape.m_radius = 1.0f;
-    mirrorCircle.m_fixtureDef.shape = &mirrorCircle.m_circleShape;
-    mirrorCircle.m_fixtureDef.density = 1.0f;
-    mirrorCircle.m_fixtureDef.friction = 0.3f;
-    mirrorCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&mirrorUserData);
-    mirrorTransform.m_body->CreateFixture(&mirrorCircle.m_fixtureDef);
+    goldUserData.m_fixtureType = 3;
+    goldCircle.m_bodyDef.type = b2_dynamicBody;
+    goldCircle.m_bodyDef.position.Set(-20.0f, 5.0f);
+    goldTransform.m_body = m_world->CreateBody(&goldCircle.m_bodyDef);
+    goldCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
+    goldCircle.m_circleShape.m_radius = 1.0f;
+    goldCircle.m_fixtureDef.shape = &goldCircle.m_circleShape;
+    goldCircle.m_fixtureDef.density = 1.0f;
+    goldCircle.m_fixtureDef.friction = 0.3f;
+    goldCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&goldUserData);
+    goldTransform.m_body->CreateFixture(&goldCircle.m_fixtureDef);
     // setup OpenGL data
-    glGenVertexArrays(1, &mirrorGraphics.m_VAO);
-    glGenBuffers(1, &mirrorGraphics.m_VBO);
-    glBindVertexArray(mirrorGraphics.m_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, mirrorGraphics.m_VBO);
+    glGenVertexArrays(1, &goldGraphics.m_VAO);
+    glGenBuffers(1, &goldGraphics.m_VBO);
+    glBindVertexArray(goldGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, goldGraphics.m_VBO);
     glBufferData(GL_ARRAY_BUFFER, sphereMesh.m_verticesSize, sphereMesh.m_vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -627,14 +844,14 @@ void Game::setup() {
     m_registry.emplace<RenderDataComponent>(sunEntity, sunGraphics);
     m_registry.emplace<ShadowFramebufferComponent>(sunEntity, sunShadow);
 
-    auto blueOrbEntity = m_registry.create();
-    m_registry.emplace<LightComponent>(blueOrbEntity, blueOrbLight);
-    m_registry.emplace<BodyTransformComponent>(blueOrbEntity, blueOrbTransform);
-    m_registry.emplace<ShaderProgramComponent>(blueOrbEntity, blueOrbShaderProgram);
-    m_registry.emplace<RenderDataComponent>(blueOrbEntity, blueOrbGraphics);
-    m_registry.emplace<FixtureUserDataComponent>(blueOrbEntity, blueOrbUserData);
-    m_registry.emplace<ShadowFramebufferComponent>(blueOrbEntity, blueOrbShadow);
-    blueOrbUserData.m_enttEntity = &blueOrbEntity;
+    auto redOrbEntity = m_registry.create();
+    m_registry.emplace<LightComponent>(redOrbEntity, redOrbLight);
+    m_registry.emplace<BodyTransformComponent>(redOrbEntity, redOrbTransform);
+    m_registry.emplace<ShaderProgramComponent>(redOrbEntity, redOrbShaderProgram);
+    m_registry.emplace<RenderDataComponent>(redOrbEntity, redOrbGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(redOrbEntity, redOrbUserData);
+    m_registry.emplace<ShadowFramebufferComponent>(redOrbEntity, redOrbShadow);
+    redOrbUserData.m_enttEntity = &redOrbEntity;
 
     auto greenOrbEntity = m_registry.create();
     m_registry.emplace<LightComponent>(greenOrbEntity, greenOrbLight);
@@ -645,15 +862,46 @@ void Game::setup() {
     m_registry.emplace<ShadowFramebufferComponent>(greenOrbEntity, greenOrbShadow);
     greenOrbUserData.m_enttEntity = &greenOrbEntity;
 
-    auto streetLampEntity = m_registry.create();
-    m_registry.emplace<LightComponent>(streetLampEntity, streetLampLight);
-    m_registry.emplace<BodyTransformComponent>(streetLampEntity, streetLampTransform);
-    m_registry.emplace<BodyCircleComponent>(streetLampEntity, streetLampCircle);
-    m_registry.emplace<ShaderProgramComponent>(streetLampEntity, streetLampShaderProgram);
-    m_registry.emplace<RenderDataComponent>(streetLampEntity, streetLampGraphics);
-    m_registry.emplace<FixtureUserDataComponent>(streetLampEntity, streetLampUserData);
-    m_registry.emplace<ShadowFramebufferComponent>(streetLampEntity, streetLampShadow);
-    streetLampUserData.m_enttEntity = &streetLampEntity;
+    auto blueOrbEntity = m_registry.create();
+    m_registry.emplace<LightComponent>(blueOrbEntity, blueOrbLight);
+    m_registry.emplace<BodyTransformComponent>(blueOrbEntity, blueOrbTransform);
+    m_registry.emplace<ShaderProgramComponent>(blueOrbEntity, blueOrbShaderProgram);
+    m_registry.emplace<RenderDataComponent>(blueOrbEntity, blueOrbGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(blueOrbEntity, blueOrbUserData);
+    m_registry.emplace<ShadowFramebufferComponent>(blueOrbEntity, blueOrbShadow);
+    blueOrbUserData.m_enttEntity = &blueOrbEntity;
+
+    auto yellowLampEntity = m_registry.create();
+    m_registry.emplace<LightComponent>(yellowLampEntity, yellowLampLight);
+    m_registry.emplace<BodyTransformComponent>(yellowLampEntity, yellowLampTransform);
+    m_registry.emplace<BodyCircleComponent>(yellowLampEntity, yellowLampCircle);
+    m_registry.emplace<ShaderProgramComponent>(yellowLampEntity, yellowLampShaderProgram);
+    m_registry.emplace<RenderDataComponent>(yellowLampEntity, yellowLampGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(yellowLampEntity, yellowLampUserData);
+    m_registry.emplace<ShadowFramebufferComponent>(yellowLampEntity, yellowLampShadow);
+    yellowLampUserData.m_enttEntity = &yellowLampEntity;
+
+/*
+    auto magentaLampEntity = m_registry.create();
+    m_registry.emplace<LightComponent>(magentaLampEntity, magentaLampLight);
+    m_registry.emplace<BodyTransformComponent>(magentaLampEntity, magentaLampTransform);
+    m_registry.emplace<BodyCircleComponent>(magentaLampEntity, magentaLampCircle);
+    m_registry.emplace<ShaderProgramComponent>(magentaLampEntity, magentaLampShaderProgram);
+    m_registry.emplace<RenderDataComponent>(magentaLampEntity, magentaLampGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(magentaLampEntity, magentaLampUserData);
+    m_registry.emplace<ShadowFramebufferComponent>(magentaLampEntity, magentaLampShadow);
+    magentaLampUserData.m_enttEntity = &magentaLampEntity;
+
+    auto cyanLampEntity = m_registry.create();
+    m_registry.emplace<LightComponent>(cyanLampEntity, cyanLampLight);
+    m_registry.emplace<BodyTransformComponent>(cyanLampEntity, cyanLampTransform);
+    m_registry.emplace<BodyCircleComponent>(cyanLampEntity, cyanLampCircle);
+    m_registry.emplace<ShaderProgramComponent>(cyanLampEntity, cyanLampShaderProgram);
+    m_registry.emplace<RenderDataComponent>(cyanLampEntity, cyanLampGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(cyanLampEntity, cyanLampUserData);
+    m_registry.emplace<ShadowFramebufferComponent>(cyanLampEntity, cyanLampShadow);
+    cyanLampUserData.m_enttEntity = &cyanLampEntity;
+*/
 
     auto playerEntity = m_registry.create();
     m_registry.emplace<PlayerComponent>(playerEntity, playerPlayer);
@@ -683,14 +931,14 @@ void Game::setup() {
     m_registry.emplace<FixtureUserDataComponent>(sphereEntity, sphereUserData);
     sphereUserData.m_enttEntity = &sphereEntity;
 
-    auto mirrorEntity = m_registry.create();
-    m_registry.emplace<MaterialComponent>(mirrorEntity, mirrorMaterial);
-    m_registry.emplace<BodyTransformComponent>(mirrorEntity, mirrorTransform);
-    m_registry.emplace<TextureComponent>(mirrorEntity, mirrorTexture);
-    m_registry.emplace<ShaderProgramComponent>(mirrorEntity, mirrorShaderProgram);
-    m_registry.emplace<RenderDataComponent>(mirrorEntity, mirrorGraphics);
-    m_registry.emplace<FixtureUserDataComponent>(mirrorEntity, mirrorUserData);
-    mirrorUserData.m_enttEntity = &mirrorEntity;
+    auto goldEntity = m_registry.create();
+    m_registry.emplace<MaterialComponent>(goldEntity, goldMaterial);
+    m_registry.emplace<BodyTransformComponent>(goldEntity, goldTransform);
+    m_registry.emplace<TextureComponent>(goldEntity, goldTexture);
+    m_registry.emplace<ShaderProgramComponent>(goldEntity, goldShaderProgram);
+    m_registry.emplace<RenderDataComponent>(goldEntity, goldGraphics);
+    m_registry.emplace<FixtureUserDataComponent>(goldEntity, goldUserData);
+    goldUserData.m_enttEntity = &goldEntity;
 
     auto cubeEntity = m_registry.create();
     m_registry.emplace<MaterialComponent>(cubeEntity, cubeMaterial);
