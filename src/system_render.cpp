@@ -21,13 +21,11 @@ void RenderSystem::update(
     const float timeStep, 
     entt::registry& registry
 ) {
+    unsigned int shadowTextures[3];
+    unsigned int shadowCubes[3];
     int framebufferWidth;
     int framebufferHeight;
     glfwGetFramebufferSize(m_glfwWindow, &framebufferWidth, &framebufferHeight);
-
-    int depthTexture;
-    // unsigned int shadowTextures[3];
-    unsigned int shadowCubes[3];
 
     auto gameplayEntities = registry.view<
         MaterialComponent,
@@ -82,7 +80,7 @@ void RenderSystem::update(
         // spotlight: monodirectional shadow mapping
         // .................................................................
         if (rootShadow.m_type == 1) {
-            depthTexture = rootShadow.m_depthMap;
+            shadowTextures[rootShadow.m_index] = rootShadow.m_depthMap;
             b2Vec2 rootBodyPos = rootBody.m_body->GetPosition();
             glm::vec3 rootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.0f);
             glm::vec3 offsetRootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.1f);
@@ -92,8 +90,8 @@ void RenderSystem::update(
             glm::mat4 rootSpaceMatrix = rootProjection * rootView;
 
             glUseProgram(rootShader.m_lightProgram);
-            glUniform1i(glGetUniformLocation(rootShader.m_lightProgram, "spotShadow.shadowFlag"), true);
-            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_lightProgram, "spotShadow.lightSpaceMatrix"), 1, GL_FALSE, &rootSpaceMatrix[0][0]);
+            std::string lightSpaceMatrixAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].lightSpaceMatrix";
+            glUniformMatrix4fv(glGetUniformLocation(rootShader.m_lightProgram, lightSpaceMatrixAddress.c_str()), 1, GL_FALSE, &rootSpaceMatrix[0][0]);
             glUseProgram(rootShader.m_shadowProgram);
             glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "lightSpaceMatrix"), 1, GL_FALSE, &rootSpaceMatrix[0][0]);
 
@@ -109,14 +107,17 @@ void RenderSystem::update(
                 const auto& gameGraphics
             ) {
                 b2Vec2 gameBodyPos = gameBody.m_body->GetPosition();
-                float gameAngle = gameBody.m_body->GetAngle();
-                glm::mat4 gameModel = glm::mat4(1.0f);
-                gameModel = glm::translate(gameModel, glm::vec3(gameBodyPos.x, gameBodyPos.y, 0.0f));
-                gameModel = glm::rotate(gameModel, gameAngle, glm::vec3(0.0f, 0.0f, 1.0f));
-                glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &gameModel[0][0]);
-                glBindVertexArray(gameGraphics.m_VAO);
-                glDrawArrays(GL_TRIANGLES, 0, gameGraphics.m_vertexCount);
-                glBindVertexArray(0);
+                glm::vec3 gamePos = glm::vec3(gameBodyPos.x, gameBodyPos.y, 0.0f);
+                if (glm::distance(rootPos, gamePos) <= rootShadow.m_farPlane) {
+                    float gameAngle = gameBody.m_body->GetAngle();
+                    glm::mat4 gameModel = glm::mat4(1.0f);
+                    gameModel = glm::translate(gameModel, gamePos);
+                    gameModel = glm::rotate(gameModel, gameAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+                    glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &gameModel[0][0]);
+                    glBindVertexArray(gameGraphics.m_VAO);
+                    glDrawArrays(GL_TRIANGLES, 0, gameGraphics.m_vertexCount);
+                    glBindVertexArray(0);
+                }
             });
             lightEntities.each([&](
                 const auto& interiorLight,
@@ -128,15 +129,18 @@ void RenderSystem::update(
                 // if point or spot light, it will cast a shadow
                 if (interiorLight.m_type != 0) {
                     b2Vec2 interiorBodyPos = interiorBody.m_body->GetPosition();
-                    float interiorAngle = interiorBody.m_body->GetAngle();
-                    glm::mat4 interiorModel = glm::mat4(1.0f);
-                    interiorModel = glm::translate(interiorModel, glm::vec3(interiorBodyPos.x, interiorBodyPos.y, 0.0f));
-                    interiorModel = glm::rotate(interiorModel, interiorAngle, glm::vec3(0.0f, 0.0f, 1.0f));
-                    interiorModel = glm::scale(interiorModel, interiorLight.m_scale);
-                    glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &interiorModel[0][0]);
-                    glBindVertexArray(interiorGraphics.m_VAO);
-                    glDrawArrays(GL_TRIANGLES, 0, interiorGraphics.m_vertexCount);
-                    glBindVertexArray(0);
+                    glm::vec3 interiorPos = glm::vec3(interiorBodyPos.x, interiorBodyPos.y, 0.0f);
+                    if (glm::distance(rootPos, interiorPos) <= rootShadow.m_farPlane) {
+                        float interiorAngle = interiorBody.m_body->GetAngle();
+                        glm::mat4 interiorModel = glm::mat4(1.0f);
+                        interiorModel = glm::translate(interiorModel, interiorPos);
+                        interiorModel = glm::rotate(interiorModel, interiorAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+                        interiorModel = glm::scale(interiorModel, interiorLight.m_scale);
+                        glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &interiorModel[0][0]);
+                        glBindVertexArray(interiorGraphics.m_VAO);
+                        glDrawArrays(GL_TRIANGLES, 0, interiorGraphics.m_vertexCount);
+                        glBindVertexArray(0);
+                    }
                 }
             });
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -153,10 +157,8 @@ void RenderSystem::update(
             glm::vec3 offsetRootPos = glm::vec3(rootBodyPos.x, rootBodyPos.y, 0.1f);
 
             glUseProgram(rootShader.m_lightProgram);
-            std::string farPlaneAddress = "pointShadows[" + std::to_string(rootShadow.m_index) + "].farPlane";
-            std::string shadowFlagAddress = "pointShadows[" + std::to_string(rootShadow.m_index) + "].shadowFlag";
+            std::string farPlaneAddress = "pointLights[" + std::to_string(rootShadow.m_index) + "].farPlane";
             glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, farPlaneAddress.c_str()), rootShadow.m_farPlane);
-            glUniform1i(glGetUniformLocation(rootShader.m_lightProgram, shadowFlagAddress.c_str()), true);
 
             glm::mat4 rootProjection = glm::perspective(glm::radians(90.0f), (GLfloat)m_shadowWidth / (GLfloat)m_shadowHeight, rootShadow.m_nearPlane, rootShadow.m_farPlane);
             std::vector<glm::mat4> rootTransforms;
@@ -188,14 +190,17 @@ void RenderSystem::update(
                 const auto& gameGraphics
             ) {
                 b2Vec2 gameBodyPos = gameBody.m_body->GetPosition();
-                float gameAngle = gameBody.m_body->GetAngle();
-                glm::mat4 gameModel = glm::mat4(1.0f);
-                gameModel = glm::translate(gameModel, glm::vec3(gameBodyPos.x, gameBodyPos.y, 0.0f));
-                gameModel = glm::rotate(gameModel, gameAngle, glm::vec3(0.0f, 0.0f, 1.0f));
-                glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &gameModel[0][0]);
-                glBindVertexArray(gameGraphics.m_VAO);
-                glDrawArrays(GL_TRIANGLES, 0, gameGraphics.m_vertexCount);
-                glBindVertexArray(0);
+                glm::vec3 gamePos = glm::vec3(gameBodyPos.x, gameBodyPos.y, 0.0f);
+                if (glm::distance(rootPos, gamePos) <= rootShadow.m_farPlane) {
+                    float gameAngle = gameBody.m_body->GetAngle();
+                    glm::mat4 gameModel = glm::mat4(1.0f);
+                    gameModel = glm::translate(gameModel, gamePos);
+                    gameModel = glm::rotate(gameModel, gameAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+                    glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &gameModel[0][0]);
+                    glBindVertexArray(gameGraphics.m_VAO);
+                    glDrawArrays(GL_TRIANGLES, 0, gameGraphics.m_vertexCount);
+                    glBindVertexArray(0);
+                }
             });
             lightEntities.each([&](
                 const auto& interiorLight,
@@ -207,15 +212,18 @@ void RenderSystem::update(
                 // if point or spot light, it will cast a shadow
                 if (interiorLight.m_type != 0) {
                     b2Vec2 interiorBodyPos = interiorBody.m_body->GetPosition();
-                    float interiorAngle = interiorBody.m_body->GetAngle();
-                    glm::mat4 interiorModel = glm::mat4(1.0f);
-                    interiorModel = glm::translate(interiorModel, glm::vec3(interiorBodyPos.x, interiorBodyPos.y, 0.0f));
-                    interiorModel = glm::rotate(interiorModel, interiorAngle, glm::vec3(0.0f, 0.0f, 1.0f));
-                    interiorModel = glm::scale(interiorModel, interiorLight.m_scale);
-                    glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &interiorModel[0][0]);
-                    glBindVertexArray(interiorGraphics.m_VAO);
-                    glDrawArrays(GL_TRIANGLES, 0, interiorGraphics.m_vertexCount);
-                    glBindVertexArray(0);
+                    glm::vec3 interiorPos = glm::vec3(interiorBodyPos.x, interiorBodyPos.y, 0.0f);
+                    if (glm::distance(rootPos, interiorPos) <= rootShadow.m_farPlane) {
+                        float interiorAngle = interiorBody.m_body->GetAngle();
+                        glm::mat4 interiorModel = glm::mat4(1.0f);
+                        interiorModel = glm::translate(interiorModel, interiorPos);
+                        interiorModel = glm::rotate(interiorModel, interiorAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+                        interiorModel = glm::scale(interiorModel, interiorLight.m_scale);
+                        glUniformMatrix4fv(glGetUniformLocation(rootShader.m_shadowProgram, "model"), 1, GL_FALSE, &interiorModel[0][0]);
+                        glBindVertexArray(interiorGraphics.m_VAO);
+                        glDrawArrays(GL_TRIANGLES, 0, interiorGraphics.m_vertexCount);
+                        glBindVertexArray(0);
+                    }
                 }
             });
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -304,19 +312,16 @@ void RenderSystem::update(
 
             // .................................................................
             // spotlight: store reflection data
-/*
-            std::string positionAddress = "spotLights[" + std::to_string(spotSourceCount) + "].position";
-            std::string directionAddress = "spotLights[" + std::to_string(spotSourceCount) + "].direction";
-            std::string ambientAddress = "spotLights[" + std::to_string(spotSourceCount) + "].ambient";
-            std::string diffuseAddress = "spotLights[" + std::to_string(spotSourceCount) + "].diffuse";
-            std::string specularAddress = "spotLights[" + std::to_string(spotSourceCount) + "].specular";
-            std::string constantAddress = "spotLights[" + std::to_string(spotSourceCount) + "].constant";
-            std::string linearAddress = "spotLights[" + std::to_string(spotSourceCount) + "].linear";
-            std::string quadraticAddress = "spotLights[" + std::to_string(spotSourceCount) + "].quadratic";
-            std::string cutOffAddress = "spotLights[" + std::to_string(spotSourceCount) + "].cutOff";
-            std::string outerCutOffAddress = "spotLights[" + std::to_string(spotSourceCount) + "].outerCutOff";
-            std::string lightSpaceMatrixAddress = "spotLights[" + std::to_string(spotSourceCount) + "].lightSpaceMatrix";
-            std::string shadowFlagAddress = "spotLights[" + std::to_string(spotSourceCount) + "].shadowFlag";
+            std::string positionAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].position";
+            std::string directionAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].direction";
+            std::string ambientAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].ambient";
+            std::string diffuseAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].diffuse";
+            std::string specularAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].specular";
+            std::string constantAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].constant";
+            std::string linearAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].linear";
+            std::string quadraticAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].quadratic";
+            std::string cutOffAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].cutOff";
+            std::string outerCutOffAddress = "spotLights[" + std::to_string(rootShadow.m_index) + "].outerCutOff";
             glUseProgram(rootShader.m_lightProgram);
             glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, positionAddress.c_str()), rootPos[0], rootPos[1], rootPos[2]);
             glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, directionAddress.c_str()), rootLight.m_direction[0], rootLight.m_direction[1], rootLight.m_direction[2]);
@@ -328,20 +333,6 @@ void RenderSystem::update(
             glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, quadraticAddress.c_str()), rootLight.m_quadratic);
             glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, cutOffAddress.c_str()), rootLight.m_cutOff);
             glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, outerCutOffAddress.c_str()), rootLight.m_outerCutOff);
-            glUniform1i(glGetUniformLocation(rootShader.m_lightProgram, shadowFlagAddress.c_str()), (int)false);
-*/
-            glUseProgram(rootShader.m_lightProgram);
-            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.position"), rootPos[0], rootPos[1], rootPos[2]);
-            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.direction"), rootLight.m_direction[0], rootLight.m_direction[1], rootLight.m_direction[2]);
-            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.ambient"), rootLight.m_ambient[0], rootLight.m_ambient[1], rootLight.m_ambient[2]);
-            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.diffuse"), rootLight.m_diffuse[0], rootLight.m_diffuse[1], rootLight.m_diffuse[2]);
-            glUniform3f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.specular"), rootLight.m_specular[0], rootLight.m_specular[1], rootLight.m_specular[2]);
-            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.constant"), rootLight.m_constant);
-            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.linear"), rootLight.m_linear);
-            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.quadratic"), rootLight.m_quadratic);
-            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.cutOff"), rootLight.m_cutOff);
-            glUniform1f(glGetUniformLocation(rootShader.m_lightProgram, "spotLight.outerCutOff"), rootLight.m_outerCutOff);
-            // glUniform1i(glGetUniformLocation(rootShader.m_lightProgram, "spotShadow.shadowFlag"), false);
 
             // .................................................................
             // spotlight: render
@@ -446,12 +437,16 @@ void RenderSystem::update(
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture.m_specular);
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, depthTexture);
+        glBindTexture(GL_TEXTURE_2D, shadowTextures[0]);
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, shadowCubes[0]);
+        glBindTexture(GL_TEXTURE_2D, shadowTextures[1]);
         glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, shadowCubes[1]);
+        glBindTexture(GL_TEXTURE_2D, shadowTextures[2]);
         glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, shadowCubes[0]);
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, shadowCubes[1]);
+        glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_CUBE_MAP, shadowCubes[2]);
         glBindVertexArray(graphics.m_VAO);
         glEnable(GL_FRAMEBUFFER_SRGB);

@@ -124,10 +124,12 @@ void Game::setup() {
     glUseProgram(m_assetManager.getShaderProgram("basic_lighting"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "material.diffuse"), 0); 
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "material.specular"), 1);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotShadow.depthTex"), 2);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointShadows[0].depthCube"), 3);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointShadows[1].depthCube"), 4);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointShadows[2].depthCube"), 5);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotLights[0].depthTex"), 2);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotLights[1].depthTex"), 3);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotLights[2].depthTex"), 4);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointLights[0].depthCube"), 5);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointLights[1].depthCube"), 6);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointLights[2].depthCube"), 7);
     glUseProgram(m_assetManager.getShaderProgram("shadow_framebuffer"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "depthMap"), 0); 
     glUniform1f(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "near_plane"), 1.0f);
@@ -509,7 +511,7 @@ void Game::setup() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // setup shadow mapping
-    magentaLampShadow.m_type = 0; // no shadow casting
+    magentaLampShadow.m_type = 1; // monodirectional shadow casting
     magentaLampShadow.m_index = 1;
     magentaLampShadow.m_nearPlane = 1.0f;
     magentaLampShadow.m_farPlane = 15.0f;
@@ -574,7 +576,7 @@ void Game::setup() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // setup shadow mapping
-    cyanLampShadow.m_type = 0; // no shadow casting
+    cyanLampShadow.m_type = 1; // monodirectional shadow casting
     cyanLampShadow.m_index = 2;
     cyanLampShadow.m_nearPlane = 1.0f;
     cyanLampShadow.m_farPlane = 15.0f;
@@ -881,7 +883,6 @@ void Game::setup() {
     m_registry.emplace<ShadowFramebufferComponent>(yellowLampEntity, yellowLampShadow);
     yellowLampUserData.m_enttEntity = &yellowLampEntity;
 
-/*
     auto magentaLampEntity = m_registry.create();
     m_registry.emplace<LightComponent>(magentaLampEntity, magentaLampLight);
     m_registry.emplace<BodyTransformComponent>(magentaLampEntity, magentaLampTransform);
@@ -901,7 +902,6 @@ void Game::setup() {
     m_registry.emplace<FixtureUserDataComponent>(cyanLampEntity, cyanLampUserData);
     m_registry.emplace<ShadowFramebufferComponent>(cyanLampEntity, cyanLampShadow);
     cyanLampUserData.m_enttEntity = &cyanLampEntity;
-*/
 
     auto playerEntity = m_registry.create();
     m_registry.emplace<PlayerComponent>(playerEntity, playerPlayer);

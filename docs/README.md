@@ -15,10 +15,9 @@ new techniques and practices over time.
             <ul>
                 <li>Blinn-Phong Lighting Model </li>
                 <li>Directional lights, point lights, spot lights </li>
-                <li>Shadow Mapping: single/omni directional mapping, percentage-closer filtering </li>
+                <li>Shadow Mapping: mono/omni directional mapping, percentage-closer filtering </li>
                 <li>HDR ***(work in progress) </li>
                 <li>Bloom ***(work in progress) </li>
-                <li>Deferred Shading ***(work in progress) </li>
             </ul>
             <li>PBR Textures: </li>
                 <ul>
