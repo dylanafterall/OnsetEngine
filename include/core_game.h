@@ -10,11 +10,13 @@
 
 #define ONSET_CONFIG_DEBUG
 
-#include "core_asset_manager.h"
 #include "core_window_manager.h"
+#include "core_asset_manager.h"
 #include "core_input_invoker.h"
 #include "core_log_manager.h"
 #include "core_log_macros.h"
+#include "core_text_manager.h"
+
 #include "component_all.h"
 #include "event_all.h"
 #include "system_all.h"
@@ -166,6 +168,10 @@ private:
      * \brief Object to act as a wrapper class around spdlog functionality.
      */
     LogManager m_logManager;
+    /**
+     * \brief Object to manage the game's renderable text characters.
+     */
+    TextManager m_textManager;
 
     /**
      * \brief Object to translate/rotate the camera.

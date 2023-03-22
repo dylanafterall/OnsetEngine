@@ -9,6 +9,7 @@
 #define CORE_ASSET_MANAGER_H
 
 #include "core_log_macros.h"
+#include "core_text_manager.h"
 
 #define GLFW_INCLUDE_NONE
 #include "glad/glad.h"
@@ -236,7 +237,6 @@ private:
      *        creating new game entities.
      */
     std::map<std::string, unsigned int> gshaders;
-    
     /**
      * \brief std::map used to store shader program IDs for easy lookup when 
      *        creating new game entities.

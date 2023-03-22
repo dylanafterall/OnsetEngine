@@ -31,7 +31,7 @@ new techniques and practices over time.
             <li>Multisample Anti-Aliasing (via GL_MULTISAMPLE) </li>
             <li>Gamma Correction (via GL_FRAMEBUFFER_SRGB) </li>
             <li>Model Instancing (via glDrawArraysInstanced) ***(work in progress) </li>
-            <li>Text Rendering ***(work in progress) </li>
+            <li>Text Rendering via FreeType library </li>
         </ul>
     <li>Audio effects ***(work in progress) </li>
     <li>Developer Tools: </li>
@@ -56,6 +56,7 @@ new techniques and practices over time.
     <li><a href="https://github.com/gabime/spdlog">gabime/spdlog</a> </li>
     <li><a href="https://github.com/ocornut/imgui">ocornut/imgui</a> </li>
     <li><a href="https://github.com/nothings/stb">nothings/stb</a> </li>
+    <li><a href="https://freetype.org/">FreeType</a> </li>
 </ul>
 </p>
 
@@ -67,7 +68,7 @@ new techniques and practices over time.
     <li>API: <a href="https://www.opengl.org/">OpenGL</a> </li>
     <li>LSP: <a href="https://clangd.llvm.org/">clangd</a> </li>
     <li>Static Analysis: <a href="http://cppcheck.net/">Cppcheck</a>, <a href="https://clang.llvm.org/extra/clang-tidy/">Clang-Tidy</a> </li>
-    <li>Dynamic Analysis: <a href="https://lldb.llvm.org/">LLDB</a>, <a href="https://valgrind.org/">Valgrind</a>, <a href="https://github.com/aristocratos/btop">btop++</a>, <a href="https://github.com/wolfpld/tracy">Tracy Profiler</a> </li>
+    <li>Dynamic Analysis: <a href="https://lldb.llvm.org/">LLDB</a>, <a href="https://valgrind.org/">Valgrind</a>, <a href="https://github.com/aristocratos/btop">btop++</a>, <a href="https://github.com/wolfpld/tracy">Tracy Profiler</a>, <a href="https://renderdoc.org/">RenderDoc</a> </li>
 </ul>
 </p>
 
@@ -143,6 +144,7 @@ new techniques and practices over time.
 
 <p>This project uses the following assets:<br>
 <ul> 
+    <li>The Nerd Font: <a href="https://www.nerdfonts.com/font-downloads">"MesloLG"</a>, from <a href="https://nerdfonts.com/">"nerdfonts.com"</a> </li>
     <li>The PBR material: <a href="https://freepbr.com/materials/angled-blocks-vegetation/">"Angled Blocks Vegetation"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
     <li>The PBR material: <a href="https://freepbr.com/materials/black-white-tile-pbr/">"Black White Tile"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
     <li>The PBR material: <a href="https://freepbr.com/materials/dull-metal/">"Dull Metal"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>

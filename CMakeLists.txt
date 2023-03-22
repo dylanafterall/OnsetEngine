@@ -22,21 +22,22 @@ option(BUILD_DOC "Build documentation" ON)
 
 project(OnsetEngine
     VERSION 0.1.0
-    DESCRIPTION " ECS game engine with 2D physics and 3D rendering"
+    DESCRIPTION "ECS game engine with 2D physics and 3D rendering"
     HOMEPAGE_URL "https://github.com/dylanafterall/OnsetEngine"
 )
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
     src/core_game.cpp
-    src/core_window_manager.cpp
     src/core_asset_manager.cpp
-    src/core_input_invoker.cpp
     src/core_input_commander.cpp
+    src/core_input_invoker.cpp
     src/core_log_manager.cpp
+    src/core_window_manager.cpp
+    src/core_text_manager.cpp
     src/system_camera.cpp
-    src/system_render.cpp
     src/system_collision.cpp
+    src/system_render.cpp
 )
 
 find_package(OpenGL REQUIRED)
@@ -48,6 +49,7 @@ find_package(box2d CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_path(STB_INCLUDE_DIRS "stb_c_lexer.h")
+find_package(freetype CONFIG REQUIRED)
 
 include_directories(${PROJECT_NAME}
     PRIVATE ${PROJECT_SOURCE_DIR}/include
@@ -64,6 +66,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE spdlog::spdlog
     PRIVATE spdlog::spdlog_header_only
     PRIVATE imgui::imgui
+    PRIVATE freetype
 )
 
 # DOCUMENTATION ----------------------------------------------------------------

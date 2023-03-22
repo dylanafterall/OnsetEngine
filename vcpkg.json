@@ -41,6 +41,10 @@
         {
             "name": "stb",
             "version>=": "2021-09-10#1"
+        },
+        {
+            "name": "freetype",
+            "version>=": "2.12.1"
         }
     ],
     "builtin-baseline": "2c102ee932e38799d4152da09359b3633e5993b8"

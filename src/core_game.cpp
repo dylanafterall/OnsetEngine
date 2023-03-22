@@ -38,6 +38,8 @@ void Game::initialize() {
         m_screenHeight
     );
 
+    m_textManager.initialize("../assets/fonts/Meslo/MesloLG_M_Regular_Nerd_Font_Complete_Mono.ttf");
+
     m_renderSystem.setWindowPointer(m_windowManager->m_glfwWindow);
     m_renderSystem.setGammaFlag(true);
     m_renderSystem.setShadowResolution(m_shadowWidth, m_shadowHeight);
@@ -70,13 +72,13 @@ void Game::setup() {
     m_assetManager.setFShader("sprite_frag", "../assets/shaders/sprite.frag");
     m_assetManager.setVShader("skybox_vert", "../assets/shaders/skybox.vert");
     m_assetManager.setFShader("skybox_frag", "../assets/shaders/skybox.frag");
+    m_assetManager.setVShader("text_vert", "../assets/shaders/text.vert");
+    m_assetManager.setFShader("text_frag", "../assets/shaders/text.frag");
     m_assetManager.setVShader("shadow_depth_vert", "../assets/shaders/shadow_depth.vert");
     m_assetManager.setFShader("shadow_depth_frag", "../assets/shaders/shadow_depth.frag");
     m_assetManager.setVShader("shadow_depth_cube_vert", "../assets/shaders/shadow_depth_cube.vert");
     m_assetManager.setGShader("shadow_depth_cube_geom", "../assets/shaders/shadow_depth_cube.geom");
     m_assetManager.setFShader("shadow_depth_cube_frag", "../assets/shaders/shadow_depth_cube.frag");
-    m_assetManager.setVShader("shadow_render_vert", "../assets/shaders/shadow_render.vert");
-    m_assetManager.setFShader("shadow_render_frag", "../assets/shaders/shadow_render.frag");
     m_assetManager.setVShader("basic_lighting_vert", "../assets/shaders/basic_lighting.vert");
     m_assetManager.setFShader("basic_lighting_frag", "../assets/shaders/basic_lighting.frag");
     m_assetManager.setVShader("shadow_framebuffer_vert", "../assets/shaders/shadow_framebuffer.vert");
@@ -97,6 +99,9 @@ void Game::setup() {
     vertex = m_assetManager.getVShader("skybox_vert");
     fragment = m_assetManager.getFShader("skybox_frag");
     m_assetManager.setShaderProgram("skybox", vertex, fragment);
+    vertex = m_assetManager.getVShader("text_vert");
+    fragment = m_assetManager.getFShader("text_frag");
+    m_assetManager.setShaderProgram("text", vertex, fragment);
     vertex = m_assetManager.getVShader("shadow_depth_vert");
     fragment = m_assetManager.getFShader("shadow_depth_frag");
     m_assetManager.setShaderProgram("shadow_depth", vertex, fragment);
@@ -104,9 +109,6 @@ void Game::setup() {
     geometry = m_assetManager.getGShader("shadow_depth_cube_geom");
     fragment = m_assetManager.getFShader("shadow_depth_cube_frag");
     m_assetManager.setShaderProgram("shadow_depth_cube", vertex, geometry, fragment);
-    vertex = m_assetManager.getVShader("shadow_render_vert");
-    fragment = m_assetManager.getFShader("shadow_render_frag");
-    m_assetManager.setShaderProgram("shadow_render", vertex, fragment);
     vertex = m_assetManager.getVShader("basic_lighting_vert");
     fragment = m_assetManager.getFShader("basic_lighting_frag");
     m_assetManager.setShaderProgram("basic_lighting", vertex, fragment);
@@ -118,18 +120,19 @@ void Game::setup() {
     // .........................................................................
     glUseProgram(m_assetManager.getShaderProgram("sprite"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("sprite"), "texture1"), 0);
-    glUseProgram(m_assetManager.getShaderProgram("shadow_render"));
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render"), "diffuseTexture"), 0); 
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_render"), "shadowMap"), 1); 
     glUseProgram(m_assetManager.getShaderProgram("basic_lighting"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "material.diffuse"), 0); 
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "material.specular"), 1);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotLights[0].depthTex"), 2);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotLights[1].depthTex"), 3);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotLights[2].depthTex"), 4);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointLights[0].depthCube"), 5);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointLights[1].depthCube"), 6);
-    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointLights[2].depthCube"), 7);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "material.normal"), 2);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotLights[0].depthTex"), 3);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotLights[1].depthTex"), 4);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "spotLights[2].depthTex"), 5);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointLights[0].depthCube"), 6);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointLights[1].depthCube"), 7);
+    glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("basic_lighting"), "pointLights[2].depthCube"), 8);
+    glUseProgram(m_assetManager.getShaderProgram("text"));
+    glm::mat4 textProjection = glm::ortho(0.0f, static_cast<float>(m_screenWidth), 0.0f, static_cast<float>(m_screenHeight));
+    glUniformMatrix4fv(glGetUniformLocation(m_assetManager.getShaderProgram("text"), "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
     glUseProgram(m_assetManager.getShaderProgram("shadow_framebuffer"));
     glUniform1i(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "depthMap"), 0); 
     glUniform1f(glGetUniformLocation(m_assetManager.getShaderProgram("shadow_framebuffer"), "near_plane"), 1.0f);
@@ -139,14 +142,19 @@ void Game::setup() {
     // .........................................................................
     m_assetManager.setTexture("tiles_diff", "../assets/textures/black-white-tile_albedo.png", true, true);
     m_assetManager.setTexture("tiles_spec", "../assets/textures/black-white-tile_metallic.png", true, false);
+    m_assetManager.setTexture("tiles_norm", "../assets/textures/black-white-tile_normal-ogl.png", true, false);
     m_assetManager.setTexture("rusted_diff", "../assets/textures/rusted-steel_albedo.png", true, true);
     m_assetManager.setTexture("rusted_spec", "../assets/textures/rusted-steel_metallic.png", true, false);
+    m_assetManager.setTexture("rusted_norm", "../assets/textures/rusted-steel_normal-ogl.png", true, false);
     m_assetManager.setTexture("blocks_diff", "../assets/textures/angled-blocks-vegetation_albedo.png", true, true);
     m_assetManager.setTexture("blocks_spec", "../assets/textures/angled-blocks-vegetation_metallic.png", true, false);
+    m_assetManager.setTexture("blocks_norm", "../assets/textures/angled-blocks-vegetation_normal-ogl.png", true, false);
     m_assetManager.setTexture("metal_diff", "../assets/textures/dull_metal_albedo.png", true, true);
     m_assetManager.setTexture("metal_spec", "../assets/textures/dull_metal_metallic.png", true, false);
-    m_assetManager.setTexture("gold_diff", "../assets/textures/lightgold_albedo.png", false, true);
-    m_assetManager.setTexture("gold_spec", "../assets/textures/lightgold_metallic.png", false, false);
+    m_assetManager.setTexture("metal_norm", "../assets/textures/dull_metal_normal-ogl.png", true, false);
+    m_assetManager.setTexture("gold_diff", "../assets/textures/lightgold_albedo.png", true, true);
+    m_assetManager.setTexture("gold_spec", "../assets/textures/lightgold_metallic.png", true, false);
+    m_assetManager.setTexture("gold_norm", "../assets/textures/lightgold_normal-ogl.png", true, false);
     m_assetManager.setTexture("blending", "../assets/textures/blending_transparent_window.png", false, true);
     m_assetManager.setTexture("white", "../assets/textures/white.jpg", true, true);
 
@@ -611,6 +619,7 @@ void Game::setup() {
     playerMaterial.m_shininess = 128.0f;
     playerTexture.m_diffuse = m_assetManager.getTexture("tiles_diff");
     playerTexture.m_specular = m_assetManager.getTexture("tiles_spec");
+    playerTexture.m_normal = m_assetManager.getTexture("tiles_norm");
     playerShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     playerShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     playerGraphics.m_vertexCount = sphereMesh.m_vertexCount;
@@ -652,6 +661,7 @@ void Game::setup() {
     floorMaterial.m_shininess = 32.0f;
     floorTexture.m_diffuse = m_assetManager.getTexture("metal_diff");
     floorTexture.m_specular = m_assetManager.getTexture("metal_spec");
+    floorTexture.m_normal = m_assetManager.getTexture("metal_norm");
     floorShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     floorShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     floorGraphics.m_vertexCount = groundMesh.m_vertexCount;
@@ -687,6 +697,7 @@ void Game::setup() {
     sphereMaterial.m_shininess = 32.0f;
     sphereTexture.m_diffuse = m_assetManager.getTexture("rusted_diff");
     sphereTexture.m_specular = m_assetManager.getTexture("rusted_spec");
+    sphereTexture.m_normal = m_assetManager.getTexture("rusted_norm");
     sphereShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     sphereShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     sphereGraphics.m_vertexCount = sphereMesh.m_vertexCount;
@@ -728,6 +739,7 @@ void Game::setup() {
     goldMaterial.m_shininess = 256.0f;
     goldTexture.m_diffuse = m_assetManager.getTexture("gold_diff");
     goldTexture.m_specular = m_assetManager.getTexture("gold_spec");
+    goldTexture.m_normal = m_assetManager.getTexture("gold_norm");
     goldShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     goldShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     goldGraphics.m_vertexCount = sphereMesh.m_vertexCount;
@@ -770,6 +782,7 @@ void Game::setup() {
     cubeMaterial.m_shininess = 32.0f;
     cubeTexture.m_diffuse = m_assetManager.getTexture("blocks_diff");
     cubeTexture.m_specular = m_assetManager.getTexture("blocks_spec");
+    cubeTexture.m_normal = m_assetManager.getTexture("blocks_norm");
     cubeShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     cubeShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     cubeGraphics.m_vertexCount = cubeMesh.m_vertexCount;
@@ -823,6 +836,60 @@ void Game::setup() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    // identification text entity (onset engine id text)
+    // .........................................................................
+    // setup components
+    TextComponent idtextText;
+    ShaderProgramComponent idtextShaderProgram;
+    RenderDataComponent idtextGraphics;
+    idtextShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("text");
+    // setup text to render
+    idtextText.m_xCoord = 25.0f;
+    idtextText.m_yCoord = 40.0f;
+    idtextText.m_scale = 0.3f;
+    idtextText.m_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    std::string idtextMessage = "Onset Engine v0.1.0";
+    for (std::string::const_iterator c = idtextMessage.begin(); c != idtextMessage.end(); c++) {
+        idtextText.m_characters.insert(idtextText.m_characters.end(), m_textManager.getCharacter(*c));
+    }
+    // setup OpenGL data
+    glGenVertexArrays(1, &idtextGraphics.m_VAO);
+    glGenBuffers(1, &idtextGraphics.m_VBO);
+    glBindVertexArray(idtextGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, idtextGraphics.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    // link text entity (github link text)
+    // .........................................................................
+    // setup components
+    TextComponent linkText;
+    ShaderProgramComponent linkShaderProgram;
+    RenderDataComponent linkGraphics;
+    linkShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("text");
+    // setup text to render
+    linkText.m_xCoord = 25.0f;
+    linkText.m_yCoord = 25.0f;
+    linkText.m_scale = 0.2f;
+    linkText.m_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    std::string linkMessage = "github.com/dylanafterall/OnsetEngine.git";
+    for (std::string::const_iterator c = linkMessage.begin(); c != linkMessage.end(); c++) {
+        linkText.m_characters.insert(linkText.m_characters.end(), m_textManager.getCharacter(*c));
+    }
+    // setup OpenGL data
+    glGenVertexArrays(1, &linkGraphics.m_VAO);
+    glGenBuffers(1, &linkGraphics.m_VBO);
+    glBindVertexArray(linkGraphics.m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, linkGraphics.m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
 
     // _________________________________________________________________________
@@ -954,6 +1021,16 @@ void Game::setup() {
     m_registry.emplace<TextureComponent>(windowEntity, windowTexture);
     m_registry.emplace<ShaderProgramComponent>(windowEntity, windowShaderProgram);
     m_registry.emplace<RenderDataComponent>(windowEntity, windowGraphics);
+
+    auto idtextEntity = m_registry.create();
+    m_registry.emplace<TextComponent>(idtextEntity, idtextText);
+    m_registry.emplace<ShaderProgramComponent>(idtextEntity, idtextShaderProgram);
+    m_registry.emplace<RenderDataComponent>(idtextEntity, idtextGraphics);
+
+    auto linkEntity = m_registry.create();
+    m_registry.emplace<TextComponent>(linkEntity, linkText);
+    m_registry.emplace<ShaderProgramComponent>(linkEntity, linkShaderProgram);
+    m_registry.emplace<RenderDataComponent>(linkEntity, linkGraphics);
 }
 
 // _____________________________________________________________________________
@@ -1023,6 +1100,7 @@ void Game::destroy() {
     m_assetManager.deleteAssets();
     m_registry.clear();
     
+    m_textManager.destroy();
     m_inputInvoker->destroy();
     m_windowManager->destroy();
     m_logManager.destroy();

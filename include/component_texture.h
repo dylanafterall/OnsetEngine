@@ -22,6 +22,10 @@ struct TextureComponent {
      */
     unsigned int m_specular;
     /**
+     * \brief Unique OpenGL ID for a texture (texture map - normal).
+     */
+    unsigned int m_normal;
+    /**
      * \brief Unique OpenGL ID for a cubemap.
      */
     unsigned int m_cubemap;

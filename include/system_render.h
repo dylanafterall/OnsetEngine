@@ -19,6 +19,7 @@
 #include "component_skybox.h"
 #include "component_sprite.h"
 #include "component_test.h"
+#include "component_text.h"
 #include "component_texture.h"
 
 #include <glad/glad.h>
