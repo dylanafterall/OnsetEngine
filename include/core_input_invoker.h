@@ -41,11 +41,12 @@ public:
      *          an IInputCommand class for each input option.
      * \param   glfwWindow      For using glfw callback functions.
      * \param   registryPtr     For passing game's registry to IInputCommander classes.
+     * \param   dispatcherPtr   For passing game's event system dispatcher to IInputCommander classes.
      * \param   screenWidth     For calculating m_lastX and mouse input direction.
      * \param   screenHeight    For calculating m_lastY and mouse input direction.
      * \return  void, none.
      */
-    void initialize(GLFWwindow*, entt::registry*, unsigned int, unsigned int);
+    void initialize(GLFWwindow*, entt::dispatcher*, unsigned int, unsigned int);
     /**
      * \brief   The function destroy. 
      * \details This function de-allocates heap memory reserved for 
@@ -323,9 +324,9 @@ private:
      */
     GLFWwindow* m_glfwWindow;
     /**
-     * \brief Pointer to game's registry to pass to IInputCommand classes.
+     * \brief Pointer to event system's dispatcher to pass to IInputCommand classes.
      */
-    entt::registry* m_registryPtr;
+    entt::dispatcher* m_dispatcherPtr;
     /**
      * \brief The game's window width, for calculating initial mouse position.
      */

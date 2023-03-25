@@ -31,7 +31,7 @@ new techniques and practices over time.
             <li>Multisample Anti-Aliasing (via GL_MULTISAMPLE) </li>
             <li>Gamma Correction (via GL_FRAMEBUFFER_SRGB) </li>
             <li>Model Instancing (via glDrawArraysInstanced) ***(work in progress) </li>
-            <li>Text Rendering via FreeType library </li>
+            <li>Text Rendering </li>
         </ul>
     <li>Audio effects ***(work in progress) </li>
     <li>Developer Tools: </li>

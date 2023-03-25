@@ -14,8 +14,6 @@
 #include "entt/entt.hpp"
 #include "box2d/box2d.h"
 
-#include <iostream>
-
 class CollisionSystem : public b2ContactListener {
 public:
     CollisionSystem() = default;

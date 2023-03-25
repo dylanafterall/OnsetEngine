@@ -38,6 +38,8 @@ add_executable(${PROJECT_NAME}
     src/system_camera.cpp
     src/system_collision.cpp
     src/system_render.cpp
+    src/system_player_movement.cpp
+    src/system_select_mode.cpp
 )
 
 find_package(OpenGL REQUIRED)

@@ -14,7 +14,8 @@
 //      4) render skybox
 //      5) render gameplay entities
 //      6) render sprites
-//      7) render stencil outlines
+//      7) render text
+//      8) render stencil outlines
 
 void RenderSystem::update(
     const float timeStep, 
@@ -496,7 +497,64 @@ void RenderSystem::update(
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // 7) render stencil outlines
+    // 7) render text
+    // _________________________________________________________________________
+    // -------------------------------------------------------------------------
+    auto textEntities = registry.view<
+        TextComponent, 
+        ShaderProgramComponent,
+        RenderDataComponent
+    >();
+    textEntities.each([&](
+        auto& text,
+        const auto& shader,
+        const auto& graphics
+    ) { 
+        glUseProgram(shader.m_outputProgram);
+        glStencilMask(0x00);
+        glUniform3f(glGetUniformLocation(shader.m_outputProgram, "textColor"), text.m_color.x, text.m_color.y, text.m_color.z);
+        glActiveTexture(GL_TEXTURE0);
+        glBindVertexArray(graphics.m_VAO);
+
+        float x = text.m_xCoord;
+        // iterate through all characters
+        for (std::vector<Character>::iterator ch = text.m_characters.begin(); ch != text.m_characters.end(); ++ch) {
+            float xpos = x + ch->m_bearing.x * text.m_scale;
+            float ypos = text.m_yCoord - (ch->m_size.y - ch->m_bearing.y) * text.m_scale;
+            float w = ch->m_size.x * text.m_scale;
+            float h = ch->m_size.y * text.m_scale;
+            // update VBO for each character
+            float textVertices[6][4] = {
+                { xpos,     ypos + h,   0.0f, 0.0f },            
+                { xpos,     ypos,       0.0f, 1.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+
+                { xpos,     ypos + h,   0.0f, 0.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+                { xpos + w, ypos + h,   1.0f, 0.0f }           
+            };
+            // render glyph texture over quad
+            glBindTexture(GL_TEXTURE_2D, ch->m_textureID);
+            // update content of VBO memory
+            glBindBuffer(GL_ARRAY_BUFFER, graphics.m_VBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(textVertices), textVertices);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+            // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels 
+            // by 64 to get amount of pixels))
+            x += (ch->m_advance >> 6) * text.m_scale;
+        }
+        x = text.m_xCoord;
+
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    });
+
+    // _________________________________________________________________________
+    // -------------------------------------------------------------------------
+    // 8) render stencil outlines
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
     gameplayEntities.each([&](
@@ -541,62 +599,6 @@ void RenderSystem::update(
             glStencilFunc(GL_ALWAYS, 0, 0xFF);
             glEnable(GL_DEPTH_TEST);
         }
-    });
-
-    // _________________________________________________________________________
-    // -------------------------------------------------------------------------
-    // 8) render text
-    // _________________________________________________________________________
-    // -------------------------------------------------------------------------
-    auto textEntities = registry.view<
-        TextComponent, 
-        ShaderProgramComponent,
-        RenderDataComponent
-    >();
-    textEntities.each([&](
-        auto& text,
-        const auto& shader,
-        const auto& graphics
-    ) { 
-        glUseProgram(shader.m_outputProgram);
-        glUniform3f(glGetUniformLocation(shader.m_outputProgram, "textColor"), text.m_color.x, text.m_color.y, text.m_color.z);
-        glActiveTexture(GL_TEXTURE0);
-        glBindVertexArray(graphics.m_VAO);
-
-        float x = text.m_xCoord;
-        // iterate through all characters
-        for (std::vector<Character>::iterator ch = text.m_characters.begin(); ch != text.m_characters.end(); ++ch) {
-            float xpos = x + ch->m_bearing.x * text.m_scale;
-            float ypos = text.m_yCoord - (ch->m_size.y - ch->m_bearing.y) * text.m_scale;
-            float w = ch->m_size.x * text.m_scale;
-            float h = ch->m_size.y * text.m_scale;
-            // update VBO for each character
-            float textVertices[6][4] = {
-                { xpos,     ypos + h,   0.0f, 0.0f },            
-                { xpos,     ypos,       0.0f, 1.0f },
-                { xpos + w, ypos,       1.0f, 1.0f },
-
-                { xpos,     ypos + h,   0.0f, 0.0f },
-                { xpos + w, ypos,       1.0f, 1.0f },
-                { xpos + w, ypos + h,   1.0f, 0.0f }           
-            };
-            // render glyph texture over quad
-            glBindTexture(GL_TEXTURE_2D, ch->m_textureID);
-            // update content of VBO memory
-            glBindBuffer(GL_ARRAY_BUFFER, graphics.m_VBO);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(textVertices), textVertices);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-            // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-            // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels 
-            // by 64 to get amount of pixels))
-            x += (ch->m_advance >> 6) * text.m_scale;
-        }
-        x = text.m_xCoord;
-
-        glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
     });
 }
 

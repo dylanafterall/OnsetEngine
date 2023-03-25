@@ -18,12 +18,12 @@
 
 void InputInvoker::initialize(
     GLFWwindow* glfwWindow,
-    entt::registry* registryPtr, 
+    entt::dispatcher* dispatcherPtr,
     unsigned int screenWidth, 
     unsigned int screenHeight
 ) {
     m_glfwWindow = glfwWindow;
-    m_registryPtr = registryPtr;
+    m_dispatcherPtr = dispatcherPtr;
     m_screenWidth = screenWidth;
     m_screenHeight = screenHeight;
     m_lastX = screenWidth / 2;
@@ -132,64 +132,64 @@ void InputInvoker::handleKeyInput(GLFWwindow* window, int key, int scancode, int
                 break;
             case GLFW_KEY_A:
                 if (mods == GLFW_MOD_SHIFT) {
-                    m_keyShiftA->execute(*m_registryPtr);
+                    m_keyShiftA->execute(*m_dispatcherPtr);
                     break;
                 }
-                m_keyA->execute(*m_registryPtr);
+                m_keyA->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_S:
                 if (mods == GLFW_MOD_SHIFT) {
-                    m_keyShiftS->execute(*m_registryPtr);
+                    m_keyShiftS->execute(*m_dispatcherPtr);
                     break;
                 }
-                m_keyS->execute(*m_registryPtr);
+                m_keyS->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_D:
                 if (mods == GLFW_MOD_SHIFT) {
-                    m_keyShiftD->execute(*m_registryPtr);
+                    m_keyShiftD->execute(*m_dispatcherPtr);
                     break;
                 }
-                m_keyD->execute(*m_registryPtr);
+                m_keyD->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_W:
                 if (mods == GLFW_MOD_SHIFT) {
-                    m_keyShiftW->execute(*m_registryPtr);
+                    m_keyShiftW->execute(*m_dispatcherPtr);
                     break;
                 }
-                m_keyW->execute(*m_registryPtr);
+                m_keyW->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_E:
-                m_keyE->execute(*m_registryPtr);
+                m_keyE->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_H:
-                m_keyH->execute(*m_registryPtr);
+                m_keyH->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_J:
-                m_keyJ->execute(*m_registryPtr);
+                m_keyJ->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_K:
-                m_keyK->execute(*m_registryPtr);
+                m_keyK->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_L:
-                m_keyL->execute(*m_registryPtr);
+                m_keyL->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_U:
-                m_keyU->execute(*m_registryPtr);
+                m_keyU->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_I:
-                m_keyI->execute(*m_registryPtr);
+                m_keyI->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_7:
-                m_key7->execute(*m_registryPtr);
+                m_key7->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_8:
-                m_key8->execute(*m_registryPtr);
+                m_key8->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_9:
-                m_key9->execute(*m_registryPtr);
+                m_key9->execute(*m_dispatcherPtr);
                 break;
             case GLFW_KEY_0:
-                m_key0->execute(*m_registryPtr);
+                m_key0->execute(*m_dispatcherPtr);
                 break;
         }
     }
@@ -215,28 +215,28 @@ void InputInvoker::handleMouseInput(double xposIn, double yposIn) {
     // call InputCommander
     // if cursor is moving to the right
     if (xoffset > 0) {
-        if (yoffset > 0) {m_cursorUp_rightMove->execute(*m_registryPtr);}
-        else if (yoffset < 0) {m_cursorDown_rightMove->execute(*m_registryPtr);}
-        else {m_cursorRightMove->execute(*m_registryPtr);}
+        if (yoffset > 0) {m_cursorUp_rightMove->execute(*m_dispatcherPtr);}
+        else if (yoffset < 0) {m_cursorDown_rightMove->execute(*m_dispatcherPtr);}
+        else {m_cursorRightMove->execute(*m_dispatcherPtr);}
     }
     // else if cursor is moving to the left
     else if (xoffset < 0) {
-        if (yoffset > 0) {m_cursorUp_leftMove->execute(*m_registryPtr);}
-        else if (yoffset < 0) {m_cursorDown_leftMove->execute(*m_registryPtr);}
-        else {m_cursorLeftMove->execute(*m_registryPtr);}
+        if (yoffset > 0) {m_cursorUp_leftMove->execute(*m_dispatcherPtr);}
+        else if (yoffset < 0) {m_cursorDown_leftMove->execute(*m_dispatcherPtr);}
+        else {m_cursorLeftMove->execute(*m_dispatcherPtr);}
     }
     // else cursor is moving, but not left or right
     else {
-        if (yoffset > 0) {m_cursorUpMove->execute(*m_registryPtr);}
-        else {m_cursorDownMove->execute(*m_registryPtr);}
+        if (yoffset > 0) {m_cursorUpMove->execute(*m_dispatcherPtr);}
+        else {m_cursorDownMove->execute(*m_dispatcherPtr);}
     }
 }
 
 void InputInvoker::handleScrollInput(float yoffset) {
     // positive yoffset means scroll down
-    if (yoffset > 0) {m_scrollDownMove->execute(*m_registryPtr);}
+    if (yoffset > 0) {m_scrollDownMove->execute(*m_dispatcherPtr);}
     // negative yoffset is scroll up
-    else {m_scrollUpMove->execute(*m_registryPtr);}
+    else {m_scrollUpMove->execute(*m_dispatcherPtr);}
 }
 
 // _____________________________________________________________________________

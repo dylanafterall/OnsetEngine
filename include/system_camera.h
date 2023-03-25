@@ -13,6 +13,7 @@
 #include "component_body_transform.h"
 
 #include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "entt/entt.hpp"
 #include "box2d/box2d.h"
@@ -34,24 +35,81 @@ public:
     ~CameraSystem() = default;
 
     /**
-     * \brief   The function update. 
-     * \details This function translates, rotates, and zooms the game's main 
+     * \brief   Set EnTT registry within CameraSystem to accesss game data.
+     */
+    void setRegistry(entt::registry*);
+
+    /**
+     * \brief   This function translates, rotates, and zooms the game's main 
      *          camera entity.
      * \param   timeStep    The amount of time to simulate (representing seconds).
      * \param   registry    The game's EnTT registry for accessing camera entities.
      * \return  void, none.
      */
-    void update(const float, entt::registry&);
+    void update(const float);
 
-private:
     /**
-     * \brief   The function updateCameraVectors. 
-     * \details This function updates the member vectors of camera entities 
+     * \brief   Translates the game's camera entity left in game space.
+     */
+    void translateCameraLeft();
+    /**
+     * \brief   Translates the game's camera entity right in game space.
+     */
+    void translateCameraRight();
+    /**
+     * \brief   Translates the game's camera entity up in game space.
+     */
+    void translateCameraUp();
+    /**
+     * \brief   Translates the game's camera entity down in game space.
+     */
+    void translateCameraDown();
+    /**
+     * \brief   Translates the game's camera entity forward in game space.
+     */
+    void translateCameraForward();
+    /**
+     * \brief   Translates the game's camera entity backward in game space.
+     */
+    void translateCameraBackward();
+
+    /**
+     * \brief   Zooms the game's camera entity into game space.
+     */
+    void zoomCameraIn();
+    /**
+     * \brief   Zooms the game's camera entity out of game space.
+     */
+    void zoomCameraOut();
+
+    /**
+     * \brief   Rotates the game's camera entity up in game space.
+     */
+    void pitchCameraUp();
+    /**
+     * \brief   Rotates the game's camera entity down in game space.
+     */
+    void pitchCameraDown();
+
+    /**
+     * \brief   Rotates the game's camera entity left in game space.
+     */
+    void yawCameraLeft();
+    /**
+     * \brief   Rotates the game's camera entity right in game space.
+     */
+    void yawCameraRight();
+
+    /**
+     * \brief   This function updates the member vectors of camera entities 
      *          (m_front, m_up, and m_right).
      * \param   registry    The game's EnTT registry for accessing camera entities.
      * \return  void, none.
      */
-    void updateCameraVectors(entt::registry&);
+    void updateCameraVectors();
+
+private:
+    entt::registry* m_registry;
 
 };
 

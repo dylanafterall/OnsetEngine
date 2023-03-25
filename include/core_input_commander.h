@@ -10,18 +10,9 @@
 #ifndef CORE_INPUT_COMMANDER_H
 #define CORE_INPUT_COMMANDER_H
 
-#include "component_body_transform.h"
-#include "component_camera.h"
-#include "component_fixture_user_data.h"
-#include "component_player.h"
-#include "component_render_data.h"
 #include "core_log_macros.h"
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "entt/entt.hpp"
-#include "box2d/box2d.h"
 
 
 /** 
@@ -34,7 +25,7 @@
 class IInputCommand {
 public:
 	virtual ~IInputCommand() {}
-	virtual void execute(entt::registry&) const = 0;
+	virtual void execute(entt::dispatcher&) const = 0;
 };
 
 /** 
@@ -45,7 +36,7 @@ public:
  */
 class LeftCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -56,7 +47,7 @@ public:
  */
 class DownCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -67,7 +58,7 @@ public:
  */
 class RightCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -78,7 +69,7 @@ public:
  */
 class UpCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -89,7 +80,7 @@ public:
  */
 class SelectedLeftCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -100,7 +91,7 @@ public:
  */
 class SelectedDownCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -111,7 +102,7 @@ public:
  */
 class SelectedRightCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -122,7 +113,7 @@ public:
  */
 class SelectedUpCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -133,7 +124,7 @@ public:
  */
 class ToggleSelectModeCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 // -----------------------------------------------------------------------------
@@ -144,7 +135,7 @@ public:
  */
 class NorthCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -154,7 +145,7 @@ public:
  */
 class WestCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -164,7 +155,7 @@ public:
  */
 class SouthCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -174,7 +165,7 @@ public:
  */
 class EastCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -184,7 +175,7 @@ public:
  */
 class NortheastCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -194,7 +185,7 @@ public:
  */
 class NorthwestCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -204,7 +195,7 @@ public:
  */
 class SouthwestCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -214,7 +205,7 @@ public:
  */
 class SoutheastCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 // -----------------------------------------------------------------------------
@@ -225,7 +216,7 @@ public:
  */
 class CameraUpCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -235,7 +226,7 @@ public:
  */
 class CameraDownCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -245,7 +236,7 @@ public:
  */
 class CameraLeftCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -255,7 +246,7 @@ public:
  */
 class CameraRightCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -265,7 +256,7 @@ public:
  */
 class CameraForwardCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -275,7 +266,7 @@ public:
  */
 class CameraBackwardCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -286,7 +277,7 @@ public:
  */
 class CameraZoomInCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -297,7 +288,7 @@ public:
  */
 class CameraZoomOutCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -307,7 +298,7 @@ public:
  */
 class CameraPitchUpCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -317,7 +308,7 @@ public:
  */
 class CameraPitchDownCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -327,7 +318,7 @@ public:
  */
 class CameraYawLeftCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 /** 
@@ -337,7 +328,7 @@ public:
  */
 class CameraYawRightCommand : public IInputCommand {
 public:
-	void execute(entt::registry&) const override;
+	void execute(entt::dispatcher&) const override;
 };
 
 #endif // CORE_INPUT_COMMANDER_H

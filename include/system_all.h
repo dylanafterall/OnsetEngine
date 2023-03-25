@@ -10,6 +10,8 @@
 
 #include "system_camera.h"
 #include "system_collision.h"
+#include "system_player_movement.h"
 #include "system_render.h"
+#include "system_select_mode.h"
 
 #endif // SYSTEM_ALL_H

@@ -185,15 +185,21 @@ private:
      * \brief Object to render entities of game's registry.
      */
     RenderSystem m_renderSystem;
-
-
+    /**
+     * \brief Object to control player movement functionality.
+     */
+    PlayerMovementSystem m_playerMovementSystem;
+    /**
+     * \brief Object to control 'select mode' functionality.
+     */
+    SelectModeSystem m_selectModeSystem;
 
     /**
      * \brief EnTT registry to manage all game entities.
      */
     entt::registry m_registry;
     /**
-     * \brief EnTT dispatcher to .
+     * \brief EnTT default event dispatcher.
      */
     entt::dispatcher m_dispatcher;
 

@@ -33,12 +33,10 @@ void Game::initialize() {
     m_inputInvoker = std::make_unique<InputInvoker>();
     m_inputInvoker->initialize(
         m_windowManager->m_glfwWindow, 
-        &m_registry, 
+        &m_dispatcher,
         m_screenWidth, 
         m_screenHeight
     );
-
-    m_textManager.initialize("../assets/fonts/Meslo/MesloLG_M_Regular_Nerd_Font_Complete_Mono.ttf");
 
     m_renderSystem.setWindowPointer(m_windowManager->m_glfwWindow);
     m_renderSystem.setGammaFlag(true);
@@ -46,6 +44,10 @@ void Game::initialize() {
 
     m_world->SetContactListener(&m_collisionSystem);
     m_collisionSystem.setRegistry(&m_registry);
+
+    m_cameraSystem.setRegistry(&m_registry);
+    m_playerMovementSystem.setRegistry(&m_registry);
+    m_selectModeSystem.setRegistry(&m_registry);
 }
 
 void Game::setup() {
@@ -61,6 +63,10 @@ void Game::setup() {
     MeshGroundComponent groundMesh;
     MeshSpriteComponent spriteMesh;
     MeshSkyboxComponent skyboxMesh;
+
+    // fonts 
+    // .........................................................................
+    m_textManager.initialize("../assets/fonts/Meslo/MesloLG_M_Regular_Nerd_Font_Complete_Mono.ttf");
 
     // shaders
     // .........................................................................
@@ -172,9 +178,35 @@ void Game::setup() {
 
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
-    // Entities
+    // EnTT
     // _________________________________________________________________________
     // -------------------------------------------------------------------------
+    // event dispatcher setup
+    // .........................................................................
+    m_dispatcher.sink<LeftCommand>().connect<&PlayerMovementSystem::movePlayerLeft>(m_playerMovementSystem);
+    m_dispatcher.sink<RightCommand>().connect<&PlayerMovementSystem::movePlayerRight>(m_playerMovementSystem);
+    m_dispatcher.sink<UpCommand>().connect<&PlayerMovementSystem::movePlayerUp>(m_playerMovementSystem);
+    m_dispatcher.sink<DownCommand>().connect<&PlayerMovementSystem::movePlayerDown>(m_playerMovementSystem);
+
+    m_dispatcher.sink<CameraLeftCommand>().connect<&CameraSystem::translateCameraLeft>(m_cameraSystem);
+    m_dispatcher.sink<CameraRightCommand>().connect<&CameraSystem::translateCameraRight>(m_cameraSystem);
+    m_dispatcher.sink<CameraUpCommand>().connect<&CameraSystem::translateCameraUp>(m_cameraSystem);
+    m_dispatcher.sink<CameraDownCommand>().connect<&CameraSystem::translateCameraDown>(m_cameraSystem);
+    m_dispatcher.sink<CameraForwardCommand>().connect<&CameraSystem::translateCameraForward>(m_cameraSystem);
+    m_dispatcher.sink<CameraBackwardCommand>().connect<&CameraSystem::translateCameraBackward>(m_cameraSystem);
+    m_dispatcher.sink<CameraZoomInCommand>().connect<&CameraSystem::zoomCameraIn>(m_cameraSystem);
+    m_dispatcher.sink<CameraZoomOutCommand>().connect<&CameraSystem::zoomCameraOut>(m_cameraSystem);
+    m_dispatcher.sink<CameraPitchUpCommand>().connect<&CameraSystem::pitchCameraUp>(m_cameraSystem);
+    m_dispatcher.sink<CameraPitchDownCommand>().connect<&CameraSystem::pitchCameraDown>(m_cameraSystem);
+    m_dispatcher.sink<CameraYawLeftCommand>().connect<&CameraSystem::yawCameraLeft>(m_cameraSystem);
+    m_dispatcher.sink<CameraYawRightCommand>().connect<&CameraSystem::yawCameraRight>(m_cameraSystem);
+
+    m_dispatcher.sink<SelectedLeftCommand>().connect<&SelectModeSystem::moveSelectedLeft>(m_selectModeSystem);
+    m_dispatcher.sink<SelectedRightCommand>().connect<&SelectModeSystem::moveSelectedRight>(m_selectModeSystem);
+    m_dispatcher.sink<SelectedUpCommand>().connect<&SelectModeSystem::moveSelectedUp>(m_selectModeSystem);
+    m_dispatcher.sink<SelectedDownCommand>().connect<&SelectModeSystem::moveSelectedDown>(m_selectModeSystem);
+    m_dispatcher.sink<ToggleSelectModeCommand>().connect<&SelectModeSystem::toggleSelectMode>(m_selectModeSystem);
+
     // camera entity
     // .........................................................................
     // setup components
@@ -1071,7 +1103,7 @@ void Game::processInput() {
 void Game::update(const float timeStep, const int32 velocityIterations, const int32 positionIterations) {
     // box2D update
     m_world->Step(timeStep, velocityIterations, positionIterations);
-    m_cameraSystem.update(timeStep, m_registry);
+    m_cameraSystem.update(timeStep);
 }
 
 void Game::render(const float renderFactor) {

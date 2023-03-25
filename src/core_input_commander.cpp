@@ -10,400 +10,113 @@
 #include "core_input_commander.h"
 
 // -----------------------------------------------------------------------------
-void LeftCommand::execute(entt::registry& registry) const {
-    auto player = registry.view<
-        PlayerComponent,
-        BodyTransformComponent
-    >();
-    player.each([&](
-        const auto& player,
-        auto& body
-    ) {
-        b2Vec2 force = b2Vec2(-500.0f, 0.0f);
-        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-    });
+void LeftCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<LeftCommand>();
 }
 
-void DownCommand::execute(entt::registry& registry) const {
-    auto player = registry.view<
-        PlayerComponent,
-        BodyTransformComponent
-    >();
-    player.each([&](
-        const auto& player,
-        auto& body
-    ) {
-        b2Vec2 force = b2Vec2(0.0f, -2000.0f);
-        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-    });
+void DownCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<DownCommand>();
 }
 
-void RightCommand::execute(entt::registry& registry) const {
-    auto player = registry.view<
-        PlayerComponent,
-        BodyTransformComponent
-    >();
-    player.each([&](
-        const auto& player,
-        auto& body
-    ) {
-        b2Vec2 force = b2Vec2(500.0f, 0.0f);
-        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-    });
+void RightCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<RightCommand>();
 }
 
-void UpCommand::execute(entt::registry& registry) const {
-    auto player = registry.view<
-        PlayerComponent,
-        BodyTransformComponent
-    >();
-    player.each([&](
-        const auto& player,
-        auto& body
-    ) {
-        b2Vec2 force = b2Vec2(0.0f, 2000.0f);
-        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-    });
+void UpCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<UpCommand>();
 }
 
-void SelectedLeftCommand::execute(entt::registry& registry) const {
-    // get views of player and of selected objects
-    auto player = registry.view<
-        PlayerComponent,
-        BodyTransformComponent,
-        RenderDataComponent
-    >();
-    auto selectables = registry.view<
-        BodyTransformComponent,
-        FixtureUserDataComponent,
-        RenderDataComponent
-    >();
-
-    // move the player, then selectables if select mode is on
-    bool selectModeOn;
-    player.each([&](
-        const auto& player,
-        auto& body,
-        const auto& renderData
-    ) {
-        selectModeOn = renderData.m_stencilFlag;
-        b2Vec2 force = b2Vec2(-500.0f, 0.0f);
-        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-    });
-
-    if (selectModeOn) {
-        selectables.each([&](
-            auto& body,
-            const auto& userData,
-            const auto& renderData
-        ) {
-            if (userData.m_fixtureType == 3 && renderData.m_stencilFlag) {
-                b2Vec2 force = b2Vec2(-500.0f, 0.0f);
-                body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-            }
-        });
-    }
+void SelectedLeftCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<SelectedLeftCommand>();
 }
 
-void SelectedDownCommand::execute(entt::registry& registry) const {
-    // get views of player and of selected objects
-    auto player = registry.view<
-        PlayerComponent,
-        BodyTransformComponent,
-        RenderDataComponent
-    >();
-    auto selectables = registry.view<
-        BodyTransformComponent,
-        FixtureUserDataComponent,
-        RenderDataComponent
-    >();
-
-    // move the player, then selectables if select mode is on
-    bool selectModeOn;
-    player.each([&](
-        const auto& player,
-        auto& body,
-        const auto& renderData
-    ) {
-        selectModeOn = renderData.m_stencilFlag;
-        b2Vec2 force = b2Vec2(0.0f, -2000.0f);
-        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-    });
-
-    if (selectModeOn) {
-        selectables.each([&](
-            auto& body,
-            const auto& userData,
-            const auto& renderData
-        ) {
-            if (userData.m_fixtureType == 3 && renderData.m_stencilFlag) {
-                b2Vec2 force = b2Vec2(0.0f, -2000.0f);
-                body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-            }
-        });
-    }
+void SelectedDownCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<SelectedDownCommand>();
 }
 
-void SelectedRightCommand::execute(entt::registry& registry) const {
-    // get views of player and of selected objects
-    auto player = registry.view<
-        PlayerComponent,
-        BodyTransformComponent,
-        RenderDataComponent
-    >();
-    auto selectables = registry.view<
-        BodyTransformComponent,
-        FixtureUserDataComponent,
-        RenderDataComponent
-    >();
-
-    // move the player, then selectables if select mode is on
-    bool selectModeOn;
-    player.each([&](
-        const auto& player,
-        auto& body,
-        const auto& renderData
-    ) {
-        selectModeOn = renderData.m_stencilFlag;
-        b2Vec2 force = b2Vec2(500.0f, 0.0f);
-        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-    });
-
-    if (selectModeOn) {
-        selectables.each([&](
-            auto& body,
-            const auto& userData,
-            const auto& renderData
-        ) {
-            if (userData.m_fixtureType == 3 && renderData.m_stencilFlag) {
-                b2Vec2 force = b2Vec2(500.0f, 0.0f);
-                body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-            }
-        });
-    }
+void SelectedRightCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<SelectedRightCommand>();
 }
 
-void SelectedUpCommand::execute(entt::registry& registry) const {
-    // get views of player and of selected objects
-    auto player = registry.view<
-        PlayerComponent,
-        BodyTransformComponent,
-        RenderDataComponent
-    >();
-    auto selectables = registry.view<
-        BodyTransformComponent,
-        FixtureUserDataComponent,
-        RenderDataComponent
-    >();
-
-    // move the player, then selectables if select mode is on
-    bool selectModeOn;
-    player.each([&](
-        const auto& player,
-        auto& body,
-        const auto& renderData
-    ) {
-        selectModeOn = renderData.m_stencilFlag;
-        b2Vec2 force = b2Vec2(0.0f, 2000.0f);
-        body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-    });
-
-    if (selectModeOn) {
-        selectables.each([&](
-            auto& body,
-            const auto& userData,
-            const auto& renderData
-        ) {
-            if (userData.m_fixtureType == 3 && renderData.m_stencilFlag) {
-                b2Vec2 force = b2Vec2(0.0f, 2000.0f);
-                body.m_body->ApplyForce(force, body.m_body->GetPosition(), true);
-            }
-        });
-    }
+void SelectedUpCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<SelectedUpCommand>();
 }
 
 
-void ToggleSelectModeCommand::execute(entt::registry& registry) const {    
-    auto player = registry.view<
-        PlayerComponent,
-        RenderDataComponent
-    >();
-    auto stencils = registry.view<
-        FixtureUserDataComponent,
-        RenderDataComponent
-    >();
-
-    player.each([&](
-        const auto& player,
-        auto& renderData
-    ) {
-        // flip boolean value of stencilFlag: if true make false (& vice-versa)
-        renderData.m_stencilFlag = !renderData.m_stencilFlag;
-
-        // if we just turned off select mode, turn off all selected spheres
-        if (renderData.m_stencilFlag == false) {
-            stencils.each([&](
-                const auto& userData,
-                auto& renderData
-            ) {
-                if (userData.m_fixtureType == 3) {
-                    renderData.m_stencilFlag = false;
-                }
-            });
-        }
-    });
+void ToggleSelectModeCommand::execute(entt::dispatcher& dispatcher) const {    
+    dispatcher.trigger<ToggleSelectModeCommand>();
 }
 
 // -----------------------------------------------------------------------------
-void NorthCommand::execute(entt::registry& registry) const {
-    //ONSET_TRACE("moved north");
+void NorthCommand::execute(entt::dispatcher& dispatcher) const {
 }
 
-void WestCommand::execute(entt::registry& registry) const {
-    //ONSET_TRACE("moved west");
+void WestCommand::execute(entt::dispatcher& dispatcher) const {
 }
 
-void SouthCommand::execute(entt::registry& registry) const {
-    //ONSET_TRACE("moved south");
+void SouthCommand::execute(entt::dispatcher& dispatcher) const {
 }
 
-void EastCommand::execute(entt::registry& registry) const {
-    //ONSET_TRACE("moved east");
+void EastCommand::execute(entt::dispatcher& dispatcher) const {
 }
 
-void NortheastCommand::execute(entt::registry& registry) const {
-    //ONSET_TRACE("moved northeast");
+void NortheastCommand::execute(entt::dispatcher& dispatcher) const {
 }
 
-void NorthwestCommand::execute(entt::registry& registry) const {
-    //ONSET_TRACE("moved northwest");
+void NorthwestCommand::execute(entt::dispatcher& dispatcher) const {
 }
 
-void SouthwestCommand::execute(entt::registry& registry) const {
-    //ONSET_TRACE("moved southwest");
+void SouthwestCommand::execute(entt::dispatcher& dispatcher) const {
 }
 
-void SoutheastCommand::execute(entt::registry& registry) const {
-    //ONSET_TRACE("moved southeast");
+void SoutheastCommand::execute(entt::dispatcher& dispatcher) const {
 }
 
 // -----------------------------------------------------------------------------
-void CameraUpCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_position += camera.m_up * camera.m_speed;
-    });
+void CameraUpCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraUpCommand>();
 }
 
-void CameraDownCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_position -= camera.m_up * camera.m_speed;
-    });
+void CameraDownCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraDownCommand>();
 }
 
-void CameraLeftCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_position -= camera.m_right * camera.m_speed;
-    });
+void CameraLeftCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraLeftCommand>();
 }
 
-void CameraRightCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_position += camera.m_right * camera.m_speed;
-    });
+void CameraRightCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraRightCommand>();
 }
 
-void CameraForwardCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_position += camera.m_front * camera.m_speed;
-    });
+void CameraForwardCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraForwardCommand>();
 }
 
-void CameraBackwardCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_position -= camera.m_front * camera.m_speed;
-    });
+void CameraBackwardCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraBackwardCommand>();
 }
 
-void CameraZoomInCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_zoom -= camera.m_sensitivity;
-        if (camera.m_zoom < 1.0f) {camera.m_zoom = 1.0f;}
-    });
+void CameraZoomInCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraZoomInCommand>();
 }
 
-void CameraZoomOutCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_zoom += camera.m_sensitivity;
-        if (camera.m_zoom > 45.0f) {camera.m_zoom = 45.0f;}
-    });
+void CameraZoomOutCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraZoomOutCommand>();
 }
 
-void CameraPitchUpCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_pitch += camera.m_sensitivity;
-        if (camera.m_pitch > 89.0f) {camera.m_pitch = 89.0f;}
-        // update vectors
-        glm::vec3 front;
-        front.x = cos(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
-        front.y = sin(glm::radians(camera.m_pitch));
-        front.z = sin(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
-        camera.m_front = glm::normalize(front);
-        camera.m_right = glm::normalize(glm::cross(camera.m_front, camera.m_worldUp));
-        camera.m_up = glm::normalize(glm::cross(camera.m_right, camera.m_front));
-    });
+void CameraPitchUpCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraPitchUpCommand>();
 }
 
-void CameraPitchDownCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_pitch -= camera.m_sensitivity;
-        if (camera.m_pitch < -89.0f) {camera.m_pitch = -89.0f;}
-        // update vectors
-        glm::vec3 front;
-        front.x = cos(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
-        front.y = sin(glm::radians(camera.m_pitch));
-        front.z = sin(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
-        camera.m_front = glm::normalize(front);
-        camera.m_right = glm::normalize(glm::cross(camera.m_front, camera.m_worldUp));
-        camera.m_up = glm::normalize(glm::cross(camera.m_right, camera.m_front));
-    });
+void CameraPitchDownCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraPitchDownCommand>();
 }
 
-void CameraYawLeftCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_yaw -= camera.m_sensitivity;
-        // update vectors
-        glm::vec3 front;
-        front.x = cos(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
-        front.y = sin(glm::radians(camera.m_pitch));
-        front.z = sin(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
-        camera.m_front = glm::normalize(front);
-        camera.m_right = glm::normalize(glm::cross(camera.m_front, camera.m_worldUp));
-        camera.m_up = glm::normalize(glm::cross(camera.m_right, camera.m_front));
-    });
+void CameraYawLeftCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraYawLeftCommand>();
 }
 
-void CameraYawRightCommand::execute(entt::registry& registry) const {
-    auto cameras = registry.view<CameraComponent>();
-    cameras.each([&](auto& camera) {
-        camera.m_yaw += camera.m_sensitivity;
-        // update vectors
-        glm::vec3 front;
-        front.x = cos(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
-        front.y = sin(glm::radians(camera.m_pitch));
-        front.z = sin(glm::radians(camera.m_yaw)) * cos(glm::radians(camera.m_pitch));
-        camera.m_front = glm::normalize(front);
-        camera.m_right = glm::normalize(glm::cross(camera.m_front, camera.m_worldUp));
-        camera.m_up = glm::normalize(glm::cross(camera.m_right, camera.m_front));
-    });
+void CameraYawRightCommand::execute(entt::dispatcher& dispatcher) const {
+    dispatcher.trigger<CameraYawRightCommand>();
 }
