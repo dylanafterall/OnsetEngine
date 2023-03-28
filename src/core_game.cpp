@@ -30,6 +30,8 @@ void Game::initialize() {
     m_windowManager = std::make_unique<WindowManager>();
     m_windowManager->initialize(m_screenWidth, m_screenHeight);
 
+    // event handling
+    // -------------------------------------------------------------------------
     m_inputInvoker = std::make_unique<InputInvoker>();
     m_inputInvoker->initialize(
         m_windowManager->m_glfwWindow, 
@@ -38,15 +40,17 @@ void Game::initialize() {
         m_screenHeight
     );
 
+    // system handling
+    // -------------------------------------------------------------------------
+    m_audioSystem.setRegistry(&m_registry);
+    m_cameraSystem.setRegistry(&m_registry);
+    m_world->SetContactListener(&m_collisionSystem);
+    m_collisionSystem.setRegistry(&m_registry);
+    m_collisionSystem.setDispatcher(&m_dispatcher);
+    m_playerMovementSystem.setRegistry(&m_registry);
     m_renderSystem.setWindowPointer(m_windowManager->m_glfwWindow);
     m_renderSystem.setGammaFlag(true);
     m_renderSystem.setShadowResolution(m_shadowWidth, m_shadowHeight);
-
-    m_world->SetContactListener(&m_collisionSystem);
-    m_collisionSystem.setRegistry(&m_registry);
-
-    m_cameraSystem.setRegistry(&m_registry);
-    m_playerMovementSystem.setRegistry(&m_registry);
     m_selectModeSystem.setRegistry(&m_registry);
 }
 
@@ -67,6 +71,14 @@ void Game::setup() {
     // fonts 
     // .........................................................................
     m_textManager.initialize("../assets/fonts/Meslo/MesloLG_M_Regular_Nerd_Font_Complete_Mono.ttf");
+
+    // audio
+    // .........................................................................
+    m_audioManager.setSoundEffect("button1", "../assets/audio/StumpyStrust/button1.ogg");
+    m_audioManager.setSoundEffect("button2", "../assets/audio/StumpyStrust/button2.ogg");
+    m_audioManager.setSoundEffect("complete", "../assets/audio/StumpyStrust/complete.ogg");
+    m_audioManager.setSoundEffect("off", "../assets/audio/StumpyStrust/off.ogg");
+    m_audioManager.setSoundEffect("on", "../assets/audio/StumpyStrust/on.ogg");
 
     // shaders
     // .........................................................................
@@ -207,6 +219,8 @@ void Game::setup() {
     m_dispatcher.sink<SelectedDownCommand>().connect<&SelectModeSystem::moveSelectedDown>(m_selectModeSystem);
     m_dispatcher.sink<ToggleSelectModeCommand>().connect<&SelectModeSystem::toggleSelectMode>(m_selectModeSystem);
 
+    m_dispatcher.sink<ToggleSelectModeAudioEvent>().connect<&AudioSystem::playSelectModeToggleSound>(m_audioSystem);
+
     // camera entity
     // .........................................................................
     // setup components
@@ -256,6 +270,7 @@ void Game::setup() {
     LightComponent redOrbLight;
     BodyTransformComponent redOrbTransform;
     BodyCircleComponent redOrbCircle;
+    AudioDataComponent redOrbAudio;
     ShaderProgramComponent redOrbShaderProgram;
     RenderDataComponent redOrbGraphics;
     FixtureUserDataComponent redOrbUserData;
@@ -268,12 +283,17 @@ void Game::setup() {
     redOrbLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);     // red ambient
     redOrbLight.m_diffuse = glm::vec3(1.0f, 0.0f, 0.0f);     // red diffuse
     redOrbLight.m_specular = glm::vec3(1.0f, 0.0f, 0.0f);    // red specular
+    alGenSources(1, &redOrbAudio.m_soundSource);
+    redOrbAudio.m_collisionSound.m_soundBuffer = m_audioManager.getSoundEffect("button2");
+    redOrbAudio.m_collisionSound.m_pitch = 1.0f;
+    redOrbAudio.m_collisionSound.m_gain = 1.0f;
+    redOrbAudio.m_collisionSound.m_loop = false;
     redOrbShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
     redOrbShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     redOrbShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth_cube");
     redOrbGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
-    redOrbUserData.m_fixtureType = 0;
+    redOrbUserData.m_fixtureType = 1;
     redOrbCircle.m_bodyDef.type = b2_dynamicBody;
     redOrbCircle.m_bodyDef.position.Set(10.0f, 5.0f);
     redOrbTransform.m_body = m_world->CreateBody(&redOrbCircle.m_bodyDef);
@@ -282,6 +302,7 @@ void Game::setup() {
     redOrbCircle.m_fixtureDef.shape = &redOrbCircle.m_circleShape;
     redOrbCircle.m_fixtureDef.density = 1.0f;
     redOrbCircle.m_fixtureDef.friction = 0.3f;
+    redOrbCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&redOrbUserData);
     redOrbTransform.m_body->CreateFixture(&redOrbCircle.m_fixtureDef);
     // setup OpenGL data
     glGenVertexArrays(1, &redOrbGraphics.m_VAO);
@@ -320,6 +341,7 @@ void Game::setup() {
     LightComponent greenOrbLight;
     BodyTransformComponent greenOrbTransform;
     BodyCircleComponent greenOrbCircle;
+    AudioDataComponent greenOrbAudio;
     ShaderProgramComponent greenOrbShaderProgram;
     RenderDataComponent greenOrbGraphics;
     FixtureUserDataComponent greenOrbUserData;
@@ -332,12 +354,17 @@ void Game::setup() {
     greenOrbLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);    // green ambient
     greenOrbLight.m_diffuse = glm::vec3(0.0f, 1.0f, 0.0f);    // green diffuse
     greenOrbLight.m_specular = glm::vec3(0.0f, 1.0f, 0.0f);   // green specular
+    alGenSources(1, &greenOrbAudio.m_soundSource);
+    greenOrbAudio.m_collisionSound.m_soundBuffer = m_audioManager.getSoundEffect("button2");
+    greenOrbAudio.m_collisionSound.m_pitch = 1.0f;
+    greenOrbAudio.m_collisionSound.m_gain = 1.0f;
+    greenOrbAudio.m_collisionSound.m_loop = false;
     greenOrbShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
     greenOrbShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     greenOrbShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth_cube");
     greenOrbGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
-    greenOrbUserData.m_fixtureType = 0;
+    greenOrbUserData.m_fixtureType = 1;
     greenOrbCircle.m_bodyDef.type = b2_dynamicBody;
     greenOrbCircle.m_bodyDef.position.Set(25.0f, 5.0f);
     greenOrbTransform.m_body = m_world->CreateBody(&greenOrbCircle.m_bodyDef);
@@ -346,6 +373,7 @@ void Game::setup() {
     greenOrbCircle.m_fixtureDef.shape = &greenOrbCircle.m_circleShape;
     greenOrbCircle.m_fixtureDef.density = 1.0f;
     greenOrbCircle.m_fixtureDef.friction = 0.3f;
+    greenOrbCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&greenOrbUserData);
     greenOrbTransform.m_body->CreateFixture(&greenOrbCircle.m_fixtureDef);
     // setup OpenGL data
     glGenVertexArrays(1, &greenOrbGraphics.m_VAO);
@@ -384,6 +412,7 @@ void Game::setup() {
     LightComponent blueOrbLight;
     BodyTransformComponent blueOrbTransform;
     BodyCircleComponent blueOrbCircle;
+    AudioDataComponent blueOrbAudio;
     ShaderProgramComponent blueOrbShaderProgram;
     RenderDataComponent blueOrbGraphics;
     FixtureUserDataComponent blueOrbUserData;
@@ -396,12 +425,17 @@ void Game::setup() {
     blueOrbLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);     // blue ambient
     blueOrbLight.m_diffuse = glm::vec3(0.0f, 0.0f, 1.0f);     // blue diffuse
     blueOrbLight.m_specular = glm::vec3(0.0f, 0.0f, 1.0f);    // blue specular
+    alGenSources(1, &blueOrbAudio.m_soundSource);
+    blueOrbAudio.m_collisionSound.m_soundBuffer = m_audioManager.getSoundEffect("button2");
+    blueOrbAudio.m_collisionSound.m_pitch = 1.0f;
+    blueOrbAudio.m_collisionSound.m_gain = 1.0f;
+    blueOrbAudio.m_collisionSound.m_loop = false;
     blueOrbShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
     blueOrbShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     blueOrbShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth_cube");
     blueOrbGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
-    blueOrbUserData.m_fixtureType = 0;
+    blueOrbUserData.m_fixtureType = 1;
     blueOrbCircle.m_bodyDef.type = b2_dynamicBody;
     blueOrbCircle.m_bodyDef.position.Set(-15.0f, 5.0f);
     blueOrbTransform.m_body = m_world->CreateBody(&blueOrbCircle.m_bodyDef);
@@ -410,6 +444,7 @@ void Game::setup() {
     blueOrbCircle.m_fixtureDef.shape = &blueOrbCircle.m_circleShape;
     blueOrbCircle.m_fixtureDef.density = 1.0f;
     blueOrbCircle.m_fixtureDef.friction = 0.3f;
+    blueOrbCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&blueOrbUserData);
     blueOrbTransform.m_body->CreateFixture(&blueOrbCircle.m_fixtureDef);
     // setup OpenGL data
     glGenVertexArrays(1, &blueOrbGraphics.m_VAO);
@@ -448,6 +483,7 @@ void Game::setup() {
     LightComponent yellowLampLight;
     BodyTransformComponent yellowLampTransform;
     BodyCircleComponent yellowLampCircle;
+    AudioDataComponent yellowLampAudio;
     ShaderProgramComponent yellowLampShaderProgram;
     RenderDataComponent yellowLampGraphics;
     FixtureUserDataComponent yellowLampUserData;
@@ -463,12 +499,17 @@ void Game::setup() {
     yellowLampLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);    // no ambient
     yellowLampLight.m_diffuse = glm::vec3(1.0f, 1.0f, 0.0f);    // yellow diffuse
     yellowLampLight.m_specular = glm::vec3(1.0f, 1.0f, 0.0f);   // yellow specular
+    alGenSources(1, &yellowLampAudio.m_soundSource);
+    yellowLampAudio.m_collisionSound.m_soundBuffer = m_audioManager.getSoundEffect("button2");
+    yellowLampAudio.m_collisionSound.m_pitch = 1.0f;
+    yellowLampAudio.m_collisionSound.m_gain = 1.0f;
+    yellowLampAudio.m_collisionSound.m_loop = false;
     yellowLampShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
     yellowLampShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     yellowLampShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
     yellowLampGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
-    yellowLampUserData.m_fixtureType = 0;
+    yellowLampUserData.m_fixtureType = 1;
     yellowLampCircle.m_bodyDef.position.Set(-10.0f, 10.0f);
     yellowLampTransform.m_body = m_world->CreateBody(&yellowLampCircle.m_bodyDef);
     yellowLampCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
@@ -476,6 +517,7 @@ void Game::setup() {
     yellowLampCircle.m_fixtureDef.shape = &yellowLampCircle.m_circleShape;
     yellowLampCircle.m_fixtureDef.density = 1.0f;
     yellowLampCircle.m_fixtureDef.friction = 0.3f;
+    yellowLampCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&yellowLampUserData);
     yellowLampTransform.m_body->CreateFixture(&yellowLampCircle.m_fixtureDef);
     // setup OpenGL data
     glGenVertexArrays(1, &yellowLampGraphics.m_VAO);
@@ -513,6 +555,7 @@ void Game::setup() {
     LightComponent magentaLampLight;
     BodyTransformComponent magentaLampTransform;
     BodyCircleComponent magentaLampCircle;
+    AudioDataComponent magentaLampAudio;
     ShaderProgramComponent magentaLampShaderProgram;
     RenderDataComponent magentaLampGraphics;
     FixtureUserDataComponent magentaLampUserData;
@@ -528,12 +571,17 @@ void Game::setup() {
     magentaLampLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);    // no ambient
     magentaLampLight.m_diffuse = glm::vec3(1.0f, 0.0f, 1.0f);    // magenta diffuse
     magentaLampLight.m_specular = glm::vec3(1.0f, 0.0f, 1.0f);   // magenta specular
+    alGenSources(1, &magentaLampAudio.m_soundSource);
+    magentaLampAudio.m_collisionSound.m_soundBuffer = m_audioManager.getSoundEffect("button2");
+    magentaLampAudio.m_collisionSound.m_pitch = 1.0f;
+    magentaLampAudio.m_collisionSound.m_gain = 1.0f;
+    magentaLampAudio.m_collisionSound.m_loop = false;
     magentaLampShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
     magentaLampShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     magentaLampShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
     magentaLampGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
-    magentaLampUserData.m_fixtureType = 0;
+    magentaLampUserData.m_fixtureType = 1;
     magentaLampCircle.m_bodyDef.position.Set(-25.0f, 10.0f);
     magentaLampTransform.m_body = m_world->CreateBody(&magentaLampCircle.m_bodyDef);
     magentaLampCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
@@ -541,6 +589,7 @@ void Game::setup() {
     magentaLampCircle.m_fixtureDef.shape = &magentaLampCircle.m_circleShape;
     magentaLampCircle.m_fixtureDef.density = 1.0f;
     magentaLampCircle.m_fixtureDef.friction = 0.3f;
+    magentaLampCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&magentaLampUserData);
     magentaLampTransform.m_body->CreateFixture(&magentaLampCircle.m_fixtureDef);
     // setup OpenGL data
     glGenVertexArrays(1, &magentaLampGraphics.m_VAO);
@@ -578,6 +627,7 @@ void Game::setup() {
     LightComponent cyanLampLight;
     BodyTransformComponent cyanLampTransform;
     BodyCircleComponent cyanLampCircle;
+    AudioDataComponent cyanLampAudio;
     ShaderProgramComponent cyanLampShaderProgram;
     RenderDataComponent cyanLampGraphics;
     FixtureUserDataComponent cyanLampUserData;
@@ -593,12 +643,17 @@ void Game::setup() {
     cyanLampLight.m_ambient = glm::vec3(0.0f, 0.0f, 0.0f);    // no ambient
     cyanLampLight.m_diffuse = glm::vec3(0.0f, 1.0f, 1.0f);    // cyan diffuse
     cyanLampLight.m_specular = glm::vec3(0.0f, 1.0f, 1.0f);   // cyan specular
+    alGenSources(1, &cyanLampAudio.m_soundSource);
+    cyanLampAudio.m_collisionSound.m_soundBuffer = m_audioManager.getSoundEffect("button2");
+    cyanLampAudio.m_collisionSound.m_pitch = 1.0f;
+    cyanLampAudio.m_collisionSound.m_gain = 1.0f;
+    cyanLampAudio.m_collisionSound.m_loop = false;
     cyanLampShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("solid_color");
     cyanLampShaderProgram.m_lightProgram = m_assetManager.getShaderProgram("basic_lighting");
     cyanLampShaderProgram.m_shadowProgram = m_assetManager.getShaderProgram("shadow_depth");
     cyanLampGraphics.m_vertexCount = sphereMesh.m_vertexCount;
     // setup Box2D data
-    cyanLampUserData.m_fixtureType = 0;
+    cyanLampUserData.m_fixtureType = 1;
     cyanLampCircle.m_bodyDef.position.Set(20.0f, 10.0f);
     cyanLampTransform.m_body = m_world->CreateBody(&cyanLampCircle.m_bodyDef);
     cyanLampCircle.m_circleShape.m_p.Set(0.0f, 0.0f);
@@ -606,6 +661,7 @@ void Game::setup() {
     cyanLampCircle.m_fixtureDef.shape = &cyanLampCircle.m_circleShape;
     cyanLampCircle.m_fixtureDef.density = 1.0f;
     cyanLampCircle.m_fixtureDef.friction = 0.3f;
+    cyanLampCircle.m_fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&cyanLampUserData);
     cyanLampTransform.m_body->CreateFixture(&cyanLampCircle.m_fixtureDef);
     // setup OpenGL data
     glGenVertexArrays(1, &cyanLampGraphics.m_VAO);
@@ -645,6 +701,7 @@ void Game::setup() {
     BodyTransformComponent playerTransform;
     BodyCircleComponent playerCircle;
     TextureComponent playerTexture;
+    AudioDataComponent playerAudio;
     ShaderProgramComponent playerShaderProgram;
     RenderDataComponent playerGraphics;
     FixtureUserDataComponent playerUserData;
@@ -652,6 +709,15 @@ void Game::setup() {
     playerTexture.m_diffuse = m_assetManager.getTexture("tiles_diff");
     playerTexture.m_specular = m_assetManager.getTexture("tiles_spec");
     playerTexture.m_normal = m_assetManager.getTexture("tiles_norm");
+    alGenSources(1, &playerAudio.m_soundSource);
+    playerAudio.m_selectModeOnSound.m_soundBuffer = m_audioManager.getSoundEffect("on");
+    playerAudio.m_selectModeOnSound.m_pitch = 1.0f;
+    playerAudio.m_selectModeOnSound.m_gain = 1.0f;
+    playerAudio.m_selectModeOnSound.m_loop = false;
+    playerAudio.m_selectModeOffSound.m_soundBuffer = m_audioManager.getSoundEffect("off");
+    playerAudio.m_selectModeOffSound.m_pitch = 1.0f;
+    playerAudio.m_selectModeOffSound.m_gain = 1.0f;
+    playerAudio.m_selectModeOffSound.m_loop = false;
     playerShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     playerShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     playerGraphics.m_vertexCount = sphereMesh.m_vertexCount;
@@ -687,6 +753,7 @@ void Game::setup() {
     BodyTransformComponent floorTransform;
     BodyPolygonComponent floorPolygon;
     TextureComponent floorTexture;
+    AudioDataComponent floorAudio;
     ShaderProgramComponent floorShaderProgram;
     RenderDataComponent floorGraphics;
     FixtureUserDataComponent floorUserData;
@@ -694,6 +761,11 @@ void Game::setup() {
     floorTexture.m_diffuse = m_assetManager.getTexture("metal_diff");
     floorTexture.m_specular = m_assetManager.getTexture("metal_spec");
     floorTexture.m_normal = m_assetManager.getTexture("metal_norm");
+    alGenSources(1, &floorAudio.m_soundSource);
+    floorAudio.m_collisionSound.m_soundBuffer = m_audioManager.getSoundEffect("button2");
+    floorAudio.m_collisionSound.m_pitch = 1.0f;
+    floorAudio.m_collisionSound.m_gain = 1.0f;
+    floorAudio.m_collisionSound.m_loop = false;
     floorShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     floorShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     floorGraphics.m_vertexCount = groundMesh.m_vertexCount;
@@ -723,6 +795,7 @@ void Game::setup() {
     BodyTransformComponent sphereTransform;
     BodyCircleComponent sphereCircle;
     TextureComponent sphereTexture;
+    AudioDataComponent sphereAudio;
     ShaderProgramComponent sphereShaderProgram;
     RenderDataComponent sphereGraphics;
     FixtureUserDataComponent sphereUserData;
@@ -730,6 +803,11 @@ void Game::setup() {
     sphereTexture.m_diffuse = m_assetManager.getTexture("rusted_diff");
     sphereTexture.m_specular = m_assetManager.getTexture("rusted_spec");
     sphereTexture.m_normal = m_assetManager.getTexture("rusted_norm");
+    alGenSources(1, &sphereAudio.m_soundSource);
+    sphereAudio.m_collisionSound.m_soundBuffer = m_audioManager.getSoundEffect("button1");
+    sphereAudio.m_collisionSound.m_pitch = 1.0f;
+    sphereAudio.m_collisionSound.m_gain = 1.0f;
+    sphereAudio.m_collisionSound.m_loop = false;
     sphereShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     sphereShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     sphereGraphics.m_vertexCount = sphereMesh.m_vertexCount;
@@ -765,6 +843,7 @@ void Game::setup() {
     BodyTransformComponent goldTransform;
     BodyCircleComponent goldCircle;
     TextureComponent goldTexture;
+    AudioDataComponent goldAudio;
     ShaderProgramComponent goldShaderProgram;
     RenderDataComponent goldGraphics;
     FixtureUserDataComponent goldUserData;
@@ -772,6 +851,11 @@ void Game::setup() {
     goldTexture.m_diffuse = m_assetManager.getTexture("gold_diff");
     goldTexture.m_specular = m_assetManager.getTexture("gold_spec");
     goldTexture.m_normal = m_assetManager.getTexture("gold_norm");
+    alGenSources(1, &goldAudio.m_soundSource);
+    goldAudio.m_collisionSound.m_soundBuffer = m_audioManager.getSoundEffect("button1");
+    goldAudio.m_collisionSound.m_pitch = 1.0f;
+    goldAudio.m_collisionSound.m_gain = 1.0f;
+    goldAudio.m_collisionSound.m_loop = false;
     goldShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     goldShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     goldGraphics.m_vertexCount = sphereMesh.m_vertexCount;
@@ -808,6 +892,7 @@ void Game::setup() {
     BodyPolygonComponent cubePolygon;
     ShapeSquareComponent cubeShape;
     TextureComponent cubeTexture;
+    AudioDataComponent cubeAudio;
     ShaderProgramComponent cubeShaderProgram;
     RenderDataComponent cubeGraphics;
     FixtureUserDataComponent cubeUserData;
@@ -815,6 +900,11 @@ void Game::setup() {
     cubeTexture.m_diffuse = m_assetManager.getTexture("blocks_diff");
     cubeTexture.m_specular = m_assetManager.getTexture("blocks_spec");
     cubeTexture.m_normal = m_assetManager.getTexture("blocks_norm");
+    alGenSources(1, &cubeAudio.m_soundSource);
+    cubeAudio.m_collisionSound.m_soundBuffer = m_audioManager.getSoundEffect("button2");
+    cubeAudio.m_collisionSound.m_pitch = 1.0f;
+    cubeAudio.m_collisionSound.m_gain = 1.0f;
+    cubeAudio.m_collisionSound.m_loop = false;
     cubeShaderProgram.m_outputProgram = m_assetManager.getShaderProgram("basic_lighting");
     cubeShaderProgram.m_stencilProgram = m_assetManager.getShaderProgram("stencil");
     cubeGraphics.m_vertexCount = cubeMesh.m_vertexCount;
@@ -948,6 +1038,7 @@ void Game::setup() {
     auto redOrbEntity = m_registry.create();
     m_registry.emplace<LightComponent>(redOrbEntity, redOrbLight);
     m_registry.emplace<BodyTransformComponent>(redOrbEntity, redOrbTransform);
+    m_registry.emplace<AudioDataComponent>(redOrbEntity, redOrbAudio);
     m_registry.emplace<ShaderProgramComponent>(redOrbEntity, redOrbShaderProgram);
     m_registry.emplace<RenderDataComponent>(redOrbEntity, redOrbGraphics);
     m_registry.emplace<FixtureUserDataComponent>(redOrbEntity, redOrbUserData);
@@ -957,6 +1048,7 @@ void Game::setup() {
     auto greenOrbEntity = m_registry.create();
     m_registry.emplace<LightComponent>(greenOrbEntity, greenOrbLight);
     m_registry.emplace<BodyTransformComponent>(greenOrbEntity, greenOrbTransform);
+    m_registry.emplace<AudioDataComponent>(greenOrbEntity, greenOrbAudio);
     m_registry.emplace<ShaderProgramComponent>(greenOrbEntity, greenOrbShaderProgram);
     m_registry.emplace<RenderDataComponent>(greenOrbEntity, greenOrbGraphics);
     m_registry.emplace<FixtureUserDataComponent>(greenOrbEntity, greenOrbUserData);
@@ -966,6 +1058,7 @@ void Game::setup() {
     auto blueOrbEntity = m_registry.create();
     m_registry.emplace<LightComponent>(blueOrbEntity, blueOrbLight);
     m_registry.emplace<BodyTransformComponent>(blueOrbEntity, blueOrbTransform);
+    m_registry.emplace<AudioDataComponent>(blueOrbEntity, blueOrbAudio);
     m_registry.emplace<ShaderProgramComponent>(blueOrbEntity, blueOrbShaderProgram);
     m_registry.emplace<RenderDataComponent>(blueOrbEntity, blueOrbGraphics);
     m_registry.emplace<FixtureUserDataComponent>(blueOrbEntity, blueOrbUserData);
@@ -976,6 +1069,7 @@ void Game::setup() {
     m_registry.emplace<LightComponent>(yellowLampEntity, yellowLampLight);
     m_registry.emplace<BodyTransformComponent>(yellowLampEntity, yellowLampTransform);
     m_registry.emplace<BodyCircleComponent>(yellowLampEntity, yellowLampCircle);
+    m_registry.emplace<AudioDataComponent>(yellowLampEntity, yellowLampAudio);
     m_registry.emplace<ShaderProgramComponent>(yellowLampEntity, yellowLampShaderProgram);
     m_registry.emplace<RenderDataComponent>(yellowLampEntity, yellowLampGraphics);
     m_registry.emplace<FixtureUserDataComponent>(yellowLampEntity, yellowLampUserData);
@@ -986,6 +1080,7 @@ void Game::setup() {
     m_registry.emplace<LightComponent>(magentaLampEntity, magentaLampLight);
     m_registry.emplace<BodyTransformComponent>(magentaLampEntity, magentaLampTransform);
     m_registry.emplace<BodyCircleComponent>(magentaLampEntity, magentaLampCircle);
+    m_registry.emplace<AudioDataComponent>(magentaLampEntity, magentaLampAudio);
     m_registry.emplace<ShaderProgramComponent>(magentaLampEntity, magentaLampShaderProgram);
     m_registry.emplace<RenderDataComponent>(magentaLampEntity, magentaLampGraphics);
     m_registry.emplace<FixtureUserDataComponent>(magentaLampEntity, magentaLampUserData);
@@ -996,6 +1091,7 @@ void Game::setup() {
     m_registry.emplace<LightComponent>(cyanLampEntity, cyanLampLight);
     m_registry.emplace<BodyTransformComponent>(cyanLampEntity, cyanLampTransform);
     m_registry.emplace<BodyCircleComponent>(cyanLampEntity, cyanLampCircle);
+    m_registry.emplace<AudioDataComponent>(cyanLampEntity, cyanLampAudio);
     m_registry.emplace<ShaderProgramComponent>(cyanLampEntity, cyanLampShaderProgram);
     m_registry.emplace<RenderDataComponent>(cyanLampEntity, cyanLampGraphics);
     m_registry.emplace<FixtureUserDataComponent>(cyanLampEntity, cyanLampUserData);
@@ -1007,6 +1103,7 @@ void Game::setup() {
     m_registry.emplace<MaterialComponent>(playerEntity, playerMaterial);
     m_registry.emplace<BodyTransformComponent>(playerEntity, playerTransform);
     m_registry.emplace<TextureComponent>(playerEntity, playerTexture);
+    m_registry.emplace<AudioDataComponent>(playerEntity, playerAudio);
     m_registry.emplace<ShaderProgramComponent>(playerEntity, playerShaderProgram);
     m_registry.emplace<RenderDataComponent>(playerEntity, playerGraphics);
     m_registry.emplace<FixtureUserDataComponent>(playerEntity, playerUserData);
@@ -1016,6 +1113,7 @@ void Game::setup() {
     m_registry.emplace<MaterialComponent>(floorEntity, floorMaterial);
     m_registry.emplace<BodyTransformComponent>(floorEntity, floorTransform);
     m_registry.emplace<TextureComponent>(floorEntity, floorTexture);
+    m_registry.emplace<AudioDataComponent>(floorEntity, floorAudio);
     m_registry.emplace<ShaderProgramComponent>(floorEntity, floorShaderProgram);
     m_registry.emplace<RenderDataComponent>(floorEntity, floorGraphics);
     m_registry.emplace<FixtureUserDataComponent>(floorEntity, floorUserData);
@@ -1025,6 +1123,7 @@ void Game::setup() {
     m_registry.emplace<MaterialComponent>(sphereEntity, sphereMaterial);
     m_registry.emplace<BodyTransformComponent>(sphereEntity, sphereTransform);
     m_registry.emplace<TextureComponent>(sphereEntity, sphereTexture);
+    m_registry.emplace<AudioDataComponent>(sphereEntity, sphereAudio);
     m_registry.emplace<ShaderProgramComponent>(sphereEntity, sphereShaderProgram);
     m_registry.emplace<RenderDataComponent>(sphereEntity, sphereGraphics);
     m_registry.emplace<FixtureUserDataComponent>(sphereEntity, sphereUserData);
@@ -1034,6 +1133,7 @@ void Game::setup() {
     m_registry.emplace<MaterialComponent>(goldEntity, goldMaterial);
     m_registry.emplace<BodyTransformComponent>(goldEntity, goldTransform);
     m_registry.emplace<TextureComponent>(goldEntity, goldTexture);
+    m_registry.emplace<AudioDataComponent>(goldEntity, goldAudio);
     m_registry.emplace<ShaderProgramComponent>(goldEntity, goldShaderProgram);
     m_registry.emplace<RenderDataComponent>(goldEntity, goldGraphics);
     m_registry.emplace<FixtureUserDataComponent>(goldEntity, goldUserData);
@@ -1043,6 +1143,7 @@ void Game::setup() {
     m_registry.emplace<MaterialComponent>(cubeEntity, cubeMaterial);
     m_registry.emplace<BodyTransformComponent>(cubeEntity, cubeTransform);
     m_registry.emplace<TextureComponent>(cubeEntity, cubeTexture);
+    m_registry.emplace<AudioDataComponent>(cubeEntity, cubeAudio);
     m_registry.emplace<ShaderProgramComponent>(cubeEntity, cubeShaderProgram);
     m_registry.emplace<RenderDataComponent>(cubeEntity, cubeGraphics);
     m_registry.emplace<FixtureUserDataComponent>(cubeEntity, cubeUserData);
@@ -1098,6 +1199,11 @@ void Game::run() {
 }
 
 void Game::processInput() {
+    // emits all the events of the given type at once
+    // m_dispatcher.update<an_event>();
+
+    // emits all the events queued so far at once
+    m_dispatcher.update();
 }
 
 void Game::update(const float timeStep, const int32 velocityIterations, const int32 positionIterations) {
@@ -1129,6 +1235,8 @@ void Game::destroy() {
     // temporarily deleting buffers, assets, entities here for now
     // TODO: will need to use these methods between game levels
     m_renderSystem.deleteBuffers(m_registry);
+    m_audioManager.deleteBuffers();
+    m_audioSystem.deleteSources();
     m_assetManager.deleteAssets();
     m_registry.clear();
     

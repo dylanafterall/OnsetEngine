@@ -45,6 +45,14 @@
         {
             "name": "freetype",
             "version>=": "2.12.1"
+        },
+        {
+            "name": "openal-soft",
+            "version>=": "1.22.2"
+        },
+        {
+            "name": "libsndfile",
+            "version>=": "1.1.0"
         }
     ],
     "builtin-baseline": "2c102ee932e38799d4152da09359b3633e5993b8"

@@ -21,8 +21,8 @@ struct FixtureUserDataComponent {
     /**
      * \brief Integer representing what type of game object is associated with
      *          a given Box2D fixture.
-     *          0: light source
-     *          1: camera
+     *          0: camera
+     *          1: light
      *          2: player
      *          3: spheres (able to be 'selected')
      *          4: non-spheres

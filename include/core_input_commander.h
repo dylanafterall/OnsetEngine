@@ -11,6 +11,7 @@
 #define CORE_INPUT_COMMANDER_H
 
 #include "core_log_macros.h"
+#include "events/event_toggle_select_mode.h"
 
 #include "entt/entt.hpp"
 

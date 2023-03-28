@@ -8,6 +8,7 @@
 #ifndef COMPONENT_ALL_H
 #define COMPONENT_ALL_H
 
+#include "component_audio_data.h"
 #include "component_body_circle.h"
 #include "component_body_polygon.h"
 #include "component_body_edge.h"

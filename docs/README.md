@@ -26,6 +26,7 @@ new techniques and practices over time.
                     <li>Normal ***(work in progress)</li>
                 </ul>
             <li>Blending (transparent sprites) </li>
+            <li>Object outlining/highlighting (stenciling) </li>
             <li>Skybox (via GL_TEXTURE_CUBE_MAP) </li>
             <li>Face Culling (via GL_CULL_FACE) </li>
             <li>Multisample Anti-Aliasing (via GL_MULTISAMPLE) </li>
@@ -34,6 +35,8 @@ new techniques and practices over time.
             <li>Text Rendering </li>
         </ul>
     <li>Audio effects ***(work in progress) </li>
+    <li>Event System (utilizing Observer programming pattern) with adjustable Event Queue </li>
+    <li>Ability to rebind keymaps during runtime (utilizing Command programming pattern) </li>
     <li>Developer Tools: </li>
     <ul>    
         <li>Tool to convert wavefront .obj (triangulated mesh) files to array for OpenGL VBO/VAO processing </li>
@@ -57,12 +60,14 @@ new techniques and practices over time.
     <li><a href="https://github.com/ocornut/imgui">ocornut/imgui</a> </li>
     <li><a href="https://github.com/nothings/stb">nothings/stb</a> </li>
     <li><a href="https://freetype.org/">FreeType</a> </li>
+    <li><a href="https://github.com/kcat/openal-soft">kcat/openal-soft</a> </li>
+    <li><a href="https://github.com/libsndfile/libsndfile">libsndfile/libsndfile</a> </li>
 </ul>
 </p>
 
 <p>Tools:
 <ul>
-    <li>Editor: <a href="https://github.com/neovim/neovim">Neovim</a>, <a href="https://code.visualstudio.com/">VS Code</a> </li>
+    <li>Editor: <a href="https://code.visualstudio.com/">VS Code</a>, <a href="https://github.com/neovim/neovim">Neovim</a> </li>
     <li>Build System: <a href="https://cmake.org/">CMake</a>, <a href="https://vcpkg.io/en/index.html">vcpkg</a> </li>
     <li>Documentation: <a href="https://www.doxygen.nl/">Doxygen</a> </li>
     <li>API: <a href="https://www.opengl.org/">OpenGL</a> </li>
@@ -143,23 +148,34 @@ new techniques and practices over time.
 ## Acknowledgements
 
 <p>This project uses the following assets:<br>
-<ul> 
-    <li>The Nerd Font: <a href="https://www.nerdfonts.com/font-downloads">"MesloLG"</a>, from <a href="https://nerdfonts.com/">"nerdfonts.com"</a> </li>
-    <li>The PBR material: <a href="https://freepbr.com/materials/angled-blocks-vegetation/">"Angled Blocks Vegetation"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
-    <li>The PBR material: <a href="https://freepbr.com/materials/black-white-tile-pbr/">"Black White Tile"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
-    <li>The PBR material: <a href="https://freepbr.com/materials/dull-metal/">"Dull Metal"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
-    <li>The PBR material: <a href="https://freepbr.com/materials/light-gold-pbr-metal-material/">"Light Gold"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
-    <li>The PBR material: <a href="https://freepbr.com/materials/rusted-steel/">"Rusted Steel"</a>, from <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+<ul>
+    Fonts:
+    <ul>
+        <li>The Nerd Font: <a href="https://www.nerdfonts.com/font-downloads">"MesloLG"</a>, from <a href="https://nerdfonts.com/">"nerdfonts.com"</a> </li>
+    </ul>
+    Textures:
+    <ul>
+        <li>The PBR material: <a href="https://freepbr.com/materials/angled-blocks-vegetation/">"Angled Blocks Vegetation"</a>, by Brian on <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+        <li>The PBR material: <a href="https://freepbr.com/materials/black-white-tile-pbr/">"Black White Tile"</a>, by Brian on <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+        <li>The PBR material: <a href="https://freepbr.com/materials/dull-metal/">"Dull Metal"</a>, by Brian on <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+        <li>The PBR material: <a href="https://freepbr.com/materials/light-gold-pbr-metal-material/">"Light Gold"</a>, by Brian on <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+        <li>The PBR material: <a href="https://freepbr.com/materials/rusted-steel/">"Rusted Steel"</a>, by Brian on <a href="https://freepbr.com/">"freepbr.com"</a> </li>
+    </ul>
+    Audio:
+    <ul>
+        <li>Sound Effects: <a href="https://opengameart.org/content/ui-sounds">"UI Sounds"</a>, by StumpyStrust on <a href="https://opengameart.org/">"opengameart.org"</a> </li>
+    </ul>
 </ul>
 </p>
 
 <p>This project was inspired by:<br>
 <ul> 
     <li>The online reference <a href="https://learnopengl.com/">"LearnOpenGL"</a>, by Joey deVries </li>
-    <li>The online resource <a href="https://freepbr.com/">"Free PBR"</a>, by Brian </li>
     <li>The online tutorial series <a href="https://pikuma.com/courses">"C++ 2D Game Engine Development"</a>, by Gustavo
     Pezzi </li>
     <li>The book <a href="https://gameprogrammingpatterns.com/">"Game Programming Patterns"</a>, by Robert Nystrom </li>
     <li>The online reference <a href="https://thebookofshaders.com/">"The Book of Shaders"</a>, by Patricio Gonzalez Vivo and Jen Lowe </li>
+    <li>The YouTube channel <a href="https://www.youtube.com/@CodeTechandTutorials/videos">"Code, Tech, and Tutorials"</a>, by Matthew Jay Early </li>
+    <li>The online reference <a href="https://indiegamedev.net/2020/02/15/the-complete-guide-to-openal-with-c-part-1-playing-a-sound/">"The Complete Guide to OpenAL with C++"</a>, by Deckhead
 </ul>
 </p>

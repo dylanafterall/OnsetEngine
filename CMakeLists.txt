@@ -35,6 +35,8 @@ add_executable(${PROJECT_NAME}
     src/core_log_manager.cpp
     src/core_window_manager.cpp
     src/core_text_manager.cpp
+    src/core_audio_manager.cpp
+    src/system_audio.cpp
     src/system_camera.cpp
     src/system_collision.cpp
     src/system_render.cpp
@@ -52,6 +54,8 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_path(STB_INCLUDE_DIRS "stb_c_lexer.h")
 find_package(freetype CONFIG REQUIRED)
+find_package(OpenAL CONFIG REQUIRED)
+find_package(SndFile CONFIG REQUIRED)
 
 include_directories(${PROJECT_NAME}
     PRIVATE ${PROJECT_SOURCE_DIR}/include
@@ -69,6 +73,8 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE spdlog::spdlog_header_only
     PRIVATE imgui::imgui
     PRIVATE freetype
+    PRIVATE OpenAL::OpenAL
+    PRIVATE SndFile::sndfile
 )
 
 # DOCUMENTATION ----------------------------------------------------------------

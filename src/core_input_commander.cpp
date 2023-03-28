@@ -11,40 +11,41 @@
 
 // -----------------------------------------------------------------------------
 void LeftCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<LeftCommand>();
+    dispatcher.enqueue<LeftCommand>();
 }
 
 void DownCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<DownCommand>();
+    dispatcher.enqueue<DownCommand>();
 }
 
 void RightCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<RightCommand>();
+    dispatcher.enqueue<RightCommand>();
 }
 
 void UpCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<UpCommand>();
+    dispatcher.enqueue<UpCommand>();
 }
 
 void SelectedLeftCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<SelectedLeftCommand>();
+    dispatcher.enqueue<SelectedLeftCommand>();
 }
 
 void SelectedDownCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<SelectedDownCommand>();
+    dispatcher.enqueue<SelectedDownCommand>();
 }
 
 void SelectedRightCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<SelectedRightCommand>();
+    dispatcher.enqueue<SelectedRightCommand>();
 }
 
 void SelectedUpCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<SelectedUpCommand>();
+    dispatcher.enqueue<SelectedUpCommand>();
 }
 
 
 void ToggleSelectModeCommand::execute(entt::dispatcher& dispatcher) const {    
-    dispatcher.trigger<ToggleSelectModeCommand>();
+    dispatcher.enqueue<ToggleSelectModeCommand>();
+    dispatcher.enqueue<ToggleSelectModeAudioEvent>();
 }
 
 // -----------------------------------------------------------------------------
@@ -74,49 +75,49 @@ void SoutheastCommand::execute(entt::dispatcher& dispatcher) const {
 
 // -----------------------------------------------------------------------------
 void CameraUpCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraUpCommand>();
+    dispatcher.enqueue<CameraUpCommand>();
 }
 
 void CameraDownCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraDownCommand>();
+    dispatcher.enqueue<CameraDownCommand>();
 }
 
 void CameraLeftCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraLeftCommand>();
+    dispatcher.enqueue<CameraLeftCommand>();
 }
 
 void CameraRightCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraRightCommand>();
+    dispatcher.enqueue<CameraRightCommand>();
 }
 
 void CameraForwardCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraForwardCommand>();
+    dispatcher.enqueue<CameraForwardCommand>();
 }
 
 void CameraBackwardCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraBackwardCommand>();
+    dispatcher.enqueue<CameraBackwardCommand>();
 }
 
 void CameraZoomInCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraZoomInCommand>();
+    dispatcher.enqueue<CameraZoomInCommand>();
 }
 
 void CameraZoomOutCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraZoomOutCommand>();
+    dispatcher.enqueue<CameraZoomOutCommand>();
 }
 
 void CameraPitchUpCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraPitchUpCommand>();
+    dispatcher.enqueue<CameraPitchUpCommand>();
 }
 
 void CameraPitchDownCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraPitchDownCommand>();
+    dispatcher.enqueue<CameraPitchDownCommand>();
 }
 
 void CameraYawLeftCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraYawLeftCommand>();
+    dispatcher.enqueue<CameraYawLeftCommand>();
 }
 
 void CameraYawRightCommand::execute(entt::dispatcher& dispatcher) const {
-    dispatcher.trigger<CameraYawRightCommand>();
+    dispatcher.enqueue<CameraYawRightCommand>();
 }

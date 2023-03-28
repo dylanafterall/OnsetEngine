@@ -8,6 +8,7 @@
 #ifndef SYSTEM_ALL_H
 #define SYSTEM_ALL_H
 
+#include "system_audio.h"
 #include "system_camera.h"
 #include "system_collision.h"
 #include "system_player_movement.h"

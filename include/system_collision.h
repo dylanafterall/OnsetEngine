@@ -8,9 +8,13 @@
 #ifndef SYSTEM_COLLISION_H
 #define SYSTEM_COLLISION_H
 
+#include "component_audio_data.h"
+#include "component_body_transform.h"
 #include "component_fixture_user_data.h"
 #include "component_render_data.h"
+#include "events/event_toggle_select_mode.h"
 
+#include "AL/al.h"
 #include "entt/entt.hpp"
 #include "box2d/box2d.h"
 
@@ -20,6 +24,7 @@ public:
     ~CollisionSystem() = default;
 
     void setRegistry(entt::registry*);
+    void setDispatcher(entt::dispatcher*);
 
     void BeginContact(b2Contact* contact);
     void EndContact(b2Contact* contact);
@@ -28,6 +33,7 @@ public:
 
 private:
     entt::registry* m_registry;
+    entt::dispatcher* m_dispatcher;
 };
 
 #endif // SYSTEM_COLLISION_H

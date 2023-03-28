@@ -12,6 +12,7 @@
 
 #include "core_window_manager.h"
 #include "core_asset_manager.h"
+#include "core_audio_manager.h"
 #include "core_input_invoker.h"
 #include "core_log_manager.h"
 #include "core_log_macros.h"
@@ -20,6 +21,7 @@
 #include "component_all.h"
 #include "event_all.h"
 #include "system_all.h"
+#include "events/event_all.h"
 
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
@@ -172,6 +174,10 @@ private:
      * \brief Object to manage the game's renderable text characters.
      */
     TextManager m_textManager;
+    /**
+     * \brief Object to manage the game's sound/audio functionality.
+     */
+    AudioManager m_audioManager;
 
     /**
      * \brief Object to translate/rotate the camera.
@@ -185,6 +191,10 @@ private:
      * \brief Object to render entities of game's registry.
      */
     RenderSystem m_renderSystem;
+    /**
+     * \brief Object to play sound buffers of game entities.
+     */
+    AudioSystem m_audioSystem;
     /**
      * \brief Object to control player movement functionality.
      */
