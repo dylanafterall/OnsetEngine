@@ -1,4 +1,12 @@
+## \*** This Project is Archived \***
+
+<p>This is my favorite coding project I have ever worked on. Not because of the quality of the final code, but rather because of how much my programming knowledge increased from start to finish. At the beginning of this project, I had never used CMake, Git Submodules, vcpkg, or Conan. I had never used any sort of static (e.g. linters) or dynamic (e.g. valgrind/profilers) analysis tools beyond default VS Code offerings. I started with VS Code, then spent a long (way too long) time customizing a truly awesome Neovim environment, then eventually returned to VS Code when I realized I was spending more time building my editor than my engine. At the start, I had no experience with the C++ Standard Template Library (STL). I was unaware of the existence of Standard Library options like smart pointers. I had no previous experience at all with any graphics APIs or shader languages. At one point, it took me a solid week of dedicated thinking (and repeated failure / iteration) to create a shader able to combine multiple types of light sources and shadow maps (see: assets/shaders/basic_lighting.frag). Rather than continuing this project, I'd prefer to start over if I had to - knowing what I know now. Still, it is satisfying to reflect on how much this endeavour tested me and forced me to improve. 
+<br>Fun side note: this game engine got its name because when I first started coding it, I was listening to the Legend of Zelda: Wind Waker O.S.T. - in particular, the song for Onset Island on repeat. Only when I was half-way through the project did I realize that it's 
+actually Outset Island, not Onset. Oh well.</br></p>
+
 # Onset Engine
+
+![]()
 
 <p>The Onset Engine is an ECS game engine written in C++, with 2D physics and 3D rendering. Shaders are written in GLSL. 
 The engine uses the OpenGL 3.3 Graphics API for rendering. <br>
@@ -9,7 +17,7 @@ new techniques and practices over time.
 
 <p>Features:
 <ul>
-    <li>Rendering: </li>
+    <li>3D Rendering: </li>
         <ul>
             <li>Lighting: </li>
             <ul>
@@ -34,7 +42,11 @@ new techniques and practices over time.
             <li>Model Instancing (via glDrawArraysInstanced) ***(work in progress) </li>
             <li>Text Rendering </li>
         </ul>
-    <li>Audio effects ***(work in progress) </li>
+    <li>3D Sound Effects: </li>
+        <ul>
+            <li>Sound attenuation per distance and direction ***(work in progress) </li>
+            <li>Music and long sound buffering ***(work in progress) </li>
+        </ul>
     <li>Event System (utilizing Observer programming pattern) with adjustable Event Queue </li>
     <li>Ability to rebind keymaps during runtime (utilizing Command programming pattern) </li>
     <li>Developer Tools: </li>
@@ -47,9 +59,9 @@ new techniques and practices over time.
 </ul>
 </p>
 
-## Infrastructure
+## External Libraries
 
-<p>External Libraries:
+<p>
 <ul>
     <li><a href="https://github.com/Dav1dde/glad">Dav1dde/glad</a> </li>
     <li><a href="https://www.glfw.org/">GLFW</a> </li>
@@ -65,7 +77,9 @@ new techniques and practices over time.
 </ul>
 </p>
 
-<p>Tools:
+## Tools Used:
+
+<p>
 <ul>
     <li>Editor: <a href="https://code.visualstudio.com/">VS Code</a>, <a href="https://github.com/neovim/neovim">Neovim</a> </li>
     <li>Build System: <a href="https://cmake.org/">CMake</a>, <a href="https://vcpkg.io/en/index.html">vcpkg</a> </li>
